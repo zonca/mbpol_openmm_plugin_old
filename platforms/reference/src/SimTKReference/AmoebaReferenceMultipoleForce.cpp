@@ -552,12 +552,18 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
                                                           RealOpenMM r, std::vector<RealOpenMM>& rrI ) const 
 {
 
+    // MB-Pol has additional charge-charge term, and doesn't have quadrupole terms so:
+    // rrI[0] = charge-charge (ts0 in mbpol)
+    // rrI[1] = dipole-charge (ts1 in mbpol)
+    // rrI[2] = dipole-dipole (ts2 in mbpol)
+
     RealOpenMM rI             =  1.0/r;
     RealOpenMM r2I            =  rI*rI;
- 
-    rrI[0]                    = rI*r2I;
+
+    rrI[0]                    = rI;
+    rrI[1]                    = rI*r2I;
     RealOpenMM constantFactor = 3.0;
-    for( unsigned int ii  = 1; ii < rrI.size(); ii++ ){ 
+    for( unsigned int ii  = 2; ii < rrI.size(); ii++ ){ 
        rrI[ii]         = constantFactor*rrI[ii-1]*r2I;
        constantFactor += 2.0;
     }
@@ -566,16 +572,17 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
     if( damp != 0.0 ){
         RealOpenMM pgamma    = tholeI < tholeJ ? tholeI : tholeJ;
         RealOpenMM ratio     = (r/damp);
-                   ratio     = ratio*ratio*ratio;
+                   ratio     = ratio*ratio*ratio*ratio;
                    damp      = -pgamma*ratio;
 
         if( damp > -50.0 ){ 
             RealOpenMM dampExp   = EXP( damp );
 
-            rrI[0]              *= 1.0 - dampExp;
-            rrI[1]              *= 1.0 - ( 1.0 - damp )*dampExp;
+            rrI[0]              *= 1.0 - dampExp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(gammln(3.0/4.0))*gammq(3.0/4.0, -damp);
+ ;
+            rrI[1]              *= ( 1.0 - dampExp );
             if( rrI.size() > 2 ){
-                rrI[2]          *= 1.0 - ( 1.0 - damp + (0.6*damp*damp))*dampExp;
+                rrI[2]          *= (1.0 - dampExp) - (4./3.) * pgamma * dampExp * ratio;
             }
        }
     }
