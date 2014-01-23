@@ -549,7 +549,7 @@ void AmoebaReferenceMultipoleForce::applyRotationMatrix( std::vector<MultipolePa
 
 void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, RealOpenMM dampJ,
                                                           RealOpenMM tholeI, RealOpenMM tholeJ,
-                                                          RealOpenMM r, std::vector<RealOpenMM>& rrI ) const 
+                                                          RealOpenMM r, bool justScale, RealOpenMM &damp, std::vector<RealOpenMM>& rrI ) const 
 {
 
     // MB-Pol has additional charge-charge term, and doesn't have quadrupole terms so:
@@ -560,15 +560,22 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
     RealOpenMM rI             =  1.0/r;
     RealOpenMM r2I            =  rI*rI;
 
-    rrI[0]                    = rI;
-    rrI[1]                    = rI*r2I;
-    RealOpenMM constantFactor = 3.0;
-    for( unsigned int ii  = 2; ii < rrI.size(); ii++ ){ 
-       rrI[ii]         = constantFactor*rrI[ii-1]*r2I;
-       constantFactor += 2.0;
+    if (justScale) {
+        for( unsigned int ii  = 0; ii < rrI.size(); ii++ ){ 
+           rrI[ii]         = 1.;
+        }
+    } else {
+        rrI[0]                    = rI;
+        rrI[1]                    = rI*r2I;
+        RealOpenMM constantFactor = 3.0;
+        for( unsigned int ii  = 2; ii < rrI.size(); ii++ ){ 
+           rrI[ii]         = constantFactor*rrI[ii-1]*r2I;
+           constantFactor += 2.0;
+        }
     }
+        
  
-    RealOpenMM damp      = dampI*dampJ;
+    damp      = dampI*dampJ;
     if( damp != 0.0 ){
         RealOpenMM pgamma    = tholeI < tholeJ ? tholeI : tholeJ;
         RealOpenMM ratio     = (r/damp);
@@ -586,6 +593,9 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
             }
        }
     }
+
+    // For now setting the quadrupole term to zero
+    rrI[3] = 0;
     return;
 }
 
@@ -598,15 +608,15 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
 
     RealVec deltaR    = particleJ.position - particleI.position;
     RealOpenMM r      = SQRT( deltaR.dot( deltaR ) );
-    std::vector<RealOpenMM> rrI(3);
+    std::vector<RealOpenMM> rrI(4);
  
     // get scaling factors, if needed
   
     getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor, particleI.thole, particleJ.thole, r, rrI );
 
-    RealOpenMM rr3    = rrI[0];
-    RealOpenMM rr5    = rrI[1];
-    RealOpenMM rr7    = rrI[2];
+    RealOpenMM rr3    = rrI[1];
+    RealOpenMM rr5    = rrI[2];
+    RealOpenMM rr7    = rrI[3];
     RealOpenMM rr5_2  = 2.0*rr5;
 
     // field at particle I due multipoles at particle J
@@ -893,6 +903,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     RealOpenMM rr9      = 7.0*rr7/r2;
     RealOpenMM rr11     = 9.0*rr9/r2;
 
+    RealOpenMM scale1   = 1.0;
     RealOpenMM scale3   = 1.0;
     RealOpenMM scale5   = 1.0;
     RealOpenMM scale7   = 1.0;
@@ -901,16 +912,37 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     RealVec ddsc5( 0.0, 0.0, 0.0 );
     RealVec ddsc7( 0.0, 0.0, 0.0 );
 
-    RealOpenMM damp = particleI.dampingFactor*particleK.dampingFactor;
+    //RealOpenMM damp = particleI.dampingFactor*particleK.dampingFactor;
+    //if( damp != 0.0 ){
+    //    RealOpenMM pgamma = particleI.thole < particleK.thole ? particleI.thole : particleK.thole;
+    //    RealOpenMM ratio  = (r/damp);
+    //    damp              = -pgamma * ratio*ratio*ratio;
+    //    if( damp > -50.0){
+    //        RealOpenMM expdamp = EXP(damp);
+    //        scale3 = 1.0 - expdamp;
+    //        scale5 = 1.0 - (1.0-damp)*expdamp;
+    //        scale7 = 1.0 - (1.0-damp+0.6*damp*damp)*expdamp;
+    //        temp3 = -3.0 * damp * expdamp / r2;
+    //        temp5 = -damp;
+    //        temp7 = -0.2 - 0.6*damp;
+
+    //        ddsc3 = delta*temp3;
+    //        ddsc5 = ddsc3*temp5;
+    //        ddsc7 = ddsc5*temp7;
+
+    //    }
+    //}
+
+    RealOpenMM damp;
+    getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor,
+                          particleI.thole, particleJ.thole, r, true, damp, rrI );
+    RealOpenMM expdamp = EXP(damp);
     if( damp != 0.0 ){
-        RealOpenMM pgamma = particleI.thole < particleK.thole ? particleI.thole : particleK.thole;
-        RealOpenMM ratio  = (r/damp);
-        damp              = -pgamma * ratio*ratio*ratio;
         if( damp > -50.0){
-            RealOpenMM expdamp = EXP(damp);
-            scale3 = 1.0 - expdamp;
-            scale5 = 1.0 - (1.0-damp)*expdamp;
-            scale7 = 1.0 - (1.0-damp+0.6*damp*damp)*expdamp;
+            scale1 = rrI[0];
+            scale3 = rrI[1];
+            scale5 = rrI[2];
+            scale7 = rrI[3];
             temp3 = -3.0 * damp * expdamp / r2;
             temp5 = -damp;
             temp7 = -0.2 - 0.6*damp;
@@ -918,9 +950,9 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
             ddsc3 = delta*temp3;
             ddsc5 = ddsc3*temp5;
             ddsc7 = ddsc5*temp7;
-
         }
     }
+
     RealOpenMM scale3i = scale3*scalingFactors[U_SCALE];
     RealOpenMM scale5i = scale5*scalingFactors[U_SCALE];
     RealOpenMM scale7i = scale7*scalingFactors[U_SCALE];
@@ -1087,7 +1119,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
 
     // compute the energy contributions for this interaction
 
-    RealOpenMM energy = rr1*gl[0] + rr3*(gl[1]+gl[6]) + rr5*(gl[2]+gl[7]+gl[8]) + rr7*(gl[3]+gl[5]) + rr9*gl[4];
+    RealOpenMM energy = scale1*rr1*gl[0] + rr3*(gl[1]+gl[6]) + rr5*(gl[2]+gl[7]+gl[8]) + rr7*(gl[3]+gl[5]) + rr9*gl[4];
     energy           *= scalingFactors[M_SCALE];
     energy           += 0.5*(rr3*(gli[0]+gli[5])*psc3 + rr5*(gli[1]+gli[6])*psc5 + rr7*gli[2]*psc7);
     energy           *= f;
