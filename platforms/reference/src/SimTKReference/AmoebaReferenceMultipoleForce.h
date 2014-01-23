@@ -717,7 +717,7 @@ protected:
      * @param  pScale              output p-scale factor
      */
     void getAndScaleInverseRs( RealOpenMM dampI, RealOpenMM dampJ, RealOpenMM tholeI, RealOpenMM tholeJ,
-                               RealOpenMM r, std::vector<RealOpenMM>& rrI ) const;
+                               RealOpenMM r, bool justScale, RealOpenMM& damp, std::vector<RealOpenMM>& rrI ) const;
 
     /**
      * Check if multipoles at chiral site should be inverted.

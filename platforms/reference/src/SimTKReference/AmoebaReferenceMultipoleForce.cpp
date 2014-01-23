@@ -29,6 +29,9 @@
 // make sure that erf() and erfc() are defined.
 #include "openmm/internal/MSVC_erfc.h"
 
+// from mbpol
+#include "gammq.h"
+
 using std::vector;
 using OpenMM::RealVec;
 
@@ -549,7 +552,7 @@ void AmoebaReferenceMultipoleForce::applyRotationMatrix( std::vector<MultipolePa
 
 void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, RealOpenMM dampJ,
                                                           RealOpenMM tholeI, RealOpenMM tholeJ,
-                                                          RealOpenMM r, bool justScale, RealOpenMM &damp, std::vector<RealOpenMM>& rrI ) const 
+                                                          RealOpenMM r, bool justScale, RealOpenMM & damp, std::vector<RealOpenMM>& rrI ) const 
 {
 
     // MB-Pol has additional charge-charge term, and doesn't have quadrupole terms so:
@@ -585,7 +588,7 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
         if( damp > -50.0 ){ 
             RealOpenMM dampExp   = EXP( damp );
 
-            rrI[0]              *= 1.0 - dampExp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(gammln(3.0/4.0))*gammq(3.0/4.0, -damp);
+            rrI[0]              *= 1.0 - dampExp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -damp);
  ;
             rrI[1]              *= ( 1.0 - dampExp );
             if( rrI.size() > 2 ){
@@ -609,10 +612,11 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
     RealVec deltaR    = particleJ.position - particleI.position;
     RealOpenMM r      = SQRT( deltaR.dot( deltaR ) );
     std::vector<RealOpenMM> rrI(4);
+    RealOpenMM damp=0.;
  
     // get scaling factors, if needed
   
-    getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor, particleI.thole, particleJ.thole, r, rrI );
+    getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor, particleI.thole, particleJ.thole, r, false, damp, rrI );
 
     RealOpenMM rr3    = rrI[1];
     RealOpenMM rr5    = rrI[2];
@@ -723,9 +727,10 @@ void AmoebaReferenceMultipoleForce::calculateInducedDipolePairIxns( const Multip
     RealVec deltaR       = particleJ.position - particleI.position;
     RealOpenMM r         =  SQRT( deltaR.dot( deltaR ) );
     std::vector<RealOpenMM> rrI(3);
+    RealOpenMM damp;
   
     getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor,
-                          particleI.thole, particleJ.thole, r, rrI );
+                          particleI.thole, particleJ.thole, r, false, damp, rrI );
  
     RealOpenMM rr3       = -rrI[1];
     RealOpenMM rr5       =  rrI[2];
@@ -933,9 +938,10 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     //    }
     //}
 
-    RealOpenMM damp;
-    getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor,
-                          particleI.thole, particleJ.thole, r, true, damp, rrI );
+    RealOpenMM damp=0.;
+    std::vector<RealOpenMM> rrI(4);
+    getAndScaleInverseRs( particleI.dampingFactor, particleK.dampingFactor,
+                          particleI.thole, particleK.thole, r, true, damp, rrI );
     RealOpenMM expdamp = EXP(damp);
     if( damp != 0.0 ){
         if( damp > -50.0){
