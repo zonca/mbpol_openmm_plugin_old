@@ -717,8 +717,8 @@ void AmoebaReferenceMultipoleForce::calculateInducedDipolePairIxns( const Multip
     getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor,
                           particleI.thole, particleJ.thole, r, rrI );
  
-    RealOpenMM rr3       = -rrI[0];
-    RealOpenMM rr5       =  rrI[1];
+    RealOpenMM rr3       = -rrI[1];
+    RealOpenMM rr5       =  rrI[2];
  
     for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
         calculateInducedDipolePairIxn( particleI.particleIndex, particleJ.particleIndex, rr3, rr5, deltaR,
