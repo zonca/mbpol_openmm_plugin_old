@@ -75,10 +75,10 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     AmoebaMultipoleForce* amoebaMultipoleForce        = new AmoebaMultipoleForce();;
     int numberOfParticles                             = 9;
     amoebaMultipoleForce->setNonbondedMethod( nonbondedMethod );
-    amoebaMultipoleForce->setPolarizationType( polarizationType );
-    amoebaMultipoleForce->setCutoffDistance( cutoff );
-    amoebaMultipoleForce->setMutualInducedTargetEpsilon( 1.0e-06 );
-    amoebaMultipoleForce->setMutualInducedMaxIterations( 500 );
+    //amoebaMultipoleForce->setPolarizationType( polarizationType );
+    //amoebaMultipoleForce->setCutoffDistance( cutoff );
+    //amoebaMultipoleForce->setMutualInducedTargetEpsilon( 1.0e-06 );
+    //amoebaMultipoleForce->setMutualInducedMaxIterations( 500 );
     //amoebaMultipoleForce->setAEwald( 5.4459052e+00 );
     //amoebaMultipoleForce->setEwaldErrorTolerance( 1.0e-04 );
 
@@ -132,35 +132,35 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 
     // CovalentMaps
 
-    std::vector< int > covalentMap;
-    for( unsigned int jj = 0; jj < numberOfParticles; jj += 3 ){
-        covalentMap.resize(0);
-        covalentMap.push_back( jj+1 );
-        covalentMap.push_back( jj+2 );
-        amoebaMultipoleForce->setCovalentMap( jj, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(0), covalentMap );
+    //std::vector< int > covalentMap;
+    //for( unsigned int jj = 0; jj < numberOfParticles; jj += 3 ){
+    //    covalentMap.resize(0);
+    //    covalentMap.push_back( jj+1 );
+    //    covalentMap.push_back( jj+2 );
+    //    amoebaMultipoleForce->setCovalentMap( jj, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(0), covalentMap );
 
-        covalentMap.resize(0);
-        covalentMap.push_back( jj );
-        covalentMap.push_back( jj+1 );
-        covalentMap.push_back( jj+2 );
-        amoebaMultipoleForce->setCovalentMap( jj,   static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(4), covalentMap );
-        amoebaMultipoleForce->setCovalentMap( jj+1, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(4), covalentMap );
-        amoebaMultipoleForce->setCovalentMap( jj+2, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(4), covalentMap );
-    
-        covalentMap.resize(0);
-        covalentMap.push_back( jj );
-        amoebaMultipoleForce->setCovalentMap( jj+1, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(0), covalentMap );
-        amoebaMultipoleForce->setCovalentMap( jj+2, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(0), covalentMap );
-    
-        covalentMap.resize(0);
-        covalentMap.push_back( jj+2 );
-        amoebaMultipoleForce->setCovalentMap( jj+1, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(1), covalentMap );
-    
-        covalentMap.resize(0);
-        covalentMap.push_back( jj+1 );
-        amoebaMultipoleForce->setCovalentMap( jj+2, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(1), covalentMap );
-    
-    } 
+    //    covalentMap.resize(0);
+    //    covalentMap.push_back( jj );
+    //    covalentMap.push_back( jj+1 );
+    //    covalentMap.push_back( jj+2 );
+    //    amoebaMultipoleForce->setCovalentMap( jj,   static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(4), covalentMap );
+    //    amoebaMultipoleForce->setCovalentMap( jj+1, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(4), covalentMap );
+    //    amoebaMultipoleForce->setCovalentMap( jj+2, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(4), covalentMap );
+    //
+    //    covalentMap.resize(0);
+    //    covalentMap.push_back( jj );
+    //    amoebaMultipoleForce->setCovalentMap( jj+1, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(0), covalentMap );
+    //    amoebaMultipoleForce->setCovalentMap( jj+2, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(0), covalentMap );
+    //
+    //    covalentMap.resize(0);
+    //    covalentMap.push_back( jj+2 );
+    //    amoebaMultipoleForce->setCovalentMap( jj+1, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(1), covalentMap );
+    //
+    //    covalentMap.resize(0);
+    //    covalentMap.push_back( jj+1 );
+    //    amoebaMultipoleForce->setCovalentMap( jj+2, static_cast<OpenMM::AmoebaMultipoleForce::CovalentType>(1), covalentMap );
+    //
+    //} 
     system.addForce(amoebaMultipoleForce);
  
     static std::vector<Vec3> positions; // Static to work around bug in Visual Studio that makes compilation very very slow.
@@ -183,16 +183,16 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 
     context.setPositions(positions);
 
-    if( testName == "testSystemMultipoleMoments" ){
-        amoebaMultipoleForce->getSystemMultipoleMoments( context, outputMultipoleMoments );
-    } else if( testName == "testMultipoleGridPotential" ){
-        amoebaMultipoleForce->getElectrostaticPotential( inputGrid, context, outputGridPotential );
-    } else {
+    //if( testName == "testSystemMultipoleMoments" ){
+    //    amoebaMultipoleForce->getSystemMultipoleMoments( context, outputMultipoleMoments );
+    //} else if( testName == "testMultipoleGridPotential" ){
+    //    amoebaMultipoleForce->getElectrostaticPotential( inputGrid, context, outputGridPotential );
+    //} else {
 
-        State state               = context.getState(State::Forces | State::Energy);
-        forces                    = state.getForces();
-        energy                    = state.getPotentialEnergy();
-    }
+    //    State state               = context.getState(State::Forces | State::Energy);
+    //    forces                    = state.getForces();
+    //    energy                    = state.getPotentialEnergy();
+    //}
 
     return;
 }
@@ -210,9 +210,13 @@ static void testWater3Distances( FILE* log ) {
     std::vector< Vec3 > inputGrid;
     std::vector< double > outputGridPotential;
 
-    setupWater3System( AmoebaMultipoleForce::PME, AmoebaMultipoleForce::Mutual, 
+    setupWater3System( AmoebaMultipoleForce::NoCutoff, AmoebaMultipoleForce::Mutual, 
                           cutoff, testName,
                          forces, energy, outputMultipoleMoments, inputGrid, outputGridPotential, log );
+
+    //std::vector<RealOpenMM> rrI(4);
+    //getAndScaleInverseRs( particleI.dampingFactor, particleK.dampingFactor,
+    //                      particleI.thole, particleK.thole, r, false, damp, rrI );
 
 //    std::vector<double> tinkerMoments(4);
 //
