@@ -38,6 +38,7 @@
 #include "OpenMMAmoeba.h"
 #include "openmm/System.h"
 #include "openmm/AmoebaMultipoleForce.h"
+#include "AmoebaReferenceMultipoleForce.h"
 #include "openmm/LangevinIntegrator.h"
 #include <iostream>
 #include <vector>
@@ -186,6 +187,41 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     return;
 }
 
+static void testGetAndScaleInverseRs( FILE* log ) {
+
+    std::string testName      = "testGetAndScaleInverseRs";
+
+    
+    // getAndScaleInverseRs is protected, so we need to create a wrapping class for testing it.
+    class WrappedAmoebaReferenceMultipoleForce : public AmoebaReferenceMultipoleForce {
+        public:
+        int wrapGetAndScaleInverseRs(
+                RealOpenMM dampI, RealOpenMM dampJ,
+                RealOpenMM tholeI, RealOpenMM tholeJ,
+                RealOpenMM r, bool justScale, RealOpenMM & damp, std::vector<RealOpenMM>& rrI
+                )   { 
+                        getAndScaleInverseRs(dampI, dampJ, tholeI, tholeJ, r, justScale, damp, rrI);
+                    }
+    };
+
+    RealOpenMM damp=10.;
+    RealOpenMM dampO=0.306988;
+    RealOpenMM dampH=0.28135;
+    std::vector<RealOpenMM> rrI(4);
+    RealOpenMM r=9.860634018e-01; // from Water3 test
+    RealOpenMM thole=0.3900;
+
+    WrappedAmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForce();;
+    amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampH,
+                          thole, thole, r, false, damp, rrI);
+
+    //ASSERT_EQUAL_TOL_MOD(0., rrI[0], 1e-5, testName);
+    //ASSERT_EQUAL_TOL_MOD(5.324612470e-01, rrI[1], 1e-5, testName);
+    //ASSERT_EQUAL_TOL_MOD(4.747626558e-02, rrI[2], 1e-5, testName);
+    //ASSERT_EQUAL_TOL_MOD(             0., rrI[3], 1e-5, testName);
+
+}
+
 static void testWater3Distances( FILE* log ) {
 
     std::string testName      = "testWaterDistances";
@@ -258,6 +294,8 @@ int main( int numberOfArguments, char* argv[] ) {
         std::cout << "TestReferenceAmoebaMultipoleForce running test..." << std::endl;
 
         FILE* log = NULL;
+
+        testGetAndScaleInverseRs( log );
 
         // water 3 mbpol
         testWater3Distances( log );
