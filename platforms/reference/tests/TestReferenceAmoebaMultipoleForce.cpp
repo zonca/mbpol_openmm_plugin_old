@@ -182,8 +182,31 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     Context context(system, integrator, Platform::getPlatformByName( platformName ) );
 
     context.setPositions(positions);
+    double tolerance          = 1.0e-04;
 
-    State state                      = context.getState(State::Forces);
+    State state                      = context.getState(State::Forces | State::Energy);
+    std::vector<Vec3> forces                           = state.getForces();
+    double energy                           = state.getPotentialEnergy();
+
+    std::vector<Vec3> expectedForces(numberOfParticles);
+    expectedForces[0]         = Vec3( -1.029233628e-01,  1.752006876e-01, -2.394228296e-01  );
+    expectedForces[1]         = Vec3(  1.238286503e-01, -9.713944883e-02,  9.278441270e-02  );
+    expectedForces[2]         = Vec3( -1.992936921e-02, -8.084103617e-02,  1.660930712e-01  );
+    expectedForces[3]         = Vec3(  2.181116801e-01,  1.127169979e-01, -1.998507867e-01  );
+    expectedForces[4]         = Vec3( -1.021411513e-01, -6.244910893e-02,  1.595471969e-01  );
+    expectedForces[5]         = Vec3( -1.214347018e-01, -6.329887574e-02,  2.105405984e-02  );
+    expectedForces[6]         = Vec3(  1.708442625e-01,  1.860776100e-01,  2.249030303e-02  );
+    expectedForces[7]         = Vec3( -7.205290616e-02, -7.830256131e-02,  4.942309713e-02  );
+    expectedForces[8]         = Vec3( -9.430310162e-02, -9.196426456e-02, -7.211852443e-02  );
+
+    //for( unsigned int ii = 0; ii < forces.size(); ii++ ){
+    //    ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
+    //}
+
+    // Energy elec+ind(kcal/mol): -2.134083549e-02
+    double expectedEnergy = -2.134083549e-02;
+    //ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
+
     return;
 }
 
@@ -243,9 +266,9 @@ static void testGetAndScaleInverseRsJustScale( FILE* log ) {
 
 }
 
-static void testWater3Distances( FILE* log ) {
+static void testWater3( FILE* log ) {
 
-    std::string testName      = "testWaterDistances";
+    std::string testName      = "testWater3";
     
     int numberOfParticles     = 9;
     double cutoff             = 0.70;
@@ -320,7 +343,7 @@ int main( int numberOfArguments, char* argv[] ) {
         testGetAndScaleInverseRsJustScale( log );
 
         // water 3 mbpol
-        testWater3Distances( log );
+        testWater3( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;
