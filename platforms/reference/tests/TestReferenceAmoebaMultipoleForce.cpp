@@ -55,7 +55,6 @@ const double TOL = 1e-4;
 static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMethod,
                  AmoebaMultipoleForce::PolarizationType polarizationType,
                  double cutoff, std::string& testName, 
-                 std::vector<Vec3>& forces, double& energy,
                  std::vector< double >& outputMultipoleMoments,
                  std::vector< Vec3 >& inputGrid,
                  std::vector< double >& outputGridPotential, FILE* log ){
@@ -183,17 +182,7 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 
     context.setPositions(positions);
 
-    //if( testName == "testSystemMultipoleMoments" ){
-    //    amoebaMultipoleForce->getSystemMultipoleMoments( context, outputMultipoleMoments );
-    //} else if( testName == "testMultipoleGridPotential" ){
-    //    amoebaMultipoleForce->getElectrostaticPotential( inputGrid, context, outputGridPotential );
-    //} else {
-
-    //    State state               = context.getState(State::Forces | State::Energy);
-    //    forces                    = state.getForces();
-    //    energy                    = state.getPotentialEnergy();
-    //}
-
+    State state                      = context.getState(State::Forces);
     return;
 }
 
@@ -212,7 +201,10 @@ static void testWater3Distances( FILE* log ) {
 
     setupWater3System( AmoebaMultipoleForce::NoCutoff, AmoebaMultipoleForce::Mutual, 
                           cutoff, testName,
-                         forces, energy, outputMultipoleMoments, inputGrid, outputGridPotential, log );
+                       outputMultipoleMoments, inputGrid, outputGridPotential, log );
+
+    //State state                      = water3Context->getState(State::Forces);
+    // forces                           = state.getForces();
 
     //std::vector<RealOpenMM> rrI(4);
     //getAndScaleInverseRs( particleI.dampingFactor, particleK.dampingFactor,

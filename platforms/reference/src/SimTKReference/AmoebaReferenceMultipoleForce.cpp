@@ -726,7 +726,7 @@ void AmoebaReferenceMultipoleForce::calculateInducedDipolePairIxns( const Multip
 
     RealVec deltaR       = particleJ.position - particleI.position;
     RealOpenMM r         =  SQRT( deltaR.dot( deltaR ) );
-    std::vector<RealOpenMM> rrI(3);
+    std::vector<RealOpenMM> rrI(4);
     RealOpenMM damp;
   
     getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor,
@@ -1593,11 +1593,11 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateForceAndEnergy( const std::ve
     // setup, including calculating induced dipoles
     // calculate electrostatic ixns including torques
     // map torques to forces
-
+    
     std::vector<MultipoleParticleData> particleData;
     setup( particlePositions, charges, dipoles, quadrupoles, tholes,
-           dampingFactors, polarity, axisTypes, multipoleAtomZs, multipoleAtomXs, multipoleAtomYs,
-           multipoleAtomCovalentInfo, particleData );
+            dampingFactors, polarity, axisTypes, multipoleAtomZs, multipoleAtomXs, multipoleAtomYs,
+            multipoleAtomCovalentInfo, particleData );
 
     std::vector<RealVec> torques;
     initializeRealVecVector( torques );
