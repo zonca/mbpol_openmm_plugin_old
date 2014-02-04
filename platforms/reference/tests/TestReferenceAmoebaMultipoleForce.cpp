@@ -162,7 +162,7 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     //
     //} 
     system.addForce(amoebaMultipoleForce);
- 
+
     static std::vector<Vec3> positions; // Static to work around bug in Visual Studio that makes compilation very very slow.
     positions.resize(numberOfParticles);
 
@@ -282,6 +282,7 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
 class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceMultipoleForce {
     public:
     int wrapCalculateInducedDipolePairIxns()   {
+    	string testName = "computeInducedDipoles";
         std::cout << "wrapCalculateInducedDipolePairIxns" << std::endl;
 
     	int numberOfParticles = 2;
@@ -350,7 +351,20 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
 
         std::cout << "END of wrapCalculateInducedDipolePairIxns" << std::endl;
 
+        std::vector<Vec3> expectedInducedDipoles(numberOfParticles);
+        expectedInducedDipoles[0] = Vec3(-7.046394571e-03, -5.104341822e-03, -7.841188329e-02);
+        expectedInducedDipoles[1] = Vec3( 7.046394571e-03,  5.104341822e-03,  7.841188329e-02);
+        for (int i=0; i<numberOfParticles; i++) {
+            for (int j=0; j<3; j++) {
+            	expectedInducedDipoles[i][j] *= 10;
+            }
         }
+
+        double tolerance = 1e-5;
+        for (int i=0; i<numberOfParticles; i++) {
+            ASSERT_EQUAL_VEC_MOD(expectedInducedDipoles[i], updateInducedDipoleField[0].inducedDipoles[0][i], tolerance, testName);
+        }
+    }
 };
 
 static void testWater3( FILE* log ) {
