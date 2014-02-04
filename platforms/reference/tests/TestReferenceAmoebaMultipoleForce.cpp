@@ -370,53 +370,6 @@ static void testWater3( FILE* log ) {
                           cutoff, testName,
                        outputMultipoleMoments, inputGrid, outputGridPotential, log );
 
-    //State state                      = water3Context->getState(State::Forces);
-    // forces                           = state.getForces();
-
-    //std::vector<RealOpenMM> rrI(4);
-    //getAndScaleInverseRs( particleI.dampingFactor, particleK.dampingFactor,
-    //                      particleI.thole, particleK.thole, r, false, damp, rrI );
-
-//    std::vector<double> tinkerMoments(4);
-//
-//    tinkerMoments[0]  =   0.0000000e+00;
-//    tinkerMoments[1]  =  -9.1118361e+00;
-//    tinkerMoments[2]  =   2.8371876e+01;
-//    tinkerMoments[3]  =   5.1518898e+01;
-////    tinkerMoments[4]  =  -1.0768808e-01; // Quadrupole moments are not uniquely defined when using periodic boundary conditions
-////    tinkerMoments[5]  =  -9.0458124e-01;
-////    tinkerMoments[6]  =   1.8460385e+00;
-////    tinkerMoments[7]  =  -9.0458124e-01;
-////    tinkerMoments[8]  =   6.4395591e-02;
-////    tinkerMoments[9]  =   1.6692567e-01;
-////    tinkerMoments[10] =   1.8460385e-00;
-////    tinkerMoments[11] =   1.6692567e-01;
-////    tinkerMoments[12] =   4.3292490e-02;
-//
-//    double tolerance = 1.0e-04;
-//    if( log ){
-//        (void) fprintf( log, "%s RelativeDifference Tinker OpenMM\n", testName.c_str() );
-//    }
-//    for( unsigned int ii = 0; ii < tinkerMoments.size(); ii++ ){
-//        double difference;
-//        if( fabs( tinkerMoments[ii] ) > 0.0 ){
-//            difference = fabs( outputMultipoleMoments[ii] - tinkerMoments[ii] )/fabs( tinkerMoments[ii] );
-//        } else {
-//            difference = fabs( outputMultipoleMoments[ii] - tinkerMoments[ii] );
-//        }
-//        if( log ){
-//            (void) fprintf( log, "%2d %15.7e %15.7e %15.7e\n", ii, difference, tinkerMoments[ii], outputMultipoleMoments[ii] );
-//        }
-//
-//        if( difference > tolerance ){
-//            std::stringstream details;
-//            details << testName << "Multipole moment " << ii << " does not agree w/ TINKER computed moments: OpenMM=" << outputMultipoleMoments[ii];
-//            details << " TINKER=" <<  tinkerMoments[ii]  << " difference=" << difference;
-//            throwException(__FILE__, __LINE__, details.str());
-//        }
-//
-//    }
-
 }
 
 int main( int numberOfArguments, char* argv[] ) {
@@ -426,11 +379,15 @@ int main( int numberOfArguments, char* argv[] ) {
 
         FILE* log = NULL;
 
-        testGetAndScaleInverseRs( log );
-        testGetAndScaleInverseRsJustScale( log );
+        // testGetAndScaleInverseRs( log );
+        // testGetAndScaleInverseRsInterMulecolar( log );
+        //testGetAndScaleInverseRsJustScale( log );
+
+        WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();;
+        amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
 
         // water 3 mbpol
-        testWater3( log );
+        // testWater3( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;
