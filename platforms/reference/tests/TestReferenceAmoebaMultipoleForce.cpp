@@ -176,6 +176,12 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     positions[7]             = Vec3( -9.411558180e-01,  1.541226676e+00,  6.163293071e-01  );
     positions[8]             = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
 
+    for (int i=0; i<numberOfParticles; i++) {
+        for (int j=0; j<3; j++) {
+        	positions[i][j] *= 1e-1;
+        }
+    }
+
     std::string platformName;
     platformName = "Reference";
     LangevinIntegrator integrator(0.0, 0.1, 0.01);
@@ -189,7 +195,7 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     State state                = context.getState(State::Forces | State::Energy);
     std::vector<Vec3> forces   = state.getForces();
     double energy              = state.getPotentialEnergy();
-
+    double cal2joule = 4.184;
     std::vector<Vec3> expectedForces(numberOfParticles);
     expectedForces[0]         = Vec3( -1.029233628e-01,  1.752006876e-01, -2.394228296e-01  );
     expectedForces[1]         = Vec3(  1.238286503e-01, -9.713944883e-02,  9.278441270e-02  );
@@ -200,14 +206,18 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     expectedForces[6]         = Vec3(  1.708442625e-01,  1.860776100e-01,  2.249030303e-02  );
     expectedForces[7]         = Vec3( -7.205290616e-02, -7.830256131e-02,  4.942309713e-02  );
     expectedForces[8]         = Vec3( -9.430310162e-02, -9.196426456e-02, -7.211852443e-02  );
-
+    for (int i=0; i<numberOfParticles; i++) {
+        for (int j=0; j<3; j++) {
+        	expectedForces[i][j] *= cal2joule*10;
+        }
+    }
     //for( unsigned int ii = 0; ii < forces.size(); ii++ ){
     //    ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
     //}
 
     // Energy elec+ind(kcal/mol): -2.134083549e-02
-    double expectedEnergy = -2.134083549e-02;
-    //ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
+    double expectedEnergy = -2.134083549e-02*cal2joule;
+    ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
 
     return;
 }
