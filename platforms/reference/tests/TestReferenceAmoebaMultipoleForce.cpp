@@ -225,7 +225,7 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 // getAndScaleInverseRs is protected, so we need to create a wrapping class for testing it.
 class WrappedAmoebaReferenceMultipoleForce : public AmoebaReferenceMultipoleForce {
     public:
-    int wrapGetAndScaleInverseRs(
+    void wrapGetAndScaleInverseRs(
             RealOpenMM dampI, RealOpenMM dampJ,
             RealOpenMM tholeI, RealOpenMM tholeJ,
             RealOpenMM r, bool justScale, RealOpenMM & damp, std::vector<RealOpenMM>& rrI
