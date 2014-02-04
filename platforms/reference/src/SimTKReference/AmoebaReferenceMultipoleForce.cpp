@@ -577,18 +577,17 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
         }
     }
         
- 
-    damp      = dampI*dampJ;
+    damp      = pow(dampI*dampJ, 1/6.);
     if( damp != 0.0 ){
-        RealOpenMM pgamma    = tholeI < tholeJ ? tholeI : tholeJ;
-        RealOpenMM ratio     = (r/damp);
-                   ratio     = ratio*ratio*ratio*ratio;
-                   damp      = -pgamma*ratio;
+        RealOpenMM pgamma      = tholeI < tholeJ ? tholeI : tholeJ;
+        RealOpenMM ratio       = pow(r/damp, 4);
+        RealOpenMM dampForExp  = -pgamma*ratio;
 
         if( damp > -50.0 ){ 
-            RealOpenMM dampExp   = EXP( damp );
+            RealOpenMM dampExp   = EXP( dampForExp );
+            std::cout << "dampExp " << dampExp << std::endl;
 
-            rrI[0]              *= 1.0 - dampExp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -damp);
+            rrI[0]              *= 1.0 - dampExp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -dampForExp);
  ;
             rrI[1]              *= ( 1.0 - dampExp );
             if( rrI.size() > 2 ){
