@@ -282,45 +282,76 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
 class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceMultipoleForce {
     public:
     int wrapCalculateInducedDipolePairIxns()   {
+        std::cout << "wrapCalculateInducedDipolePairIxns" << std::endl;
+
     	int numberOfParticles = 2;
     	std::vector<RealVec> positions(numberOfParticles);
     	positions[0]             = RealVec( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
-    	positions[1]             = RealVec( -6.218989773e-01, -6.009430735e-01,  1.572437625e+00  );
-    	std::vector<RealOpenMM> charges = Vec3(0., 0.);
-    	std::vector<RealOpenMM> dipoles = Vec3(0., 0., 0.,     0., 0., 0.);
-    	std::vector<RealOpenMM> quadrupoles = Vec3(0., 0., 0.,0., 0., 0.,    0., 0., 0.,0., 0., 0.);
-    	std::vector<RealOpenMM> tholes = Vec3(0.39, 0.39);
-    	std::vector<RealOpenMM> dampingFactors = Vec3(1., 1.);
-    	std::vector<RealOpenMM> polarity = Vec3(1., 1.);
+        positions[1]             = RealVec( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
+
+        for (int i=0; i<numberOfParticles; i++) {
+             for (int j=0; j<3; j++) {
+             	positions[i][j] *= 1e-1;
+             }
+         }
+
+    	std::vector<RealOpenMM> charges, dipoles, tholes, dampingFactors, polarity;
+    	std::vector<RealOpenMM> quadrupoles;
+
+    	for (int i=0; i<numberOfParticles; i++){
+        	charges.push_back(-5.1966000e-01);
+        	tholes.push_back(0.4);
+        	dampingFactors.push_back(0.001310);
+        	polarity.push_back(0.001310);
+        	for (int j=0; j<3; j++){
+        		dipoles.push_back(0.);
+        	}
+        	for (int j=0; j<6; j++){
+        		quadrupoles.push_back(0.);
+        	}
+    	}
 
         std::vector<MultipoleParticleData> particleData;
+        _numParticles = numberOfParticles;
     	loadParticleData(positions, charges, dipoles, quadrupoles,
     	                      tholes, dampingFactors, polarity, particleData );
-    	//calculateInducedDipolePairIxns(particleData[0], particleData[1], inducedDipoleFields);
-                }
+
+    	_fixedMultipoleField.resize( numberOfParticles );
+    	_fixedMultipoleFieldPolar.resize( numberOfParticles );
+        _fixedMultipoleField[0]      = RealVec(-6.040604308e-03*1e2, -4.375756834e-03*1e2, -6.721950569e-02*1e2);
+        _fixedMultipoleFieldPolar[0] = RealVec(0., 0., 0);
+        _fixedMultipoleField[1]      = RealVec(6.040604308e-03*1e2, 4.375756834e-03*1e2, 6.721950569e-02*1e2);
+        _fixedMultipoleFieldPolar[1] = RealVec(0., 0., 0);
+
+        _inducedDipole.resize( numberOfParticles );
+        _inducedDipolePolar.resize( numberOfParticles );
+        std::vector<UpdateInducedDipoleFieldStruct> updateInducedDipoleField;
+        updateInducedDipoleField.push_back( UpdateInducedDipoleFieldStruct( &_fixedMultipoleField,       &_inducedDipole ) );
+        updateInducedDipoleField.push_back( UpdateInducedDipoleFieldStruct( &_fixedMultipoleFieldPolar,  &_inducedDipolePolar ) );
+
+        std::cout << "initializeInducedDipoles" << std::endl;
+
+        initializeInducedDipoles( updateInducedDipoleField );
+
+    	for( unsigned int ii = 0; ii < numberOfParticles; ii++ ){
+    		std::cout << updateInducedDipoleField[0].inducedDipoles[0][ii] << std::endl;
+    	}
+
+        std::cout << "calculateInducedDipolePairIxns" << std::endl;
+
+        convergeInduceDipoles( particleData, updateInducedDipoleField );
+
+    	for( unsigned int ii = 0; ii < numberOfParticles; ii++ ){
+    		std::cout << "******** Particle " << ii << std::endl;
+    		std::cout << "inducedDipoles:     " << updateInducedDipoleField[0].inducedDipoles[0][ii] << std::endl;
+    		std::cout << "fixedMultipoleField:" << updateInducedDipoleField[0].fixedMultipoleField[0][ii] << std::endl;
+    		std::cout << "inducedDipoleField: " << updateInducedDipoleField[0].inducedDipoleField[ii] << std::endl;
+    	}
+
+        std::cout << "END of wrapCalculateInducedDipolePairIxns" << std::endl;
+
+        }
 };
-
-static void testGetAndScaleInverseRsJustScale( FILE* log ) {
-
-    std::string testName      = "testGetAndScaleInverseRsJustScale";
-
-    RealOpenMM damp=10.;
-    RealOpenMM dampO=0.306988;
-    RealOpenMM dampH=0.28135;
-    std::vector<RealOpenMM> rrI(4);
-    RealOpenMM r=9.860634018e-01; // from Water3 test
-    RealOpenMM thole=0.3900;
-
-    WrappedAmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForce();;
-    amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampH,
-                          thole, thole, r, true, damp, rrI);
-
-    //ASSERT_EQUAL_TOL_MOD(             0., rrI[0], 1e-5, testName);
-    //ASSERT_EQUAL_TOL_MOD(???????????????, rrI[1], 1e-5, testName);
-    //ASSERT_EQUAL_TOL_MOD(???????????????, rrI[2], 1e-5, testName);
-    //ASSERT_EQUAL_TOL_MOD(             0., rrI[3], 1e-5, testName);
-
-}
 
 static void testWater3( FILE* log ) {
 
