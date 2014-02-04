@@ -93,7 +93,7 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 
     oxygenMolecularDipole[0]     =   0.0000000e+00;
     oxygenMolecularDipole[1]     =   0.0000000e+00;
-    oxygenMolecularDipole[2]     =   7.5561214e-03;
+    oxygenMolecularDipole[2]     =   0.0000000e+00;
 
     oxygenMolecularQuadrupole[0] =   0.0000000e+00;
     oxygenMolecularQuadrupole[1] =   0.0000000e+00;
@@ -107,9 +107,9 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 
     std::vector<double> hydrogenMolecularDipole(3);
     std::vector<double> hydrogenMolecularQuadrupole(9);
-    hydrogenMolecularDipole[0]     =  -2.0420949e-03;
+    hydrogenMolecularDipole[0]     =   0.0000000e+00;
     hydrogenMolecularDipole[1]     =   0.0000000e+00;
-    hydrogenMolecularDipole[2]     =  -3.0787530e-03;
+    hydrogenMolecularDipole[2]     =   0.0000000e+00;
 
     hydrogenMolecularQuadrupole[0] =   0.0000000e+00;
     hydrogenMolecularQuadrupole[1] =   0.0000000e+00;
@@ -123,11 +123,11 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 3 ){
         amoebaMultipoleForce->addMultipole( -5.1966000e-01, oxygenMolecularDipole, oxygenMolecularQuadrupole, 1, jj+1, jj+2, -1,
-                                            3.9000000e-01, 3.0698765e-01, 8.3700000e-04 );
+                                            4.000000e-01, 0.001310, 0.001310 );
         amoebaMultipoleForce->addMultipole(  2.5983000e-01, hydrogenMolecularDipole, hydrogenMolecularQuadrupole, 0, jj, jj+2, -1, 
-                                            3.9000000e-01, 2.8135002e-01, 4.9600000e-04 );
+                                            4.000000e-01, 0.000294, 0.000294 );
         amoebaMultipoleForce->addMultipole(  2.5983000e-01, hydrogenMolecularDipole, hydrogenMolecularQuadrupole, 0, jj, jj+1, -1, 
-                                            3.9000000e-01, 2.8135002e-01, 4.9600000e-04 );
+                                            4.000000e-01, 0.000294, 0.000294 );
     }
 
     // CovalentMaps
