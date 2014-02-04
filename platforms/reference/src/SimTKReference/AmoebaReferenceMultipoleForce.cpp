@@ -585,7 +585,6 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
 
         if( damp > -50.0 ){ 
             RealOpenMM dampExp   = EXP( dampForExp );
-            std::cout << "dampExp " << dampExp << std::endl;
 
             rrI[0]              *= 1.0 - dampExp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -dampForExp);
  ;
