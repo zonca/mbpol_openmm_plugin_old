@@ -239,20 +239,43 @@ static void testGetAndScaleInverseRs( FILE* log ) {
     std::string testName      = "testGetAndScaleInverseRs";
 
     RealOpenMM damp=10.;
-    RealOpenMM dampO=0.306988;
-    RealOpenMM dampH=0.28135;
+    //RealOpenMM dampO=0.306988;
+    //RealOpenMM dampH=0.28135;
+    RealOpenMM dampO=0.001310;
+    RealOpenMM dampH=0.000294;
     std::vector<RealOpenMM> rrI(4);
-    RealOpenMM r=9.860634018e-01; // from Water3 test
-    RealOpenMM thole=0.3900;
+    RealOpenMM r=9.860634018e-02; // from Water3 test
+    RealOpenMM thole=0.400;
 
     WrappedAmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForce();;
     amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampH,
                           thole, thole, r, false, damp, rrI);
 
     //ASSERT_EQUAL_TOL_MOD(0., rrI[0], 1e-5, testName);
-    //ASSERT_EQUAL_TOL_MOD(5.324612470e-01, rrI[1], 1e-5, testName);
-    //ASSERT_EQUAL_TOL_MOD(4.747626558e-02, rrI[2], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(5.324612470e+02, rrI[1], 1e-5, testName);
+    // mbpol multiplies by constant factor (3) later, AMOEBA in this function
+    ASSERT_EQUAL_TOL_MOD(4.747626558e+03*3., rrI[2], 1e-5, testName);
     //ASSERT_EQUAL_TOL_MOD(             0., rrI[3], 1e-5, testName);
+
+}
+
+static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
+
+    std::string testName      = "testGetAndScaleInverseRsInterMulecolar";
+
+    RealOpenMM damp=0.;
+    RealOpenMM dampO=0.001310;
+    std::vector<RealOpenMM> rrI(4);
+    RealOpenMM r=2.771936396e+00*1e-1; // from Water3 test
+    RealOpenMM thole=0.400;
+
+    WrappedAmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForce();;
+    amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampO,
+                          thole, thole, r, false, damp, rrI);
+
+    ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[0], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(4.695157736e-02*1e3, rrI[1], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(6.110587933e-03*1e5*3., rrI[2], 1e-5, testName);
 
 }
 
