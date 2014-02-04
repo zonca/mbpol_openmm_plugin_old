@@ -184,9 +184,11 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     context.setPositions(positions);
     double tolerance          = 1.0e-04;
 
-    State state                      = context.getState(State::Forces | State::Energy);
-    std::vector<Vec3> forces                           = state.getForces();
-    double energy                           = state.getPotentialEnergy();
+//    // test energy and forces
+//
+    State state                = context.getState(State::Forces | State::Energy);
+    std::vector<Vec3> forces   = state.getForces();
+    double energy              = state.getPotentialEnergy();
 
     std::vector<Vec3> expectedForces(numberOfParticles);
     expectedForces[0]         = Vec3( -1.029233628e-01,  1.752006876e-01, -2.394228296e-01  );
@@ -243,6 +245,27 @@ static void testGetAndScaleInverseRs( FILE* log ) {
     //ASSERT_EQUAL_TOL_MOD(             0., rrI[3], 1e-5, testName);
 
 }
+
+class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceMultipoleForce {
+    public:
+    int wrapCalculateInducedDipolePairIxns()   {
+    	int numberOfParticles = 2;
+    	std::vector<RealVec> positions(numberOfParticles);
+    	positions[0]             = RealVec( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
+    	positions[1]             = RealVec( -6.218989773e-01, -6.009430735e-01,  1.572437625e+00  );
+    	std::vector<RealOpenMM> charges = Vec3(0., 0.);
+    	std::vector<RealOpenMM> dipoles = Vec3(0., 0., 0.,     0., 0., 0.);
+    	std::vector<RealOpenMM> quadrupoles = Vec3(0., 0., 0.,0., 0., 0.,    0., 0., 0.,0., 0., 0.);
+    	std::vector<RealOpenMM> tholes = Vec3(0.39, 0.39);
+    	std::vector<RealOpenMM> dampingFactors = Vec3(1., 1.);
+    	std::vector<RealOpenMM> polarity = Vec3(1., 1.);
+
+        std::vector<MultipoleParticleData> particleData;
+    	loadParticleData(positions, charges, dipoles, quadrupoles,
+    	                      tholes, dampingFactors, polarity, particleData );
+    	//calculateInducedDipolePairIxns(particleData[0], particleData[1], inducedDipoleFields);
+                }
+};
 
 static void testGetAndScaleInverseRsJustScale( FILE* log ) {
 
