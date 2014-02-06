@@ -324,6 +324,10 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
         _fixedMultipoleField[1]      = RealVec(6.040604308e-03*1e2, 4.375756834e-03*1e2, 6.721950569e-02*1e2);
         _fixedMultipoleFieldPolar[1] = RealVec(0., 0., 0);
 
+        for( unsigned int ii = 0; ii < _numParticles; ii++ ){
+            _fixedMultipoleField[ii]      *= particleData[ii].polarity;
+            _fixedMultipoleFieldPolar[ii] *= particleData[ii].polarity;
+        }
         _inducedDipole.resize( numberOfParticles );
         _inducedDipolePolar.resize( numberOfParticles );
         std::vector<UpdateInducedDipoleFieldStruct> updateInducedDipoleField;
@@ -356,11 +360,11 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
         expectedInducedDipoles[1] = Vec3( 7.046394571e-03,  5.104341822e-03,  7.841188329e-02);
         for (int i=0; i<numberOfParticles; i++) {
             for (int j=0; j<3; j++) {
-            	expectedInducedDipoles[i][j] *= 10;
+            	expectedInducedDipoles[i][j] *= 1e-1;
             }
         }
 
-        double tolerance = 1e-5;
+        double tolerance = 1e-7;
         for (int i=0; i<numberOfParticles; i++) {
             ASSERT_EQUAL_VEC_MOD(expectedInducedDipoles[i], updateInducedDipoleField[0].inducedDipoles[0][i], tolerance, testName);
         }
@@ -398,10 +402,14 @@ int main( int numberOfArguments, char* argv[] ) {
         //testGetAndScaleInverseRsJustScale( log );
 
         WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();;
+        amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
         amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
 
         // water 3 mbpol
         // testWater3( log );
+
+
+
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;
