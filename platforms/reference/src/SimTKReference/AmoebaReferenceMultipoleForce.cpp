@@ -614,6 +614,14 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
 
     if( particleI.particleIndex == particleJ.particleIndex )return;
 
+    // in MBPol there is no contribution to the Fixed Multipole Field from atoms of the same water molecule
+    // multipoleAtomZs is used for defining a reference frame for the water molecules and
+    // contains the indices to the other 2 atoms in the same water molecule.
+
+    if( (particleI.multipoleAtomZs == particleJ.particleIndex) or
+        (particleI.multipoleAtomYs == particleJ.particleIndex) or
+        (particleI.multipoleAtomXs == particleJ.particleIndex) )return;
+
     RealVec deltaR    = particleJ.position - particleI.position;
     RealOpenMM r      = SQRT( deltaR.dot( deltaR ) );
     std::vector<RealOpenMM> rrI(4);
