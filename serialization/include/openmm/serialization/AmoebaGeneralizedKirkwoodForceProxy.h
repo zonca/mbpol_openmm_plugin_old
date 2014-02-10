@@ -35,19 +35,5 @@
 #include "openmm/serialization/internal/windowsExportAmoebaSerialization.h"
 #include "openmm/serialization/SerializationProxy.h"
 
-namespace OpenMM {
-
-/**
- * This is a proxy for serializing AmoebaGeneralizedKirkwoodForce objects.
- */
-
-class OPENMM_EXPORT_AMOEBA_SERIALIZATION AmoebaGeneralizedKirkwoodForceProxy : public SerializationProxy {
-public:
-    AmoebaGeneralizedKirkwoodForceProxy();
-    void serialize(const void* object, SerializationNode& node) const;
-    void* deserialize(const SerializationNode& node) const;
-};
-
-} // namespace OpenMM
 
 #endif /*OPENMM_AMOEBA_GENERALIZED_KIRKWOOD_FORCE_PROXY_H_*/
