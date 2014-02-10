@@ -40,7 +40,7 @@ using std::string;
 using std::vector;
 
 AmoebaMultipoleForce::AmoebaMultipoleForce() : nonbondedMethod(NoCutoff), polarizationType(Mutual), pmeBSplineOrder(5), cutoffDistance(1.0), ewaldErrorTol(1e-4), mutualInducedMaxIterations(60),
-                                               mutualInducedTargetEpsilon(1.0e-02), scalingDistanceCutoff(100.0), electricConstant(138.9354558456), aewald(0.0) {
+                                               mutualInducedTargetEpsilon(1.0e-07), scalingDistanceCutoff(100.0), electricConstant(138.9354558456), aewald(0.0) {
     pmeGridDimension.resize(3);
     pmeGridDimension[0] = pmeGridDimension[1] = pmeGridDimension[2];
 }
