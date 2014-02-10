@@ -558,6 +558,9 @@ protected:
             RealOpenMM thole;
             RealOpenMM dampingFactor;
             RealOpenMM polarity;
+            int multipoleAtomZs;
+            int multipoleAtomYs;
+            int multipoleAtomXs;
     };
 
     /* 
@@ -615,6 +618,9 @@ protected:
      * @param tholes              Thole parameters
      * @param dampingFactors      dampming factors
      * @param polarity            polarity
+     * @param multipoleAtomZs     vector of z-particle indices used to map molecular frame to lab frame
+     * @param multipoleAtomYs     vector of y-particle indices used to map molecular frame to lab frame
+     * @param multipoleAtomXs     vector of x-particle indices used to map molecular frame to lab frame
      * @param particleData        output data struct
      *
      */
@@ -625,6 +631,9 @@ protected:
                            const std::vector<RealOpenMM>& tholes,
                            const std::vector<RealOpenMM>& dampingFactors,
                            const std::vector<RealOpenMM>& polarity,
+                           const std::vector<int>& multipoleAtomZs,
+                           const std::vector<int>& multipoleAtomXs,
+                           const std::vector<int>& multipoleAtomYs,
                            std::vector<MultipoleParticleData>& particleData ) const;
 
     /**

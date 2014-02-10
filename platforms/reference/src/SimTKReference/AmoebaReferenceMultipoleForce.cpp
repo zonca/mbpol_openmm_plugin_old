@@ -329,6 +329,9 @@ void AmoebaReferenceMultipoleForce::loadParticleData( const std::vector<RealVec>
                                                       const std::vector<RealOpenMM>& tholes,
                                                       const std::vector<RealOpenMM>& dampingFactors,
                                                       const std::vector<RealOpenMM>& polarity,
+                                                      const std::vector<int>& multipoleAtomZs,
+                                                      const std::vector<int>& multipoleAtomXs,
+                                                      const std::vector<int>& multipoleAtomYs,
                                                       std::vector<MultipoleParticleData>& particleData ) const 
 {
    
@@ -354,6 +357,10 @@ void AmoebaReferenceMultipoleForce::loadParticleData( const std::vector<RealVec>
         particleData[ii].thole                = tholes[ii];
         particleData[ii].dampingFactor        = dampingFactors[ii];
         particleData[ii].polarity             = polarity[ii];
+
+        particleData[ii].multipoleAtomZs = multipoleAtomZs[ii];
+        particleData[ii].multipoleAtomXs = multipoleAtomXs[ii];
+        particleData[ii].multipoleAtomYs = multipoleAtomYs[ii];
 
     }
 }
@@ -606,6 +613,14 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
 {
 
     if( particleI.particleIndex == particleJ.particleIndex )return;
+
+    // in MBPol there is no contribution to the Fixed Multipole Field from atoms of the same water molecule
+    // multipoleAtomZs is used for defining a reference frame for the water molecules and
+    // contains the indices to the other 2 atoms in the same water molecule.
+
+    if( (particleI.multipoleAtomZs == particleJ.particleIndex) or
+        (particleI.multipoleAtomYs == particleJ.particleIndex) or
+        (particleI.multipoleAtomXs == particleJ.particleIndex) )return;
 
     RealVec deltaR    = particleJ.position - particleI.position;
     RealOpenMM r      = SQRT( deltaR.dot( deltaR ) );
@@ -1552,7 +1567,7 @@ void AmoebaReferenceMultipoleForce::setup( const std::vector<RealVec>& particleP
 
     _numParticles = particlePositions.size();
     loadParticleData( particlePositions, charges, dipoles, quadrupoles,
-                      tholes, dampingFactors, polarity, particleData );
+                      tholes, dampingFactors, polarity, multipoleAtomZs, multipoleAtomXs, multipoleAtomYs, particleData );
 
     checkChiral( particleData, multipoleAtomXs, multipoleAtomYs, multipoleAtomZs, axisTypes );
 

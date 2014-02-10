@@ -312,6 +312,7 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
 
     	std::vector<RealOpenMM> charges, dipoles, tholes, dampingFactors, polarity;
     	std::vector<RealOpenMM> quadrupoles;
+    	std::vector<int> intZeros;
 
     	for (int i=0; i<numberOfParticles; i++){
         	charges.push_back(-5.1966000e-01);
@@ -324,12 +325,13 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
         	for (int j=0; j<6; j++){
         		quadrupoles.push_back(0.);
         	}
+        	intZeros.push_back(0);
     	}
 
         std::vector<MultipoleParticleData> particleData;
         _numParticles = numberOfParticles;
     	loadParticleData(positions, charges, dipoles, quadrupoles,
-    	                      tholes, dampingFactors, polarity, particleData );
+    	                      tholes, dampingFactors, polarity, intZeros, intZeros, intZeros, particleData );
 
     	_fixedMultipoleField.resize( numberOfParticles );
     	_fixedMultipoleFieldPolar.resize( numberOfParticles );
