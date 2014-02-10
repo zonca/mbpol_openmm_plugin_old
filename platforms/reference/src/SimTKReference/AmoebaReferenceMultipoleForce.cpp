@@ -671,11 +671,11 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleField( const vector<M
             // otherwise add unmodified field and fieldPolar to particle fields 
 
             RealOpenMM dScale, pScale;
-            if( jj <= _maxScaleIndex[ii] ){
-                getDScaleAndPScale( ii, jj, dScale, pScale );
-            } else {
+            //if( jj <= _maxScaleIndex[ii] ){
+            //    getDScaleAndPScale( ii, jj, dScale, pScale );
+            //} else {
                 dScale = pScale = 1.0;
-            }
+            //}
             calculateFixedMultipoleFieldPairIxn( particleData[ii], particleData[jj], dScale, pScale );
         }
     }
