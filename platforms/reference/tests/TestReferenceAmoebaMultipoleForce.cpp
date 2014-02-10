@@ -196,6 +196,9 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     std::vector<Vec3> forces   = state.getForces();
     double energy              = state.getPotentialEnergy();
     double cal2joule = 4.184;
+    std::cout << "Forces" << std::endl;
+
+
     std::vector<Vec3> expectedForces(numberOfParticles);
     expectedForces[0]         = Vec3( -1.029233628e-01,  1.752006876e-01, -2.394228296e-01  );
     expectedForces[1]         = Vec3(  1.238286503e-01, -9.713944883e-02,  9.278441270e-02  );
@@ -208,16 +211,27 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     expectedForces[8]         = Vec3( -9.430310162e-02, -9.196426456e-02, -7.211852443e-02  );
     for (int i=0; i<numberOfParticles; i++) {
         for (int j=0; j<3; j++) {
-        	expectedForces[i][j] *= cal2joule*10;
+            expectedForces[i][j] *= cal2joule*10;
         }
     }
+
+
     //for( unsigned int ii = 0; ii < forces.size(); ii++ ){
     //    ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
     //}
 
+    for (int i=0; i<numberOfParticles; i++) {
+           for (int j=0; j<3; j++) {
+           	forces[i][j] /= cal2joule*10;
+           }
+       }
+    for (int i=0; i<numberOfParticles; i++) {
+         std::cout << forces[i] << std::endl;
+    }
     // Energy elec+ind(kcal/mol): -2.134083549e-02
     double expectedEnergy = -2.134083549e-02*cal2joule;
-    ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
+    // ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
+    std::cout << "Energy" << energy/cal2joule << std::endl;
 
     return;
 }
@@ -360,7 +374,7 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
         expectedInducedDipoles[1] = Vec3( 7.046394571e-03,  5.104341822e-03,  7.841188329e-02);
         for (int i=0; i<numberOfParticles; i++) {
             for (int j=0; j<3; j++) {
-            	expectedInducedDipoles[i][j] *= 1e-1;
+                expectedInducedDipoles[i][j] *= 1e-1;
             }
         }
 
