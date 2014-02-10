@@ -411,16 +411,15 @@ int main( int numberOfArguments, char* argv[] ) {
 
         FILE* log = NULL;
 
-        // testGetAndScaleInverseRs( log );
-        // testGetAndScaleInverseRsInterMulecolar( log );
-        //testGetAndScaleInverseRsJustScale( log );
+        testGetAndScaleInverseRs( log );
+        testGetAndScaleInverseRsInterMulecolar( log );
 
         WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();;
         amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
         amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
 
         // water 3 mbpol
-        // testWater3( log );
+        testWater3( log );
 
 
 
