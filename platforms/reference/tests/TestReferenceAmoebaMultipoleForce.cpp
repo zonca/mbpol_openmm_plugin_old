@@ -373,6 +373,64 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
     }
 };
 
+class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaReferenceMultipoleForce {
+    public:
+    int testComputeWaterCharge()   {
+        string testName = "testComputeWaterCharge";
+
+        int numberOfParticles = 4;
+        std::vector<RealVec> positions(numberOfParticles);
+        positions[0]             = Vec3( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
+        positions[1]             = Vec3( -6.218989773e-01, -6.009430735e-01,  1.572437625e+00  );
+        positions[2]             = Vec3( -2.017613812e+00, -4.190350349e-01,  2.239642849e+00  );
+        positions[3]             = Vec3( -1.43230412, -0.33360265,  1.64727446 );
+
+        for (int i=0; i<numberOfParticles; i++) {
+             for (int j=0; j<3; j++) {
+                positions[i][j] *= 1e-1;
+             }
+         }
+
+        MultipoleParticleData particleO;
+        MultipoleParticleData particleH1;
+        MultipoleParticleData particleH2;
+        MultipoleParticleData particleM;
+        for (int j=0; j<3; j++) {
+            particleO.position[j]  = positions[0][j];
+            particleH1.position[j] = positions[1][j];
+            particleH2.position[j] = positions[2][j];
+            particleM.position[j]  = positions[3][j];
+        }
+
+        computeWaterCharge(particleO, particleH1, particleH2, particleM);
+
+        std::cout << "Charges" << std::endl;
+            std::cout << "O: " << particleO.charge << std::endl;
+            std::cout << "H1: " << particleH1.charge << std::endl;
+            std::cout << "H2: " << particleH2.charge << std::endl;
+            std::cout << "M: " << particleM.charge << std::endl;
+        std::cout << "Derivatives" << std::endl;
+
+        for (int i=0; i<numberOfParticles; i++) {
+            std::cout << "H1 vs H1: " << particleH1.chargeDerivatives[0] << std::endl;
+            std::cout << "H1 vs H2: " << particleH1.chargeDerivatives[1] << std::endl;
+            std::cout << "H1 vs M : " << particleH1.chargeDerivatives[2] << std::endl;
+
+            std::cout << "H2 vs H1: " << particleH2.chargeDerivatives[0] << std::endl;
+            std::cout << "H2 vs H2: " << particleH2.chargeDerivatives[1] << std::endl;
+            std::cout << "H2 vs M : " << particleH2.chargeDerivatives[2] << std::endl;
+
+            std::cout << "M vs H1: " << particleM.chargeDerivatives[0] << std::endl;
+            std::cout << "M vs H2: " << particleM.chargeDerivatives[1] << std::endl;
+            std::cout << "M vs M : " << particleM.chargeDerivatives[2] << std::endl;
+        }
+//        double tolerance = 1e-7;
+//        for (int i=0; i<numberOfParticles; i++) {
+//            ASSERT_EQUAL_VEC_MOD(expectedInducedDipoles[i], updateInducedDipoleField[0].inducedDipoles[0][i], tolerance, testName);
+//        }
+    }
+};
+
 static void testWater3( FILE* log ) {
 
     std::string testName      = "testWater3";
@@ -599,6 +657,8 @@ int main( int numberOfArguments, char* argv[] ) {
         testWater3VirtualSite( log );
 
 
+        WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
+        wrapperForComputeWaterCharge->testComputeWaterCharge();
 
 
     } catch(const std::exception& e) {
