@@ -537,6 +537,7 @@ public:
                                           const std::vector<RealVec>& inputGrid,
                                           std::vector<RealOpenMM>& outputPotential );
 
+
 protected:
 
     enum MultipoleParticleDataEnum { PARTICLE_POSITION, PARTICLE_CHARGE, PARTICLE_DIPOLE, PARTICLE_QUADRUPOLE,
@@ -544,6 +545,8 @@ protected:
                                      PARTICLE_FIELD_POLAR, GK_FIELD, PARTICLE_INDUCED_DIPOLE, PARTICLE_INDUCED_DIPOLE_POLAR };
 
     enum QuadrupoleIndices { QXX, QXY, QXZ, QYY, QYZ, QZZ };
+
+
 
     /* 
      * Particle parameters and coordinates
@@ -555,6 +558,7 @@ protected:
             RealOpenMM charge;
             RealVec dipole;
             RealOpenMM quadrupole[6];
+            RealVec chargeDerivatives[3];
             RealOpenMM thole;
             RealOpenMM dampingFactor;
             RealOpenMM polarity;
@@ -635,6 +639,9 @@ protected:
                            const std::vector<int>& multipoleAtomXs,
                            const std::vector<int>& multipoleAtomYs,
                            std::vector<MultipoleParticleData>& particleData ) const;
+
+    void computeWaterCharge(MultipoleParticleData& particleO, MultipoleParticleData& particleH1,
+                   MultipoleParticleData& particleH2,MultipoleParticleData& particleM);
 
     /**
      * Calculate fixed multipole fields.
