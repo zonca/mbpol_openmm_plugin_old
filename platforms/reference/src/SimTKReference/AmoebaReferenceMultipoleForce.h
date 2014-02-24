@@ -537,6 +537,7 @@ public:
                                           const std::vector<RealVec>& inputGrid,
                                           std::vector<RealOpenMM>& outputPotential );
 
+
 protected:
 
     enum MultipoleParticleDataEnum { PARTICLE_POSITION, PARTICLE_CHARGE, PARTICLE_DIPOLE, PARTICLE_QUADRUPOLE,
@@ -544,6 +545,8 @@ protected:
                                      PARTICLE_FIELD_POLAR, GK_FIELD, PARTICLE_INDUCED_DIPOLE, PARTICLE_INDUCED_DIPOLE_POLAR };
 
     enum QuadrupoleIndices { QXX, QXY, QXZ, QYY, QYZ, QZZ };
+
+
 
     /* 
      * Particle parameters and coordinates
@@ -555,9 +558,13 @@ protected:
             RealOpenMM charge;
             RealVec dipole;
             RealOpenMM quadrupole[6];
+            RealVec chargeDerivatives[3];
             RealOpenMM thole;
             RealOpenMM dampingFactor;
             RealOpenMM polarity;
+            int multipoleAtomZs;
+            int multipoleAtomYs;
+            int multipoleAtomXs;
     };
 
     /* 
@@ -615,6 +622,9 @@ protected:
      * @param tholes              Thole parameters
      * @param dampingFactors      dampming factors
      * @param polarity            polarity
+     * @param multipoleAtomZs     vector of z-particle indices used to map molecular frame to lab frame
+     * @param multipoleAtomYs     vector of y-particle indices used to map molecular frame to lab frame
+     * @param multipoleAtomXs     vector of x-particle indices used to map molecular frame to lab frame
      * @param particleData        output data struct
      *
      */
@@ -625,7 +635,13 @@ protected:
                            const std::vector<RealOpenMM>& tholes,
                            const std::vector<RealOpenMM>& dampingFactors,
                            const std::vector<RealOpenMM>& polarity,
+                           const std::vector<int>& multipoleAtomZs,
+                           const std::vector<int>& multipoleAtomXs,
+                           const std::vector<int>& multipoleAtomYs,
                            std::vector<MultipoleParticleData>& particleData ) const;
+
+    void computeWaterCharge(MultipoleParticleData& particleO, MultipoleParticleData& particleH1,
+                   MultipoleParticleData& particleH2,MultipoleParticleData& particleM);
 
     /**
      * Calculate fixed multipole fields.
@@ -1022,193 +1038,6 @@ protected:
      * 
      */
     virtual void getPeriodicDelta( RealVec& deltaR ) const {};
-};
-
-class AmoebaReferenceGeneralizedKirkwoodMultipoleForce : public AmoebaReferenceMultipoleForce {
-
-public:
-
-    /**
-     * Constructor
-     * 
-     */
-    AmoebaReferenceGeneralizedKirkwoodMultipoleForce( AmoebaReferenceGeneralizedKirkwoodForce* amoebaReferenceGeneralizedKirkwoodForce );
- 
-    /**
-     * Destructor
-     * 
-     */
-    ~AmoebaReferenceGeneralizedKirkwoodMultipoleForce( );
- 
-    /**
-     * Get flag signalling whether cavity term is to be included.
-     *
-     * @return flag
-     *
-     */
-    int getIncludeCavityTerm( void ) const;
-
-    /**
-     * Get probe radius.
-     *
-     * @return probe radius
-     *
-     */
-    RealOpenMM getProbeRadius( void ) const;
-
-    /**
-     * Get surface area factor.
-     *
-     * @return surface area factor
-     *
-     */
-    RealOpenMM getSurfaceAreaFactor( void ) const;
-
-    /**
-     * Get dielectric offset.
-     *
-     * @return dielectric offset
-     *
-     */
-    RealOpenMM getDielectricOffset( void ) const;
-
-private:
-
-    AmoebaReferenceGeneralizedKirkwoodForce* _amoebaReferenceGeneralizedKirkwoodForce;
-
-    RealOpenMM _gkc;
-    RealOpenMM _fc;
-    RealOpenMM _fd;
-    RealOpenMM _fq;
-
-    std::vector<RealOpenMM> _atomicRadii;
-    std::vector<RealOpenMM> _scaledRadii;
-    std::vector<RealOpenMM> _bornRadii;
-    std::vector<RealOpenMM> _bornForce;
-
-    std::vector<RealVec> _gkField;
-    std::vector<RealVec> _inducedDipoleS;
-    std::vector<RealVec> _inducedDipolePolarS;
-
-    int _includeCavityTerm;
-    RealOpenMM _probeRadius;
-    RealOpenMM _surfaceAreaFactor;
-    RealOpenMM _dielectricOffset;
-
-    /**
-     * Zero fixed multipole fields.
-     *
-     */
-    void zeroFixedMultipoleFields( void );
-
-    /**
-     * Calculate electric field at particle I due fixed multipoles at particle J and vice versa
-     * (field at particle J due fixed multipoles at particle I).
-     * 
-     * @param particleI               positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle I
-     * @param particleJ               positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
-     * @param dScale                  d-scale value for i-j interaction
-     * @param pScale                  p-scale value for i-j interaction
-     */
-    void calculateFixedMultipoleFieldPairIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
-                                              RealOpenMM dScale, RealOpenMM pScale );
-
-    /**
-     * Calculate induced dipoles.
-     * 
-     * @param particleData      vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
-     */
-    void calculateInducedDipoles( const std::vector<MultipoleParticleData>& particleData );
-
-    /**
-     * Calculate fields due induced dipoles at each site.
-     * 
-     * @param particleI                 positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle I
-     * @param particleJ                 positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
-     * @param updateInducedDipoleFields vector of UpdateInducedDipoleFieldStruct containing input induced dipoles and output fields
-     */
-    void calculateInducedDipolePairIxns( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
-                                         std::vector<UpdateInducedDipoleFieldStruct>& updateInducedDipoleFields );
-
-    /**
-     * Calculate electrostatic forces and torques.
-     * 
-     * @param particleData            vector of parameters (charge, labFrame dipoles, quadrupoles, ...) for particles
-     * @param torques                 output torques
-     * @param forces                  output forces 
-     *
-     * @return energy
-     */
-    RealOpenMM calculateElectrostatic( const std::vector<MultipoleParticleData>& particleData, 
-                                       std::vector<OpenMM::RealVec>& torques,
-                                       std::vector<OpenMM::RealVec>& forces );
-
-    /**
-     * Calculate GK field at particle I due induced dipole at particle J and vice versa
-     * (field at particle J due induced dipole at particle I).
-     * 
-     * @param particleI               index of particle I
-     * @param particleJ               index of particle J
-     * @param field                   vector of induced dipole fields
-     * @param fieldPolar              vector of induced dipole polar fields
-     */
-    void calculateInducedDipolePairGkIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
-                                          const std::vector<RealVec>& field, std::vector<RealVec>& fieldPolar ) const;
-
-    /**
-     * Calculate Kirkwood interaction.
-     * 
-     * @param particleI               particle parameters (charge, labFrame dipoles, quadrupoles, ...) for particle I
-     * @param particleJ               particle parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
-     * @param forces                  add Kirkwood force to forces
-     * @param torques                 add Kirkwood torque to torques
-     * @param dBorn                   chain-rule factor
-     *
-     * @return energy
-     */
-    RealOpenMM calculateKirkwoodPairIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
-                                         std::vector<RealVec>& forces, 
-                                         std::vector<RealVec>& torques,
-                                         std::vector<RealOpenMM>& dBorn ) const;
-
-    /**
-     * Calculate Grycuk 'chain-rule' force.
-     * 
-     * @param particleI               particle parameters (charge, labFrame dipoles, quadrupoles, ...) for particle I
-     * @param particleJ               particle parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
-     * @param dBorn                   chain-rule Born force factor
-     * @param forces                  add Kirkwood force to forces
-     *
-     */
-    void calculateGrycukChainRulePairIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
-                                          const std::vector<RealOpenMM>& dBorn, std::vector<RealVec>& forces ) const;
-
-    /**
-     * Calculate TINKER's ACE approximation to non-polar cavity term. 
-     * 
-     * @param dBorn add ACE force to chain rule force
-     *
-     * @return ACE energy
-     *
-     */
-    RealOpenMM calculateCavityTermEnergyAndForces( std::vector<RealOpenMM>& dBorn ) const;
-
-    /**
-     * Correct vacuum to SCRF derivatives (TINKER's ediff1()).
-     * 
-     * @param particleI               particle parameters (charge, labFrame dipoles, quadrupoles, ...) for particle I
-     * @param particleJ               particle parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
-     * @param pscale                  p-scale factor
-     * @param dscale                  d-scale factor
-     * @param forces                  force accumulator
-     * @param torques                 torque accumulator
-     *
-     * @return energy
-     */
-    RealOpenMM calculateKirkwoodEDiffPairIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
-                                              RealOpenMM pscale, RealOpenMM dscale, 
-                                              std::vector<RealVec>& forces, std::vector<RealVec>& torques ) const;
-
 };
 
 class AmoebaReferencePmeMultipoleForce : public AmoebaReferenceMultipoleForce {

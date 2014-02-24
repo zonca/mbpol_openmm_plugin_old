@@ -36,34 +36,3 @@
 using namespace OpenMM;
 using std::vector;
 
-AmoebaGeneralizedKirkwoodForceImpl::AmoebaGeneralizedKirkwoodForceImpl(const AmoebaGeneralizedKirkwoodForce& owner) : owner(owner) {
-}
-
-void AmoebaGeneralizedKirkwoodForceImpl::initialize(ContextImpl& context) {
-
-    const System& system = context.getSystem();
-    if (owner.getNumParticles() != system.getNumParticles())
-        throw OpenMMException("AmoebaGeneralizedKirkwoodForce must have exactly as many particles as the System it belongs to.");
-
-
-    kernel = context.getPlatform().createKernel(CalcAmoebaGeneralizedKirkwoodForceKernel::Name(), context);
-    if (owner.getNumParticles() != context.getSystem().getNumParticles())
-        throw OpenMMException("AmoebaGeneralizedKirkwoodForce must have exactly as many particles as the System it belongs to.");
-    kernel.getAs<CalcAmoebaGeneralizedKirkwoodForceKernel>().initialize(context.getSystem(), owner);
-}
-
-double AmoebaGeneralizedKirkwoodForceImpl::calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups) {
-    if ((groups&(1<<owner.getForceGroup())) != 0)
-        return kernel.getAs<CalcAmoebaGeneralizedKirkwoodForceKernel>().execute(context, includeForces, includeEnergy);
-    return 0.0;
-}
-
-std::vector<std::string> AmoebaGeneralizedKirkwoodForceImpl::getKernelNames() {
-    std::vector<std::string> names;
-    names.push_back(CalcAmoebaGeneralizedKirkwoodForceKernel::Name());
-    return names;
-}
-
-void AmoebaGeneralizedKirkwoodForceImpl::updateParametersInContext(ContextImpl& context) {
-    kernel.getAs<CalcAmoebaGeneralizedKirkwoodForceKernel>().copyParametersToContext(context, owner);
-}

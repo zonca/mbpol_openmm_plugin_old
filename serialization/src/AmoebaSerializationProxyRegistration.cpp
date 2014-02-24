@@ -82,7 +82,6 @@
 using namespace OpenMM;
 
 extern "C" OPENMM_EXPORT_AMOEBA_SERIALIZATION void registerAmoebaSerializationProxies() {
-    SerializationProxy::registerProxy(typeid(AmoebaGeneralizedKirkwoodForce),         new AmoebaGeneralizedKirkwoodForceProxy());
     SerializationProxy::registerProxy(typeid(AmoebaBondForce),                new AmoebaBondForceProxy());
     SerializationProxy::registerProxy(typeid(AmoebaAngleForce),               new AmoebaAngleForceProxy());
     SerializationProxy::registerProxy(typeid(AmoebaInPlaneAngleForce),        new AmoebaInPlaneAngleForceProxy());

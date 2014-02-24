@@ -37,36 +37,4 @@
 #include "openmm/Kernel.h"
 #include <string>
 
-namespace OpenMM {
-
-/**
- * This is the internal implementation of AmoebaGeneralizedKirkwoodForce.
- */
-
-class AmoebaGeneralizedKirkwoodForceImpl : public ForceImpl {
-public:
-    AmoebaGeneralizedKirkwoodForceImpl(const AmoebaGeneralizedKirkwoodForce& owner);
-    void initialize(ContextImpl& context);
-    const AmoebaGeneralizedKirkwoodForce& getOwner() const {
-        return owner;
-    }
-    void updateContextState(ContextImpl& context) {
-        // This force field doesn't update the state directly.
-    }
-    double calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups);
-    std::map<std::string, double> getDefaultParameters() {
-        return std::map<std::string, double>(); // This force field doesn't define any parameters.
-    }
-    std::vector<std::string> getKernelNames();
-    Kernel& getKernel() {
-        return kernel;
-    }
-    void updateParametersInContext(ContextImpl& context);
-private:
-    const AmoebaGeneralizedKirkwoodForce& owner;
-    Kernel kernel;
-};
-
-} // namespace OpenMM
-
 #endif /*OPENMM_AMOEBA_GBSA_OBC_FORCE_FIELD_IMPL_H_*/

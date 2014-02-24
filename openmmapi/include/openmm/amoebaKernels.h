@@ -362,47 +362,6 @@ public:
 };
 
 /**
- * This kernel is invoked by AmoebaGeneralizedKirkwoodForce to calculate the forces acting on the system and the energy of the system.
- */
-class CalcAmoebaGeneralizedKirkwoodForceKernel : public KernelImpl {
-
-public:
-
-    static std::string Name() {
-        return "CalcAmoebaGeneralizedKirkwoodForce";
-    }
-
-    CalcAmoebaGeneralizedKirkwoodForceKernel(std::string name, const Platform& platform) : KernelImpl(name, platform) {
-    }
-
-    /**
-     * Initialize the kernel.
-     * 
-     * @param system     the System this kernel will be applied to
-     * @param force      the GBSAOBCForce this kernel will be used for
-     */
-    virtual void initialize(const System& system, const AmoebaGeneralizedKirkwoodForce& force) = 0;
-
-    /**
-     * Execute the kernel to calculate the forces and/or energy.
-     *
-     * @param context        the context in which to execute this kernel
-     * @param includeForces  true if forces should be calculated
-     * @param includeEnergy  true if the energy should be calculated
-     * @return the potential energy due to the force
-     */
-    virtual double execute(ContextImpl& context, bool includeForces, bool includeEnergy) = 0;
-    /**
-     * Copy changed parameters over to a context.
-     *
-     * @param context    the context to copy parameters to
-     * @param force      the AmoebaGeneralizedKirkwoodForce to copy the parameters from
-     */
-    virtual void copyParametersToContext(ContextImpl& context, const AmoebaGeneralizedKirkwoodForce& force) = 0;
-};
-
-
-/**
  * This kernel is invoked by AmoebaVdwForce to calculate the vdw forces acting on the system and the vdw energy of the system.
  */
 class CalcAmoebaVdwForceKernel : public KernelImpl {
