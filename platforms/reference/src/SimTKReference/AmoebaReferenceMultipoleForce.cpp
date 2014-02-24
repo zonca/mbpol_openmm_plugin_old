@@ -1152,7 +1152,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     }
     // compute the energy contributions for this interaction
 
-    RealOpenMM energy = scale1*rr1*gl[0] + rr3*(gl[1]+gl[6]) + rr5*(gl[2]+gl[7]+gl[8]) + rr7*(gl[3]+gl[5]) + rr9*gl[4];
+    RealOpenMM energy = scale1*rr1*gl[0] + scale3*rr3*(gl[1]+gl[6]) + scale5*rr5*(gl[2]+gl[7]+gl[8]) + scale7*rr7*(gl[3]+gl[5]) + rr9*gl[4];
     energy           *= scalingFactors[M_SCALE];
     energy           += 0.5*(rr3*(gli[0]+gli[5])*psc3 + rr5*(gli[1]+gli[6])*psc5 + rr7*gli[2]*psc7);
     energy           *= f;
