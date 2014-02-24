@@ -621,9 +621,10 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
     // multipoleAtomZs is used for defining a reference frame for the water molecules and
     // contains the indices to the other 2 atoms in the same water molecule.
 
-    if( (particleI.multipoleAtomZs == particleJ.particleIndex) or
-        (particleI.multipoleAtomYs == particleJ.particleIndex) or
-        (particleI.multipoleAtomXs == particleJ.particleIndex) )return;
+    bool isSameWater = (particleI.multipoleAtomZs == particleJ.particleIndex) or
+            (particleI.multipoleAtomYs == particleJ.particleIndex) or
+            (particleI.multipoleAtomXs == particleJ.particleIndex);
+    if( isSameWater )return;
 
     RealVec deltaR    = particleJ.position - particleI.position;
     RealOpenMM r      = SQRT( deltaR.dot( deltaR ) );
@@ -1139,6 +1140,16 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     glip[5] = scip[0];
     glip[6] = 2.0 * (scip[6]-scip[7]);
 
+    bool isSameWater = (particleI.multipoleAtomZs == particleK.particleIndex) or
+            (particleI.multipoleAtomYs == particleK.particleIndex) or
+            (particleI.multipoleAtomXs == particleK.particleIndex);
+    // Same water atoms have no charge/charge interaction and no induced-dipole/charge interaction
+    if( isSameWater ) {
+        gl[0] = 0.;
+        gli[0] = 0.;
+        glip[0] = 0.;
+
+    }
     // compute the energy contributions for this interaction
 
     RealOpenMM energy = scale1*rr1*gl[0] + rr3*(gl[1]+gl[6]) + rr5*(gl[2]+gl[7]+gl[8]) + rr7*(gl[3]+gl[5]) + rr9*gl[4];
