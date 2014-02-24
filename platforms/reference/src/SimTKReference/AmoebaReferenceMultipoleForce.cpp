@@ -1169,9 +1169,9 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
 
     // intermediate variables for the induced components
 
-    gfi[0] = 0.5 * rr5 * ((gli[0]+gli[5])*psc3 + (glip[0]+glip[5])*dsc3 + scip[1]*scale3i)
-           + 0.5 * rr7 * ((gli[6]+gli[1])*psc5 + (glip[6]+glip[1])*dsc5 - (sci[2]*scip[3]+scip[2]*sci[3])*scale5i)
-           + 0.5 * rr9 * (gli[2]*psc7+glip[2]*dsc7);
+    gfi[0] = 0.5 * rr5 * ((gli[0]+gli[5])*psc5 + (glip[0]+glip[5])*dsc5 + scip[1]*scale5i)
+           + 0.5 * rr7 * ((gli[6]+gli[1])*psc7 + (glip[6]+glip[1])*dsc7 - (sci[2]*scip[3]+scip[2]*sci[3])*scale7i)
+           + 0.5 * rr9 * (gli[2]*psc7+glip[2]*dsc7); // this should be psc9 but we do not have quadrupoles anyway
 
     gfi[1] = -rr3*particleK.charge + rr5*sc[3] - rr7*sc[5];
     gfi[2] =  rr3*particleI.charge + rr5*sc[2] + rr7*sc[4];
@@ -1187,19 +1187,27 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     // get the induced force components
 
     RealVec ftm2i  = delta*gfi[0] + qir*gfi[4] + qkr*gfi[5];
-            ftm2i += ( 
 
+    ftm2i += (
+            (_inducedDipole[iIndex]*psc5 + _inducedDipolePolar[iIndex]*dsc5)*( rr5*sc[3]) +  // idipole_i * dipole_k
+            (_inducedDipole[iIndex]*psc7 + _inducedDipolePolar[iIndex]*dsc7)*(-rr7*sc[5]) +  // idipole_i * quadrupole_k
+            (_inducedDipole[kIndex]*psc5 + _inducedDipolePolar[kIndex]*dsc5)*(rr5*sc[2]) +   // idipole_i * dipole_k
+            (_inducedDipole[kIndex]*psc7 + _inducedDipolePolar[kIndex]*dsc7)*(rr7*sc[4]) +   // idipole_i * quadrupole_k
+            (_inducedDipolePolar[iIndex]*sci[3] + _inducedDipole[iIndex]*scip[3] +// iPdipole_i * idipole_k
+             _inducedDipolePolar[kIndex]*sci[2] + _inducedDipole[kIndex]*scip[2])*(rr5*scale5i) +
+            particleI.dipole*((sci[3]*psc5  + scip[3]*dsc5)*rr5) +
+            particleK.dipole*((sci[2]*psc5  + scip[2]*dsc5)*rr5) +
+            ((qkui - qiuk)*psc5 + (qkuip - qiukp)*dsc5)*(gfi[3])
+    )*0.5;
+    // Same water atoms have no induced-dipole/charge interaction
+    if (not( isSameWater )) {
+
+            ftm2i += ( 
          (_inducedDipole[iIndex]*psc3 + _inducedDipolePolar[iIndex]*dsc3)*(-rr3*particleK.charge) +
-         (_inducedDipole[iIndex]*psc5 + _inducedDipolePolar[iIndex]*dsc5)*( rr5*sc[3]) +
-         (_inducedDipole[iIndex]*psc7 + _inducedDipolePolar[iIndex]*dsc7)*(-rr7*sc[5]) +
-         (_inducedDipole[kIndex]*psc3 + _inducedDipolePolar[kIndex]*dsc3)*(rr3*particleI.charge) +
-         (_inducedDipole[kIndex]*psc5 + _inducedDipolePolar[kIndex]*dsc5)*(rr5*sc[2]) +
-         (_inducedDipole[kIndex]*psc7 + _inducedDipolePolar[kIndex]*dsc7)*(rr7*sc[4]) +
-         (_inducedDipolePolar[iIndex]*sci[3] + _inducedDipole[iIndex]*scip[3] +
-          _inducedDipolePolar[kIndex]*sci[2] + _inducedDipole[kIndex]*scip[2])*(rr5*scale5i) +
-         particleI.dipole*((sci[3]*psc5  + scip[3]*dsc5)*rr5) +
-         particleK.dipole*((sci[2]*psc5  + scip[2]*dsc5)*rr5) +
-         ((qkui - qiuk)*psc5 + (qkuip - qiukp)*dsc5)*(gfi[3]))*0.5;
+         (_inducedDipole[kIndex]*psc3 + _inducedDipolePolar[kIndex]*dsc3)*(rr3*particleI.charge)
+
+            )*0.5;
+    }
 
     // account for partially excluded induced interactions
 
@@ -1218,8 +1226,8 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     findmp = (ddsc3*temp3 + ddsc5*temp5);
 
     // modify induced force for partially excluded interactions
-
-    ftm2i -= ( fridmp + findmp )*0.5;
+    // FIXME check how to disable this in the xml
+    // ftm2i -= ( fridmp + findmp )*0.5;
 
     // correction to convert mutual to direct polarization force
 
