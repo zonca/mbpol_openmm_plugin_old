@@ -599,11 +599,14 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
             if( rrI.size() > 2 ){
                 rrI[2]          *= (1.0 - dampExp) - (4./3.) * pgamma * dampExp * ratio;
             }
+
+            if( rrI.size() > 3 ){
+                rrI[3]          *= ((1.0 - dampExp) - (4./3.) * pgamma * dampExp * ratio) - // rrI[2]'s factor
+                        (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * dampExp / pow(damp, 4) * pow(r, 4);
+            }
        }
     }
 
-    // For now setting the quadrupole term to zero
-    rrI[3] = 0;
     return;
 }
 
