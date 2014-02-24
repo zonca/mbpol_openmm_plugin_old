@@ -4172,9 +4172,9 @@ void AmoebaReferenceMultipoleForce::computeWaterCharge(
     double ROH1[3], ROH2[3], RHH[3], dROH1(0), dROH2(0), dRHH(0);
 
     for (size_t i = 0; i < 3; ++i) {
-        ROH1[i] = particleH1.position[i] - particleO.position[i]; // H1 - O
-        ROH2[i] = particleH2.position[i] - particleO.position[i]; // H2 - O
-        RHH[i] = particleH1.position[i] - particleH2.position[i]; // H1 - H2
+        ROH1[i] = particleH1.position[i]*10. - particleO.position[i]*10.; // H1 - O
+        ROH2[i] = particleH2.position[i]*10. - particleO.position[i]*10.; // H2 - O
+        RHH[i] = particleH1.position[i]*10. - particleH2.position[i]*10.; // H1 - H2
 
         dROH1 += ROH1[i]*ROH1[i];
         dROH2 += ROH2[i]*ROH2[i];
