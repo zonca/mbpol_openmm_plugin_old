@@ -690,11 +690,11 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleField( const vector<M
             // otherwise add unmodified field and fieldPolar to particle fields 
 
             RealOpenMM dScale, pScale;
-            if( jj <= _maxScaleIndex[ii] ){
-                getDScaleAndPScale( ii, jj, dScale, pScale );
-            } else {
+//            if( jj <= _maxScaleIndex[ii] ){
+//                getDScaleAndPScale( ii, jj, dScale, pScale );
+//            } else {
                 dScale = pScale = 1.0;
-            }
+            //}
             calculateFixedMultipoleFieldPairIxn( particleData[ii], particleData[jj], dScale, pScale );
         }
     }
@@ -1591,6 +1591,9 @@ void AmoebaReferenceMultipoleForce::setup( const std::vector<RealVec>& particleP
     loadParticleData( particlePositions, charges, dipoles, quadrupoles,
                       tholes, dampingFactors, polarity, multipoleAtomZs, multipoleAtomXs, multipoleAtomYs, particleData );
 
+    for( unsigned int ii = 0; ii < _numParticles; ii=ii+4 ){ // FIXME this assumes only waters
+        computeWaterCharge(particleData[ii], particleData[ii+1], particleData[ii+2], particleData[ii+3]);
+    }
     checkChiral( particleData, multipoleAtomXs, multipoleAtomYs, multipoleAtomZs, axisTypes );
 
     applyRotationMatrix( particleData, multipoleAtomXs, multipoleAtomYs, multipoleAtomZs, axisTypes );

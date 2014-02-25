@@ -516,48 +516,32 @@ static void testWater3VirtualSite( FILE* log ) {
 
     }
 
-    std::vector<double> oxygenMolecularDipole(3);
-    std::vector<double> oxygenMolecularQuadrupole(9);
+    std::vector<double> zeroDipole(3);
+    std::vector<double> zeroQuadrupole(9);
 
-    oxygenMolecularDipole[0]     =   0.0000000e+00;
-    oxygenMolecularDipole[1]     =   0.0000000e+00;
-    oxygenMolecularDipole[2]     =   0.0000000e+00;
+    zeroDipole[0]     =   0.0000000e+00;
+    zeroDipole[1]     =   0.0000000e+00;
+    zeroDipole[2]     =   0.0000000e+00;
 
-    oxygenMolecularQuadrupole[0] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[1] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[2] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[3] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[4] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[5] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[6] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[7] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[8] =   0.0000000e+00;
+    zeroQuadrupole[0] =   0.0000000e+00;
+    zeroQuadrupole[1] =   0.0000000e+00;
+    zeroQuadrupole[2] =   0.0000000e+00;
+    zeroQuadrupole[3] =   0.0000000e+00;
+    zeroQuadrupole[4] =   0.0000000e+00;
+    zeroQuadrupole[5] =   0.0000000e+00;
+    zeroQuadrupole[6] =   0.0000000e+00;
+    zeroQuadrupole[7] =   0.0000000e+00;
+    zeroQuadrupole[8] =   0.0000000e+00;
 
-    std::vector<double> hydrogenMolecularDipole(3);
-    std::vector<double> hydrogenMolecularQuadrupole(9);
-    hydrogenMolecularDipole[0]     =   0.0000000e+00;
-    hydrogenMolecularDipole[1]     =   0.0000000e+00;
-    hydrogenMolecularDipole[2]     =   0.0000000e+00;
-
-    hydrogenMolecularQuadrupole[0] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[1] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[2] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[3] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[4] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[5] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[6] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[7] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[8] =   0.0000000e+00;
-
-for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
-        amoebaMultipoleForce->addMultipole( -5.1966000e-01, oxygenMolecularDipole, oxygenMolecularQuadrupole, 1, jj+1, jj+2, jj+3,
-                                            4.000000e-01, 0.001310, 0.001310 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, hydrogenMolecularDipole, hydrogenMolecularQuadrupole, 0, jj, jj+2, jj+3,
+    for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
+        amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+                                            4.000000e-01, 0.001310, 0. );
+        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
                                             4.000000e-01, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, hydrogenMolecularDipole, hydrogenMolecularQuadrupole, 0, jj, jj+1, jj+3,
+        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
                                             4.000000e-01, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  0., hydrogenMolecularDipole, hydrogenMolecularQuadrupole, 0, jj, jj+1, jj+2,
-                                                    4.000000e-01, 0.000294, 0.000294 );
+        amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+                                                    4.000000e-01,  0.001310,  0.001310 );
     }
 
     system.addForce(amoebaMultipoleForce);
@@ -579,8 +563,8 @@ for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
 
     positions[8]             = Vec3( -5.588472140e-01,  2.006699172e+00, -1.392786582e-01  );
     positions[9]             = Vec3( -9.411558180e-01,  1.541226676e+00,  6.163293071e-01  );
-    positions[10]             = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
-    positions[11]             = Vec3( -0.73151769,  1.8136042 , -0.13676332 );
+    positions[10]            = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
+    positions[11]            = Vec3( -0.73151769,  1.8136042 , -0.13676332 );
 
     for (int i=0; i<numberOfParticles; i++) {
         for (int j=0; j<3; j++) {
@@ -602,7 +586,7 @@ for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
     std::vector<Vec3> forces   = state.getForces();
     double energy              = state.getPotentialEnergy();
     double cal2joule = 4.184;
-    std::cout << "Forces" << std::endl;
+//    std::cout << "Forces" << std::endl;
 
 
 //    std::vector<Vec3> expectedForces(numberOfParticles);
@@ -631,14 +615,14 @@ for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
             forces[i][j] /= cal2joule*10;
            }
        }
-    for (int i=0; i<numberOfParticles; i++) {
-         std::cout << forces[i] << " Kcal/mol/A " << std::endl;
-    }
+//    for (int i=0; i<numberOfParticles; i++) {
+//         std::cout << forces[i] << " Kcal/mol/A " << std::endl;
+//    }
     // Energy elec+ind(kcal/mol): -2.134083549e-02
-    double expectedEnergy = -2.134083549e-02*cal2joule;
+    double expectedEnergy = -15.9939592*cal2joule;
     // ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
     std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
-    std::cout << "Energy: " << energy << " Kj/mol "<< std::endl;
+    std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
 
     return;
 }
@@ -658,12 +642,12 @@ int main( int numberOfArguments, char* argv[] ) {
         amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
 
         // water 3 mbpol
-        testWater3( log );
-
+        // testWater3( log );
 
         WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
         wrapperForComputeWaterCharge->testComputeWaterCharge();
 
+        testWater3VirtualSite( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;
