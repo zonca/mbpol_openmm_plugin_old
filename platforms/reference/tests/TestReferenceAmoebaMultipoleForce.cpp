@@ -535,13 +535,13 @@ static void testWater3VirtualSite( FILE* log ) {
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
         amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
-                                            4.000000e-01, 0.001310, 0. );
+                                            4.000000e-01, 0.001310, 0.001310 );
         amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
                                             4.000000e-01, 0.000294, 0.000294 );
         amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
                                             4.000000e-01, 0.000294, 0.000294 );
         amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
-                                                    4.000000e-01,  0.001310,  0.001310 );
+                                                    4.000000e-01,  0.001310,  0.);
     }
 
     system.addForce(amoebaMultipoleForce);
@@ -615,14 +615,65 @@ static void testWater3VirtualSite( FILE* log ) {
             forces[i][j] /= cal2joule*10;
            }
        }
-//    for (int i=0; i<numberOfParticles; i++) {
-//         std::cout << forces[i] << " Kcal/mol/A " << std::endl;
-//    }
+    for (int i=0; i<numberOfParticles; i++) {
+         std::cout << forces[i] << " Kcal/mol/A " << std::endl;
+    }
     // Energy elec+ind(kcal/mol): -2.134083549e-02
     double expectedEnergy = -15.9939592*cal2joule;
     // ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
     std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
     std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
+    const double eps = 1.0e-4;
+
+    double x_orig;
+
+    std::vector<Vec3> finiteDifferenceForces(numberOfParticles);
+    for (int i=0; i<numberOfParticles; i++) {
+        finiteDifferenceForces.push_back(Vec3( 0.,  0., 0.  ));
+    }
+    for (int i=0; i<numberOfParticles; i++) {
+        for (int xyz=0; xyz<3; xyz++) {
+            x_orig = positions[i][xyz];
+
+            positions[i][xyz] = x_orig + eps;
+            context.setPositions(positions);
+            context.applyConstraints(1e-4); // update position of virtual site
+            state                = context.getState(State::Energy);
+            const double Ep  = state.getPotentialEnergy();
+
+            positions[i][xyz] = x_orig + 2*eps;
+            context.setPositions(positions);
+            context.applyConstraints(1e-4); // update position of virtual site
+            state                = context.getState(State::Energy);
+            const double E2p  = state.getPotentialEnergy();
+
+            positions[i][xyz] = x_orig - eps;
+            context.setPositions(positions);
+            context.applyConstraints(1e-4); // update position of virtual site
+            state                = context.getState(State::Energy);
+            const double Em   = state.getPotentialEnergy();
+
+            positions[i][xyz] = x_orig - 2*eps;
+            context.setPositions(positions);
+            context.applyConstraints(1e-4); // update position of virtual site
+            state                = context.getState(State::Energy);
+            const double E2m   = state.getPotentialEnergy();
+
+            finiteDifferenceForces[i][xyz] = (8*(Ep - Em) - (E2p - E2m))/(12*eps);
+            positions[i][xyz] = x_orig;
+        }
+
+    }
+
+    for (int i=0; i<numberOfParticles; i++) {
+           for (int j=0; j<3; j++) {
+            finiteDifferenceForces[i][j] /= -1*cal2joule*10;
+           }
+
+       }
+    for (int i=0; i<numberOfParticles; i++) {
+         std::cout << finiteDifferenceForces[i] << " Kcal/mol/A " << std::endl;
+    }
 
     return;
 }
