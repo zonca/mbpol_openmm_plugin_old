@@ -2213,6 +2213,15 @@ void MBPolReferencePmeElectrostaticsForce::calculateFixedElectrostaticsFieldPair
 
     if( particleI.particleIndex == particleJ.particleIndex )return;
 
+    // in MBPol there is no contribution to the Fixed Multipole Field from atoms of the same water molecule
+    // multipoleAtomZs is used for defining a reference frame for the water molecules and
+    // contains the indices to the other 2 atoms in the same water molecule.
+
+    bool isSameWater = (particleI.multipoleAtomZs == particleJ.particleIndex) or
+            (particleI.multipoleAtomYs == particleJ.particleIndex) or
+            (particleI.multipoleAtomXs == particleJ.particleIndex);
+    if( isSameWater )return;
+
     RealVec deltaR    = particleJ.position - particleI.position;
     getPeriodicDelta( deltaR );
     RealOpenMM r2     = deltaR.dot( deltaR );
