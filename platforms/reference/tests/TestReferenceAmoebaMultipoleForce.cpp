@@ -395,26 +395,28 @@ class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaR
         ASSERT_EQUAL_TOL_MOD(-1.15079656, particleM.charge, 1e-5, testName);
 
         std::cout << "Charges" << std::endl;
-            std::cout << "O: " << particleO.charge << std::endl;
-            std::cout << "H1: " << particleH1.charge << std::endl;
-            std::cout << "H2: " << particleH2.charge << std::endl;
-            std::cout << "M: " << particleM.charge << std::endl;
+
+        std::cout << "O: " << particleO.charge << std::endl;
+        std::cout << "H1: " << particleH1.charge << std::endl;
+        std::cout << "H2: " << particleH2.charge << std::endl;
+        std::cout << "M: " << particleM.charge << std::endl;
+
         std::cout << "Derivatives" << std::endl;
 
-            std::cout << "H1 vs H1: " << particleH1.chargeDerivatives[0] << std::endl;
-            std::cout << "H1 vs H2: " << particleH1.chargeDerivatives[1] << std::endl;
-            std::cout << "H1 vs M : " << particleH1.chargeDerivatives[2] << std::endl;
+        std::cout << "H1 vs H1: " << particleH1.chargeDerivatives[0] << std::endl;
+        std::cout << "H1 vs H2: " << particleH1.chargeDerivatives[1] << std::endl;
+        std::cout << "H1 vs M : " << particleH1.chargeDerivatives[2] << std::endl;
 
-            std::cout << "H2 vs H1: " << particleH2.chargeDerivatives[0] << std::endl;
-            std::cout << "H2 vs H2: " << particleH2.chargeDerivatives[1] << std::endl;
-            std::cout << "H2 vs M : " << particleH2.chargeDerivatives[2] << std::endl;
+        std::cout << "H2 vs H1: " << particleH2.chargeDerivatives[0] << std::endl;
+        std::cout << "H2 vs H2: " << particleH2.chargeDerivatives[1] << std::endl;
+        std::cout << "H2 vs M : " << particleH2.chargeDerivatives[2] << std::endl;
 
-            std::cout << "M vs H1: " << particleM.chargeDerivatives[0] << std::endl;
-            std::cout << "M vs H2: " << particleM.chargeDerivatives[1] << std::endl;
-            std::cout << "M vs M : " << particleM.chargeDerivatives[2] << std::endl;
-            std::cout << "O vs H1: " << particleO.chargeDerivatives[0] << std::endl;
-            std::cout << "O vs H2: " << particleO.chargeDerivatives[1] << std::endl;
-            std::cout << "O vs M : " << particleO.chargeDerivatives[2] << std::endl;
+        std::cout << "M vs H1: " << particleM.chargeDerivatives[0] << std::endl;
+        std::cout << "M vs H2: " << particleM.chargeDerivatives[1] << std::endl;
+        std::cout << "M vs M : " << particleM.chargeDerivatives[2] << std::endl;
+        std::cout << "O vs H1: " << particleO.chargeDerivatives[0] << std::endl;
+        std::cout << "O vs H2: " << particleO.chargeDerivatives[1] << std::endl;
+        std::cout << "O vs M : " << particleO.chargeDerivatives[2] << std::endl;
 
         std::vector<Vec3> expectedChargeDerivatives(9);
         expectedChargeDerivatives[0]         = Vec3( -0.224842979, 0.157051233, -0.139425246  );
@@ -426,6 +428,7 @@ class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaR
         expectedChargeDerivatives[6]         = Vec3(  0.23017471, -0.256041512, 0.326861745  );
         expectedChargeDerivatives[7]         = Vec3( 0.0532092469, -0.229264361, 0.404282181  );
         expectedChargeDerivatives[8]         = Vec3( -0.283383957, 0.485305874, -0.731143926  );
+
         for (int i=0; i<9; i++) {
             for (int j=0; j<3; j++) {
                 expectedChargeDerivatives[i][j] *= 10;
@@ -527,6 +530,14 @@ static void testWater3VirtualSite( FILE* log ) {
                                             4.000000e-01, 0.000294, 0.000294 );
         amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
                                                     4.000000e-01,  0.001310,  0.);
+//        amoebaMultipoleForce->addMultipole( 0, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+//                                              4.000000e-01, 0.001310, 0.001310 );
+//          amoebaMultipoleForce->addMultipole(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+//                                              4.000000e-01, 0.000294, 0.000294 );
+//          amoebaMultipoleForce->addMultipole(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+//                                              4.000000e-01, 0.000294, 0.000294 );
+//          amoebaMultipoleForce->addMultipole(  -1, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+//                                                      4.000000e-01,  0.001310,  0.);
     }
 
     system.addForce(amoebaMultipoleForce);
@@ -563,6 +574,8 @@ static void testWater3VirtualSite( FILE* log ) {
     Context context(system, integrator, Platform::getPlatformByName( platformName ) );
 
     context.setPositions(positions);
+    context.applyConstraints(1e-4); // update position of virtual site
+
     double tolerance          = 1.0e-04;
 
 //    // test energy and forces
