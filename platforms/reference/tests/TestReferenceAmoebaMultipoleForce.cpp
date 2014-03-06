@@ -83,20 +83,8 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 
     std::vector<double> zeroDipole(3);
     std::vector<double> zeroQuadrupole(9);
-
-    zeroDipole[0]     =   0.0000000e+00;
-    zeroDipole[1]     =   0.0000000e+00;
-    zeroDipole[2]     =   0.0000000e+00;
-
-    zeroQuadrupole[0] =   0.0000000e+00;
-    zeroQuadrupole[1] =   0.0000000e+00;
-    zeroQuadrupole[2] =   0.0000000e+00;
-    zeroQuadrupole[3] =   0.0000000e+00;
-    zeroQuadrupole[4] =   0.0000000e+00;
-    zeroQuadrupole[5] =   0.0000000e+00;
-    zeroQuadrupole[6] =   0.0000000e+00;
-    zeroQuadrupole[7] =   0.0000000e+00;
-    zeroQuadrupole[8] =   0.0000000e+00;
+    std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
+    std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 3 ){
         amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, -1,
@@ -406,35 +394,46 @@ class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaR
         ASSERT_EQUAL_TOL_MOD(0.577197137, particleH2.charge, 1e-5, testName);
         ASSERT_EQUAL_TOL_MOD(-1.15079656, particleM.charge, 1e-5, testName);
 
-//        std::cout << "Charges" << std::endl;
-//            std::cout << "O: " << particleO.charge << std::endl;
-//            std::cout << "H1: " << particleH1.charge << std::endl;
-//            std::cout << "H2: " << particleH2.charge << std::endl;
-//            std::cout << "M: " << particleM.charge << std::endl;
-//        std::cout << "Derivatives" << std::endl;
-//
-//            std::cout << "H1 vs H1: " << particleH1.chargeDerivatives[0] << std::endl;
-//            std::cout << "H1 vs H2: " << particleH1.chargeDerivatives[1] << std::endl;
-//            std::cout << "H1 vs M : " << particleH1.chargeDerivatives[2] << std::endl;
-//
-//            std::cout << "H2 vs H1: " << particleH2.chargeDerivatives[0] << std::endl;
-//            std::cout << "H2 vs H2: " << particleH2.chargeDerivatives[1] << std::endl;
-//            std::cout << "H2 vs M : " << particleH2.chargeDerivatives[2] << std::endl;
-//
-//            std::cout << "M vs H1: " << particleM.chargeDerivatives[0] << std::endl;
-//            std::cout << "M vs H2: " << particleM.chargeDerivatives[1] << std::endl;
-//            std::cout << "M vs M : " << particleM.chargeDerivatives[2] << std::endl;
+        std::cout << "Charges" << std::endl;
+
+        std::cout << "O: " << particleO.charge << std::endl;
+        std::cout << "H1: " << particleH1.charge << std::endl;
+        std::cout << "H2: " << particleH2.charge << std::endl;
+        std::cout << "M: " << particleM.charge << std::endl;
+
+        std::cout << "Derivatives" << std::endl;
+
+        std::cout << "H1 vs H1: " << particleH1.chargeDerivatives[0] << std::endl;
+        std::cout << "H1 vs H2: " << particleH1.chargeDerivatives[1] << std::endl;
+        std::cout << "H1 vs M : " << particleH1.chargeDerivatives[2] << std::endl;
+
+        std::cout << "H2 vs H1: " << particleH2.chargeDerivatives[0] << std::endl;
+        std::cout << "H2 vs H2: " << particleH2.chargeDerivatives[1] << std::endl;
+        std::cout << "H2 vs M : " << particleH2.chargeDerivatives[2] << std::endl;
+
+        std::cout << "M vs H1: " << particleM.chargeDerivatives[0] << std::endl;
+        std::cout << "M vs H2: " << particleM.chargeDerivatives[1] << std::endl;
+        std::cout << "M vs M : " << particleM.chargeDerivatives[2] << std::endl;
+        std::cout << "O vs H1: " << particleO.chargeDerivatives[0] << std::endl;
+        std::cout << "O vs H2: " << particleO.chargeDerivatives[1] << std::endl;
+        std::cout << "O vs M : " << particleO.chargeDerivatives[2] << std::endl;
 
         std::vector<Vec3> expectedChargeDerivatives(9);
         expectedChargeDerivatives[0]         = Vec3( -0.224842979, 0.157051233, -0.139425246  );
-        expectedChargeDerivatives[1]         = Vec3(  -0.00533173093, 0.0989902789, -0.187436499 );
-        expectedChargeDerivatives[2]         = Vec3( 0.23017471, -0.256041512, 0.326861745 );
-        expectedChargeDerivatives[3]         = Vec3( -0.118671613, 0.106113269, -0.118471774  );
-        expectedChargeDerivatives[4]         = Vec3(  0.065462366, 0.123151092, -0.285810407 );
-        expectedChargeDerivatives[5]         = Vec3( 0.0532092469, -0.229264361, 0.404282181  );
-        expectedChargeDerivatives[6]         = Vec3(   0.343514592, -0.263164503, 0.25789702  );
-        expectedChargeDerivatives[7]         = Vec3(  -0.060130635, -0.222141371, 0.473246906  );
+        expectedChargeDerivatives[1]         = Vec3( -0.118671613, 0.106113269, -0.118471774 );
+        expectedChargeDerivatives[2]         = Vec3(  0.343514592, -0.263164503, 0.25789702 );
+        expectedChargeDerivatives[3]         = Vec3( -0.00533173093, 0.0989902789, -0.187436499  );
+        expectedChargeDerivatives[4]         = Vec3( 0.065462366, 0.123151092, -0.285810407 );
+        expectedChargeDerivatives[5]         = Vec3( -0.060130635, -0.222141371, 0.473246906  );
+        expectedChargeDerivatives[6]         = Vec3(  0.23017471, -0.256041512, 0.326861745  );
+        expectedChargeDerivatives[7]         = Vec3( 0.0532092469, -0.229264361, 0.404282181  );
         expectedChargeDerivatives[8]         = Vec3( -0.283383957, 0.485305874, -0.731143926  );
+
+        for (int i=0; i<9; i++) {
+            for (int j=0; j<3; j++) {
+                expectedChargeDerivatives[i][j] *= 10;
+            }
+        }
 
         double tolerance = 1e-6;
         int start_i = 0;
@@ -447,7 +446,7 @@ class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaR
         }
         start_i = 6;
         for (int i=0; i<3; i++) {
-            ASSERT_EQUAL_VEC_MOD(particleM.chargeDerivatives[i], expectedChargeDerivatives[start_i+i], tolerance, testName);
+            ASSERT_EQUAL_VEC_MOD(particleO.chargeDerivatives[i], expectedChargeDerivatives[start_i+i], tolerance, testName);
         }
     }
 };
@@ -516,48 +515,29 @@ static void testWater3VirtualSite( FILE* log ) {
 
     }
 
-    std::vector<double> oxygenMolecularDipole(3);
-    std::vector<double> oxygenMolecularQuadrupole(9);
+    std::vector<double> zeroDipole(3);
+    std::vector<double> zeroQuadrupole(9);
 
-    oxygenMolecularDipole[0]     =   0.0000000e+00;
-    oxygenMolecularDipole[1]     =   0.0000000e+00;
-    oxygenMolecularDipole[2]     =   0.0000000e+00;
+    std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
+    std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
 
-    oxygenMolecularQuadrupole[0] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[1] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[2] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[3] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[4] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[5] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[6] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[7] =   0.0000000e+00;
-    oxygenMolecularQuadrupole[8] =   0.0000000e+00;
-
-    std::vector<double> hydrogenMolecularDipole(3);
-    std::vector<double> hydrogenMolecularQuadrupole(9);
-    hydrogenMolecularDipole[0]     =   0.0000000e+00;
-    hydrogenMolecularDipole[1]     =   0.0000000e+00;
-    hydrogenMolecularDipole[2]     =   0.0000000e+00;
-
-    hydrogenMolecularQuadrupole[0] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[1] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[2] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[3] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[4] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[5] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[6] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[7] =   0.0000000e+00;
-    hydrogenMolecularQuadrupole[8] =   0.0000000e+00;
-
-for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
-        amoebaMultipoleForce->addMultipole( -5.1966000e-01, oxygenMolecularDipole, oxygenMolecularQuadrupole, 1, jj+1, jj+2, jj+3,
+    for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
+        amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
                                             4.000000e-01, 0.001310, 0.001310 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, hydrogenMolecularDipole, hydrogenMolecularQuadrupole, 0, jj, jj+2, jj+3,
+        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
                                             4.000000e-01, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, hydrogenMolecularDipole, hydrogenMolecularQuadrupole, 0, jj, jj+1, jj+3,
+        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
                                             4.000000e-01, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  0., hydrogenMolecularDipole, hydrogenMolecularQuadrupole, 0, jj, jj+1, jj+2,
-                                                    4.000000e-01, 0.000294, 0.000294 );
+        amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+                                                    4.000000e-01,  0.001310,  0.);
+//        amoebaMultipoleForce->addMultipole( 0, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+//                                              4.000000e-01, 0.001310, 0.001310 );
+//          amoebaMultipoleForce->addMultipole(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+//                                              4.000000e-01, 0.000294, 0.000294 );
+//          amoebaMultipoleForce->addMultipole(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+//                                              4.000000e-01, 0.000294, 0.000294 );
+//          amoebaMultipoleForce->addMultipole(  -1, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+//                                                      4.000000e-01,  0.001310,  0.);
     }
 
     system.addForce(amoebaMultipoleForce);
@@ -579,8 +559,8 @@ for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
 
     positions[8]             = Vec3( -5.588472140e-01,  2.006699172e+00, -1.392786582e-01  );
     positions[9]             = Vec3( -9.411558180e-01,  1.541226676e+00,  6.163293071e-01  );
-    positions[10]             = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
-    positions[11]             = Vec3( -0.73151769,  1.8136042 , -0.13676332 );
+    positions[10]            = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
+    positions[11]            = Vec3( -0.73151769,  1.8136042 , -0.13676332 );
 
     for (int i=0; i<numberOfParticles; i++) {
         for (int j=0; j<3; j++) {
@@ -594,6 +574,8 @@ for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
     Context context(system, integrator, Platform::getPlatformByName( platformName ) );
 
     context.setPositions(positions);
+    context.applyConstraints(1e-4); // update position of virtual site
+
     double tolerance          = 1.0e-04;
 
 //    // test energy and forces
@@ -602,7 +584,7 @@ for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
     std::vector<Vec3> forces   = state.getForces();
     double energy              = state.getPotentialEnergy();
     double cal2joule = 4.184;
-    std::cout << "Forces" << std::endl;
+//    std::cout << "Forces" << std::endl;
 
 
 //    std::vector<Vec3> expectedForces(numberOfParticles);
@@ -631,14 +613,70 @@ for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
             forces[i][j] /= cal2joule*10;
            }
        }
+    std::cout  << std::endl << "Forces:" << std::endl;
+
     for (int i=0; i<numberOfParticles; i++) {
          std::cout << forces[i] << " Kcal/mol/A " << std::endl;
     }
     // Energy elec+ind(kcal/mol): -2.134083549e-02
-    double expectedEnergy = -2.134083549e-02*cal2joule;
+    double expectedEnergy = -15.9939592*cal2joule;
     // ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
     std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
-    std::cout << "Energy: " << energy << " Kj/mol "<< std::endl;
+    std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
+    const double eps = 1.0e-4;
+
+    double x_orig;
+
+    std::vector<Vec3> finiteDifferenceForces(numberOfParticles);
+    for (int i=0; i<numberOfParticles; i++) {
+        finiteDifferenceForces.push_back(Vec3( 0.,  0., 0.  ));
+    }
+    for (int i=0; i<numberOfParticles; i++) {
+        for (int xyz=0; xyz<3; xyz++) {
+            x_orig = positions[i][xyz];
+
+            positions[i][xyz] = x_orig + eps;
+            context.setPositions(positions);
+            context.applyConstraints(1e-4); // update position of virtual site
+            state                = context.getState(State::Energy);
+            const double Ep  = state.getPotentialEnergy();
+
+            positions[i][xyz] = x_orig + 2*eps;
+            context.setPositions(positions);
+            context.applyConstraints(1e-4); // update position of virtual site
+            state                = context.getState(State::Energy);
+            const double E2p  = state.getPotentialEnergy();
+
+            positions[i][xyz] = x_orig - eps;
+            context.setPositions(positions);
+            context.applyConstraints(1e-4); // update position of virtual site
+            state                = context.getState(State::Energy);
+            const double Em   = state.getPotentialEnergy();
+
+            positions[i][xyz] = x_orig - 2*eps;
+            context.setPositions(positions);
+            context.applyConstraints(1e-4); // update position of virtual site
+            state                = context.getState(State::Energy);
+            const double E2m   = state.getPotentialEnergy();
+
+            finiteDifferenceForces[i][xyz] = (8*(Ep - Em) - (E2p - E2m))/(12*eps);
+            positions[i][xyz] = x_orig;
+        }
+
+    }
+
+    for (int i=0; i<numberOfParticles; i++) {
+           for (int j=0; j<3; j++) {
+            finiteDifferenceForces[i][j] /= -1*cal2joule*10;
+           }
+
+       }
+    std::cout  << std::endl << "Finite difference forces:" << std::endl;
+
+
+    for (int i=0; i<numberOfParticles; i++) {
+         std::cout << finiteDifferenceForces[i] << " Kcal/mol/A " << std::endl;
+    }
 
     return;
 }
@@ -658,12 +696,12 @@ int main( int numberOfArguments, char* argv[] ) {
         amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
 
         // water 3 mbpol
-        testWater3( log );
-
+        // testWater3( log );
 
         WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
         wrapperForComputeWaterCharge->testComputeWaterCharge();
 
+        testWater3VirtualSite( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;

@@ -690,11 +690,11 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleField( const vector<M
             // otherwise add unmodified field and fieldPolar to particle fields 
 
             RealOpenMM dScale, pScale;
-            if( jj <= _maxScaleIndex[ii] ){
-                getDScaleAndPScale( ii, jj, dScale, pScale );
-            } else {
+//            if( jj <= _maxScaleIndex[ii] ){
+//                getDScaleAndPScale( ii, jj, dScale, pScale );
+//            } else {
                 dScale = pScale = 1.0;
-            }
+            //}
             calculateFixedMultipoleFieldPairIxn( particleData[ii], particleData[jj], dScale, pScale );
         }
     }
@@ -889,8 +889,9 @@ void AmoebaReferenceMultipoleForce::calculateInducedDipoles( const std::vector<M
     return;
 }
 
-RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const MultipoleParticleData& particleI,
-                                                                         const MultipoleParticleData& particleK,
+RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const std::vector<MultipoleParticleData>& particleData,
+                                                                         unsigned int iIndex,
+                                                                         unsigned int kIndex,
                                                                          const std::vector<RealOpenMM>& scalingFactors,
                                                                          std::vector<RealVec>& forces,
                                                                          std::vector<RealVec>& torque ) const 
@@ -900,8 +901,8 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     RealOpenMM sc[10],sci[8],scip[8];
     RealOpenMM gf[7],gfi[6],gti[6];
  
-    unsigned int iIndex = particleI.particleIndex;
-    unsigned int kIndex = particleK.particleIndex;
+    MultipoleParticleData particleI = particleData[iIndex];
+    MultipoleParticleData particleK = particleData[kIndex];
 
     RealVec delta       = particleK.position - particleI.position;
     RealOpenMM r2       = delta.dot( delta );
@@ -1229,6 +1230,70 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const M
     // FIXME check how to disable this in the xml
     // ftm2i -= ( fridmp + findmp )*0.5;
 
+    // MBPol charge derivative terms
+
+//    gE_elec[ih1 + k] += GRDQ(0, 0, k)*phi[4*n + 1]  // phi(h1)
+//                      + GRDQ(0, 1, k)*phi[4*n + 2]  // phi(h2)
+//                      + GRDQ(0, 2, k)*phi[4*n + 3]; // phi(M)
+//
+//    gE_elec[ih2 + k] += GRDQ(1, 0, k)*phi[4*n + 1]  // phi(h1)
+//                      + GRDQ(1, 1, k)*phi[4*n + 2]  // phi(h2)
+//                      + GRDQ(1, 2, k)*phi[4*n + 3]; // phi(M)
+//
+//    gE_elec[io + k] += GRDQ(2, 0, k)*phi[4*n + 1]  // phi(h1)
+//                     + GRDQ(2, 1, k)*phi[4*n + 2]  // phi(h2)
+//                     + GRDQ(2, 2, k)*phi[4*n + 3]; // phi(M)
+
+    double distanceK, distanceI, scale1I, scale1K, scale3I, scale3K, inducedDipoleI, inducedDipoleK;
+    RealVec deltaI, deltaK;
+    if (not (isSameWater)){
+
+        for (size_t s = 0; s < 3; ++s) {
+
+            // vsH1f, vsH2f, vsMf
+
+            deltaI = particleData[particleI.otherSiteIndex[s]].position-particleK.position;
+            distanceI = SQRT(deltaI.dot(deltaI));
+            deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
+            distanceK = SQRT(deltaK.dot(deltaK));
+
+            getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]].dampingFactor, particleK.dampingFactor,
+                    particleData[particleI.otherSiteIndex[s]].thole, particleK.thole, distanceI, true, damp, rrI );
+
+            if( damp != 0.0 ){
+                if( damp > -50.0){
+                    scale1I = rrI[0];
+                    scale3I = rrI[1];
+                }
+            }
+
+            getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]].dampingFactor, particleI.dampingFactor,
+                    particleData[particleK.otherSiteIndex[s]].thole, particleI.thole, distanceK, true, damp, rrI );
+
+            if( damp != 0.0 ){
+                if( damp > -50.0){
+                    scale1K = rrI[0];
+                    scale3K = rrI[1];
+                }
+            }
+
+            inducedDipoleI = _inducedDipole[kIndex].dot(deltaI);
+            inducedDipoleK = _inducedDipole[iIndex].dot(deltaK);
+
+            for (size_t i = 0; i < 3; ++i) {
+
+
+                ftm2[i] +=  scale1I * (1.0/distanceI) * particleI.chargeDerivatives[s][i] * particleK.charge;
+                ftm2[i] -=  scale1K * (1.0/distanceK) * particleK.chargeDerivatives[s][i] * particleI.charge;
+
+
+                ftm2i[i] += scale3I * pow(1.0/distanceI,3) * particleI.chargeDerivatives[s][i] * inducedDipoleI;
+                ftm2i[i] -= scale3K * pow(1.0/distanceK,3) * particleK.chargeDerivatives[s][i] * inducedDipoleK;
+            }
+
+        }
+    }
+
     // correction to convert mutual to direct polarization force
 
     if( getPolarizationType() == AmoebaReferenceMultipoleForce::Direct ){
@@ -1551,7 +1616,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostatic( const std::vec
                 getMultipoleScaleFactors( ii, jj, scaleFactors);
             }
 
-            energy += calculateElectrostaticPairIxn( particleData[ii], particleData[jj], scaleFactors, forces, torques );
+            energy += calculateElectrostaticPairIxn( particleData, ii, jj, scaleFactors, forces, torques );
 
             if( jj <= _maxScaleIndex[ii] ){
                 for( unsigned int kk = 0; kk < LAST_SCALE_TYPE_INDEX; kk++ ){
@@ -1591,6 +1656,9 @@ void AmoebaReferenceMultipoleForce::setup( const std::vector<RealVec>& particleP
     loadParticleData( particlePositions, charges, dipoles, quadrupoles,
                       tholes, dampingFactors, polarity, multipoleAtomZs, multipoleAtomXs, multipoleAtomYs, particleData );
 
+    for( unsigned int ii = 0; ii < _numParticles; ii=ii+4 ){ // FIXME this assumes only waters
+        computeWaterCharge(particleData[ii], particleData[ii+1], particleData[ii+2], particleData[ii+3]);
+    }
     checkChiral( particleData, multipoleAtomXs, multipoleAtomYs, multipoleAtomZs, axisTypes );
 
     applyRotationMatrix( particleData, multipoleAtomXs, multipoleAtomYs, multipoleAtomZs, axisTypes );
@@ -4302,7 +4370,6 @@ void AmoebaReferenceMultipoleForce::computeWaterCharge(
     // second index is the charge being differentiated
 
     enum ChargeDerivativesIndices { vsH1, vsH2, vsO };
-    enum ChargeDerivativesIndicesFinal { vsH1f, vsH2f, vsMf };
 
     std:vector<RealVec> chargeDerivativesH1;
     chargeDerivativesH1.resize(3);
@@ -4337,24 +4404,54 @@ void AmoebaReferenceMultipoleForce::computeWaterCharge(
     double sumH1, sumH2, sumO;
 
     for (size_t i = 0; i < 3; ++i) {
-        particleO.chargeDerivatives[vsH1f][i] = 0.;
-        particleO.chargeDerivatives[vsH2f][i] = 0.;
-        particleO.chargeDerivatives[vsMf][i] = 0.;
+        particleM.chargeDerivatives[vsH1f][i] = 0.;
+        particleM.chargeDerivatives[vsH2f][i] = 0.;
+        particleM.chargeDerivatives[vsMf][i] = 0.;
 
         sumH1 = gamma2div1*(chargeDerivativesH1[vsH1][i]+chargeDerivativesH2[vsH1][i]);
         sumH2 = gamma2div1*(chargeDerivativesH1[vsH2][i]+chargeDerivativesH2[vsH2][i]);
         sumO = gamma2div1*(chargeDerivativesH1[vsO][i]+chargeDerivativesH2[vsO][i]);
 
         particleH1.chargeDerivatives[vsH1f][i] = chargeDerivativesH1[vsH1][i] + sumH1;
-        particleH1.chargeDerivatives[vsH2f][i] = chargeDerivativesH1[vsH2][i] + sumH2;
-        particleH1.chargeDerivatives[vsMf][i]  = chargeDerivativesH1[vsO][i] + sumO;
+        particleH2.chargeDerivatives[vsH1f][i] = chargeDerivativesH1[vsH2][i] + sumH2;
+        particleO.chargeDerivatives[vsH1f][i]  = chargeDerivativesH1[vsO][i] + sumO;
 
-        particleH2.chargeDerivatives[vsH1f][i] = chargeDerivativesH2[vsH1][i] + sumH1;
+        particleH1.chargeDerivatives[vsH2f][i] = chargeDerivativesH2[vsH1][i] + sumH1;
         particleH2.chargeDerivatives[vsH2f][i] = chargeDerivativesH2[vsH2][i] + sumH2;
-        particleH2.chargeDerivatives[vsMf][i]  = chargeDerivativesH2[vsO][i] +  sumO;
+        particleO.chargeDerivatives[vsH2f][i]  = chargeDerivativesH2[vsO][i] +  sumO;
 
-        particleM.chargeDerivatives[vsH1f][i] = chargeDerivativesO[vsH1][i] - 2*sumH1;
-        particleM.chargeDerivatives[vsH2f][i] = chargeDerivativesO[vsH2][i] - 2*sumH2;
-        particleM.chargeDerivatives[vsMf][i]  = chargeDerivativesO[vsO][i]  - 2*sumO;
+        particleH1.chargeDerivatives[vsMf][i] = chargeDerivativesO[vsH1][i] - 2*sumH1;
+        particleH2.chargeDerivatives[vsMf][i] = chargeDerivativesO[vsH2][i] - 2*sumH2;
+        particleO.chargeDerivatives[vsMf][i]  = chargeDerivativesO[vsO][i]  - 2*sumO;
+
     }
+
+    // convert from q/A to q/nm
+    for (unsigned int i = 0; i < 3; ++i) {
+        for (unsigned int s = 0; s < 3; ++s) {
+            particleH1.chargeDerivatives[s][i] *= 10;
+            particleH2.chargeDerivatives[s][i] *= 10;
+            particleO.chargeDerivatives[s][i] *= 10;
+        }
+
+    }
+
+    // TODO implement as list
+
+    particleH1.otherSiteIndex[vsH1f] = particleH1.particleIndex;
+    particleH1.otherSiteIndex[vsH2f] = particleH2.particleIndex;
+    particleH1.otherSiteIndex[vsMf]  = particleM.particleIndex;
+
+    particleH2.otherSiteIndex[vsH1f] = particleH1.particleIndex;
+    particleH2.otherSiteIndex[vsH2f] = particleH2.particleIndex;
+    particleH2.otherSiteIndex[vsMf]  = particleM.particleIndex;
+
+    particleM.otherSiteIndex[vsH1f] = particleH1.particleIndex;
+    particleM.otherSiteIndex[vsH2f] = particleH2.particleIndex;
+    particleM.otherSiteIndex[vsMf]  = particleM.particleIndex;
+
+    particleO.otherSiteIndex[vsH1f] = particleH1.particleIndex;
+    particleO.otherSiteIndex[vsH2f] = particleH2.particleIndex;
+    particleO.otherSiteIndex[vsMf]  = particleM.particleIndex;
+
 }
