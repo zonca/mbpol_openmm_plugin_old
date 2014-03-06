@@ -335,6 +335,8 @@ public:
         Direct = 1 
     };  
 
+    enum ChargeDerivativesIndicesFinal { vsH1f, vsH2f, vsMf };
+
     /**
      * Constructor
      * 
@@ -559,6 +561,7 @@ protected:
             RealVec dipole;
             RealOpenMM quadrupole[6];
             RealVec chargeDerivatives[3];
+            unsigned int otherSiteIndex[3];
             RealOpenMM thole;
             RealOpenMM dampingFactor;
             RealOpenMM polarity;
@@ -932,7 +935,12 @@ protected:
      * @param forces            vector of particle forces to be updated
      * @param torques           vector of particle torques to be updated
      */
-    RealOpenMM calculateElectrostaticPairIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleK,
+    RealOpenMM calculateElectrostaticPairIxn(
+            const std::vector<MultipoleParticleData>& particleData,
+                                                                                    unsigned int iIndex,
+                                                                                    unsigned int kIndex,
+
+            // const MultipoleParticleData& particleI, const MultipoleParticleData& particleK,
                                               const std::vector<RealOpenMM>& scalingFactors, std::vector<OpenMM::RealVec>& forces, std::vector<RealVec>& torque ) const;
 
     /**

@@ -406,35 +406,43 @@ class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaR
         ASSERT_EQUAL_TOL_MOD(0.577197137, particleH2.charge, 1e-5, testName);
         ASSERT_EQUAL_TOL_MOD(-1.15079656, particleM.charge, 1e-5, testName);
 
-//        std::cout << "Charges" << std::endl;
-//            std::cout << "O: " << particleO.charge << std::endl;
-//            std::cout << "H1: " << particleH1.charge << std::endl;
-//            std::cout << "H2: " << particleH2.charge << std::endl;
-//            std::cout << "M: " << particleM.charge << std::endl;
-//        std::cout << "Derivatives" << std::endl;
-//
-//            std::cout << "H1 vs H1: " << particleH1.chargeDerivatives[0] << std::endl;
-//            std::cout << "H1 vs H2: " << particleH1.chargeDerivatives[1] << std::endl;
-//            std::cout << "H1 vs M : " << particleH1.chargeDerivatives[2] << std::endl;
-//
-//            std::cout << "H2 vs H1: " << particleH2.chargeDerivatives[0] << std::endl;
-//            std::cout << "H2 vs H2: " << particleH2.chargeDerivatives[1] << std::endl;
-//            std::cout << "H2 vs M : " << particleH2.chargeDerivatives[2] << std::endl;
-//
-//            std::cout << "M vs H1: " << particleM.chargeDerivatives[0] << std::endl;
-//            std::cout << "M vs H2: " << particleM.chargeDerivatives[1] << std::endl;
-//            std::cout << "M vs M : " << particleM.chargeDerivatives[2] << std::endl;
+        std::cout << "Charges" << std::endl;
+            std::cout << "O: " << particleO.charge << std::endl;
+            std::cout << "H1: " << particleH1.charge << std::endl;
+            std::cout << "H2: " << particleH2.charge << std::endl;
+            std::cout << "M: " << particleM.charge << std::endl;
+        std::cout << "Derivatives" << std::endl;
+
+            std::cout << "H1 vs H1: " << particleH1.chargeDerivatives[0] << std::endl;
+            std::cout << "H1 vs H2: " << particleH1.chargeDerivatives[1] << std::endl;
+            std::cout << "H1 vs M : " << particleH1.chargeDerivatives[2] << std::endl;
+
+            std::cout << "H2 vs H1: " << particleH2.chargeDerivatives[0] << std::endl;
+            std::cout << "H2 vs H2: " << particleH2.chargeDerivatives[1] << std::endl;
+            std::cout << "H2 vs M : " << particleH2.chargeDerivatives[2] << std::endl;
+
+            std::cout << "M vs H1: " << particleM.chargeDerivatives[0] << std::endl;
+            std::cout << "M vs H2: " << particleM.chargeDerivatives[1] << std::endl;
+            std::cout << "M vs M : " << particleM.chargeDerivatives[2] << std::endl;
+            std::cout << "O vs H1: " << particleO.chargeDerivatives[0] << std::endl;
+            std::cout << "O vs H2: " << particleO.chargeDerivatives[1] << std::endl;
+            std::cout << "O vs M : " << particleO.chargeDerivatives[2] << std::endl;
 
         std::vector<Vec3> expectedChargeDerivatives(9);
         expectedChargeDerivatives[0]         = Vec3( -0.224842979, 0.157051233, -0.139425246  );
-        expectedChargeDerivatives[1]         = Vec3(  -0.00533173093, 0.0989902789, -0.187436499 );
-        expectedChargeDerivatives[2]         = Vec3( 0.23017471, -0.256041512, 0.326861745 );
-        expectedChargeDerivatives[3]         = Vec3( -0.118671613, 0.106113269, -0.118471774  );
-        expectedChargeDerivatives[4]         = Vec3(  0.065462366, 0.123151092, -0.285810407 );
-        expectedChargeDerivatives[5]         = Vec3( 0.0532092469, -0.229264361, 0.404282181  );
-        expectedChargeDerivatives[6]         = Vec3(   0.343514592, -0.263164503, 0.25789702  );
-        expectedChargeDerivatives[7]         = Vec3(  -0.060130635, -0.222141371, 0.473246906  );
+        expectedChargeDerivatives[1]         = Vec3( -0.118671613, 0.106113269, -0.118471774 );
+        expectedChargeDerivatives[2]         = Vec3(  0.343514592, -0.263164503, 0.25789702 );
+        expectedChargeDerivatives[3]         = Vec3( -0.00533173093, 0.0989902789, -0.187436499  );
+        expectedChargeDerivatives[4]         = Vec3( 0.065462366, 0.123151092, -0.285810407 );
+        expectedChargeDerivatives[5]         = Vec3( -0.060130635, -0.222141371, 0.473246906  );
+        expectedChargeDerivatives[6]         = Vec3(  0.23017471, -0.256041512, 0.326861745  );
+        expectedChargeDerivatives[7]         = Vec3( 0.0532092469, -0.229264361, 0.404282181  );
         expectedChargeDerivatives[8]         = Vec3( -0.283383957, 0.485305874, -0.731143926  );
+        for (int i=0; i<9; i++) {
+            for (int j=0; j<3; j++) {
+                expectedChargeDerivatives[i][j] *= 10;
+            }
+        }
 
         double tolerance = 1e-6;
         int start_i = 0;
@@ -447,7 +455,7 @@ class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaR
         }
         start_i = 6;
         for (int i=0; i<3; i++) {
-            ASSERT_EQUAL_VEC_MOD(particleM.chargeDerivatives[i], expectedChargeDerivatives[start_i+i], tolerance, testName);
+            ASSERT_EQUAL_VEC_MOD(particleO.chargeDerivatives[i], expectedChargeDerivatives[start_i+i], tolerance, testName);
         }
     }
 };
@@ -615,6 +623,8 @@ static void testWater3VirtualSite( FILE* log ) {
             forces[i][j] /= cal2joule*10;
            }
        }
+    std::cout  << std::endl << "Forces:" << std::endl;
+
     for (int i=0; i<numberOfParticles; i++) {
          std::cout << forces[i] << " Kcal/mol/A " << std::endl;
     }
@@ -671,6 +681,9 @@ static void testWater3VirtualSite( FILE* log ) {
            }
 
        }
+    std::cout  << std::endl << "Finite difference forces:" << std::endl;
+
+
     for (int i=0; i<numberOfParticles; i++) {
          std::cout << finiteDifferenceForces[i] << " Kcal/mol/A " << std::endl;
     }
