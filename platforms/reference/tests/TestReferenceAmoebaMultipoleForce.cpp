@@ -83,20 +83,8 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
 
     std::vector<double> zeroDipole(3);
     std::vector<double> zeroQuadrupole(9);
-
-    zeroDipole[0]     =   0.0000000e+00;
-    zeroDipole[1]     =   0.0000000e+00;
-    zeroDipole[2]     =   0.0000000e+00;
-
-    zeroQuadrupole[0] =   0.0000000e+00;
-    zeroQuadrupole[1] =   0.0000000e+00;
-    zeroQuadrupole[2] =   0.0000000e+00;
-    zeroQuadrupole[3] =   0.0000000e+00;
-    zeroQuadrupole[4] =   0.0000000e+00;
-    zeroQuadrupole[5] =   0.0000000e+00;
-    zeroQuadrupole[6] =   0.0000000e+00;
-    zeroQuadrupole[7] =   0.0000000e+00;
-    zeroQuadrupole[8] =   0.0000000e+00;
+    std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
+    std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 3 ){
         amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, -1,
@@ -527,19 +515,8 @@ static void testWater3VirtualSite( FILE* log ) {
     std::vector<double> zeroDipole(3);
     std::vector<double> zeroQuadrupole(9);
 
-    zeroDipole[0]     =   0.0000000e+00;
-    zeroDipole[1]     =   0.0000000e+00;
-    zeroDipole[2]     =   0.0000000e+00;
-
-    zeroQuadrupole[0] =   0.0000000e+00;
-    zeroQuadrupole[1] =   0.0000000e+00;
-    zeroQuadrupole[2] =   0.0000000e+00;
-    zeroQuadrupole[3] =   0.0000000e+00;
-    zeroQuadrupole[4] =   0.0000000e+00;
-    zeroQuadrupole[5] =   0.0000000e+00;
-    zeroQuadrupole[6] =   0.0000000e+00;
-    zeroQuadrupole[7] =   0.0000000e+00;
-    zeroQuadrupole[8] =   0.0000000e+00;
+    std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
+    std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
         amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
