@@ -2064,8 +2064,8 @@ void MBPolReferencePmeElectrostaticsForce::getPmeScale( RealVec& scale ) const
 void MBPolReferencePmeElectrostaticsForce::getDampedInverseDistances( const ElectrostaticsParticleData& particleI,
                                                                   const ElectrostaticsParticleData& particleJ,
                                                                   RealOpenMM dscale, RealOpenMM pscale, RealOpenMM r,
-                                                                  RealVec& dampedDInverseDistances, 
-                                                                  RealVec& dampedPInverseDistances ) const 
+                                                                  std::vector<RealOpenMM>& dampedDInverseDistances,
+                                                                  std::vector<RealOpenMM>& dampedPInverseDistances ) const
 {
 
     RealVec scaleFactor    = RealVec( 1.0, 1.0, 1.0, 1.0 );
@@ -2095,16 +2095,18 @@ void MBPolReferencePmeElectrostaticsForce::getDampedInverseDistances( const Elec
     RealOpenMM r5              = r3*r2;
     RealOpenMM r7              = r5*r2;
 
-    dampedDInverseDistances[0] =      (1.0-dampedDScale[0])/r3;
-    dampedDInverseDistances[1] =  3.0*(1.0-dampedDScale[1])/r5;
-    dampedDInverseDistances[2] = 15.0*(1.0-dampedDScale[2])/r7;
+    dampedDInverseDistances[0] =      (1.0-dampedDScale[0])/r;
+    dampedDInverseDistances[1] =      (1.0-dampedDScale[1])/r3;
+    dampedDInverseDistances[2] =  3.0*(1.0-dampedDScale[2])/r5;
+    dampedDInverseDistances[3] = 15.0*(1.0-dampedDScale[3])/r7;
     if( pscale == dscale ){
         dampedPInverseDistances = dampedDInverseDistances;
     } else {
         RealVec dampedPScale       = scaleFactor*pscale;
-        dampedPInverseDistances[0] =      (1.0-dampedPScale[0])/r3; 
-        dampedPInverseDistances[1] =  3.0*(1.0-dampedPScale[1])/r5;
-        dampedPInverseDistances[2] = 15.0*(1.0-dampedPScale[2])/r7;
+        dampedPInverseDistances[0] =      (1.0-dampedPScale[0])/r;
+        dampedPInverseDistances[1] =      (1.0-dampedPScale[1])/r3;
+        dampedPInverseDistances[2] =  3.0*(1.0-dampedPScale[2])/r5;
+        dampedPInverseDistances[3] = 15.0*(1.0-dampedPScale[3])/r7;
     }
 
     return;
@@ -2249,8 +2251,9 @@ void MBPolReferencePmeElectrostaticsForce::calculateFixedElectrostaticsFieldPair
 
     // compute the error function scaled and unscaled terms
 
-    RealVec dampedDInverseDistances;
-    RealVec dampedPInverseDistances;
+    std::vector<RealOpenMM> dampedDInverseDistances(4);
+    std::vector<RealOpenMM> dampedPInverseDistances(4);
+
     getDampedInverseDistances( particleI, particleJ, dscale, pscale, r, dampedDInverseDistances, dampedPInverseDistances);
 
     RealOpenMM drr3        = dampedDInverseDistances[0];
