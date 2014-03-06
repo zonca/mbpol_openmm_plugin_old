@@ -2068,12 +2068,11 @@ void MBPolReferencePmeElectrostaticsForce::getDampedInverseDistances( const Elec
                                                                   RealVec& dampedPInverseDistances ) const 
 {
 
-    RealVec scaleFactor    = RealVec( 1.0, 1.0, 1.0 );
+    RealVec scaleFactor    = RealVec( 1.0, 1.0, 1.0, 1.0 );
     RealOpenMM damp        = particleI.dampingFactor*particleJ.dampingFactor;
     if( damp != 0.0 ){
 
-        RealOpenMM ratio   = (r/damp);
-                   ratio   = ratio*ratio*ratio;
+        RealOpenMM ratio   = pow(r/damp, 4);
 
         // TODO implement variable thole in PME
         RealOpenMM pgamma  = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
@@ -2081,9 +2080,12 @@ void MBPolReferencePmeElectrostaticsForce::getDampedInverseDistances( const Elec
 
         if( damp > -50.0) {
             RealOpenMM expdamp = EXP(damp);
-            scaleFactor[0]     = 1.0 - expdamp;
-            scaleFactor[1]     = 1.0 - expdamp*(1.0-damp);
-            scaleFactor[2]     = 1.0 - expdamp*(1.0-damp+(0.6f*damp*damp));
+            scaleFactor[0]     = 1.0 - expdamp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -damp);;
+            scaleFactor[1]     = 1.0 - expdamp;
+            scaleFactor[2]     = (1.0 - expdamp)- (4./3.) * pgamma * expdamp * ratio;
+            scaleFactor[3]     = ((1.0 - expdamp) - (4./3.) * pgamma * expdamp * ratio) - // rrI[2]'s factor
+                    (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * expdamp / pow(damp, 4) * pow(r, 4);
+;
         }   
     }   
     RealVec dampedDScale       = scaleFactor*dscale;
