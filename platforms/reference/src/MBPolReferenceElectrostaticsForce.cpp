@@ -3581,6 +3581,7 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
 
     RealOpenMM usc3 = 1.0 - scale3*scalingFactors[U_SCALE];
     RealOpenMM usc5 = 1.0 - scale5*scalingFactors[U_SCALE];
+    RealOpenMM usc7 = 1.0 - scale7*scalingFactors[U_SCALE];
 
     // construct necessary auxiliary vectors
 
@@ -3842,12 +3843,12 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM gfi4 = 2.0 * bn2;
     RealOpenMM gfi5 = bn3 * (sci4+scip4);
     RealOpenMM gfi6 = -bn3 * (sci3+scip3);
-    RealOpenMM gfri1 = 0.5*(rr5*((gli1+gli6)*psc3
-                         + (glip1+glip6)*dsc3
-                         + scip2*usc3)
-              + rr7*((gli7+gli2)*psc5
-                         + (glip7+glip2)*dsc5
-                  - (sci3*scip4+scip3*sci4)*usc5)
+    RealOpenMM gfri1 = 0.5*(rr5*((gli1+gli6)*psc5
+                         + (glip1+glip6)*dsc5
+                         + scip2*usc5)
+              + rr7*((gli7+gli2)*psc7
+                         + (glip7+glip2)*dsc7
+                  - (sci3*scip4+scip3*sci4)*usc7)
               + rr9*(gli3*psc7+glip3*dsc7));
     RealOpenMM gfri4 = 2.0 * rr5;
     RealOpenMM gfri5 = rr7 * (sci4*psc7+scip4*dsc7);
