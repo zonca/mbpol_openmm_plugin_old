@@ -3791,13 +3791,12 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     // Same water atoms have no charge/charge interaction and no induced-dipole/charge interaction
     if( isSameWater ) {
         gl0 = 0.;
-        gli[0] = 0.;
-        glip[0] = 0.;
+        gli1 = 0.;
+        glip1 = 0.;
 
     }
     // compute the energy contributions for this interaction
 
-    RealOpenMM energy = scale1*rr1*gl0
     RealOpenMM e             = bn0*gl0 + bn1*(gl1+gl6) + bn2*(gl2+gl7+gl8) + bn3*(gl3+gl5) + bn4*gl4;
     RealOpenMM ei            = 0.5 * (bn1*(gli1+gli6) + bn2*(gli2+gli7) + bn3*gli3); 
 
