@@ -3519,6 +3519,7 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM rr9    = 7.0*rr7/r2;
     RealOpenMM rr11   = 9.0*rr9/r2;
 
+    RealOpenMM scale1 = 1.0;
     RealOpenMM scale3 = 1.0;
     RealOpenMM scale5 = 1.0;
     RealOpenMM scale7 = 1.0;
@@ -3535,7 +3536,11 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM ddsc72 = 0.0;
     RealOpenMM ddsc73 = 0.0;
 
-    RealOpenMM damp   = particleI.dampingFactor*particleJ.dampingFactor;
+    RealOpenMM damp;
+    std::vector<RealOpenMM> scalingFactors(4);
+
+    getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor, particleI.thole, particleJ.thole, r, true, damp, scalingFactors );
+
     if( damp != 0.0 ){
         // TODO variable thole in PME
         RealOpenMM pgamma = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
@@ -3543,9 +3548,10 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
             damp     = -pgamma*ratio*ratio*ratio;
         if( damp > -50.0 ){
             RealOpenMM expdamp  = EXP(damp);
-            scale3         = 1.0 - expdamp;
-               scale5      = 1.0 - (1.0-damp)*expdamp;
-               scale7      = 1.0 - (1.0-damp+0.6*damp*damp)*expdamp;
+            scale1         = scalingFactors[0];
+            scale3         = scalingFactors[1];
+            scale5         = scalingFactors[2];
+            scale7         = scalingFactors[3];
             RealOpenMM temp3    = -3.0 * damp * expdamp / r2;
             RealOpenMM temp5    = -damp;
             RealOpenMM temp7    = -0.2 - 0.6*damp;
@@ -3568,6 +3574,7 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM dsc5 = 1.0 - scale5*scalingFactors[D_SCALE];
     RealOpenMM dsc7 = 1.0 - scale7*scalingFactors[D_SCALE];
 
+    RealOpenMM psc1 = 1.0 - scale1*scalingFactors[P_SCALE];
     RealOpenMM psc3 = 1.0 - scale3*scalingFactors[P_SCALE];
     RealOpenMM psc5 = 1.0 - scale5*scalingFactors[P_SCALE];
     RealOpenMM psc7 = 1.0 - scale7*scalingFactors[P_SCALE];
@@ -3777,12 +3784,26 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
 
     // compute the energy contributions for this interaction
 
+
+    bool isSameWater = (particleI.multipoleAtomZs == particleJ.particleIndex) or
+            (particleI.multipoleAtomYs == particleJ.particleIndex) or
+            (particleI.multipoleAtomXs == particleJ.particleIndex);
+    // Same water atoms have no charge/charge interaction and no induced-dipole/charge interaction
+    if( isSameWater ) {
+        gl0 = 0.;
+        gli[0] = 0.;
+        glip[0] = 0.;
+
+    }
+    // compute the energy contributions for this interaction
+
+    RealOpenMM energy = scale1*rr1*gl0
     RealOpenMM e             = bn0*gl0 + bn1*(gl1+gl6) + bn2*(gl2+gl7+gl8) + bn3*(gl3+gl5) + bn4*gl4;
     RealOpenMM ei            = 0.5 * (bn1*(gli1+gli6) + bn2*(gli2+gli7) + bn3*gli3); 
 
     // get the real energy without any screening function
 
-    RealOpenMM erl           = rr1*gl0 + rr3*(gl1+gl6) + rr5*(gl2+gl7+gl8) + rr7*(gl3+gl5) + rr9*gl4;
+    RealOpenMM erl           = rr1*gl0*psc1 + rr3*(gl1+gl6)*psc3 + rr5*(gl2+gl7+gl8)*psc5 + rr7*(gl3+gl5)*psc7 + rr9*gl4;
     RealOpenMM erli          = 0.5*(rr3*(gli1+gli6)*psc3 + rr5*(gli2+gli7)*psc5 + rr7*gli3*psc7);
     e                   = e - (1.0-scalingFactors[M_SCALE])*erl;
     ei                  = ei - erli;
