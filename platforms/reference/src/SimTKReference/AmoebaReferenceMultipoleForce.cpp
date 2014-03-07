@@ -3911,10 +3911,10 @@ RealOpenMM AmoebaReferencePmeMultipoleForce::calculatePmeDirectElectrostaticPair
     // get the induced force without screening
 
     RealOpenMM ftm2ri1 = gfri1*xr + 0.5*
-        (- rr3*ck*(_inducedDipole[iIndex][0]*psc3+_inducedDipolePolar[iIndex][0]*dsc3)
+        (
          + rr5*sc4*(_inducedDipole[iIndex][0]*psc5+_inducedDipolePolar[iIndex][0]*dsc5)
          - rr7*sc6*(_inducedDipole[iIndex][0]*psc7+_inducedDipolePolar[iIndex][0]*dsc7))
-         + (rr3*ci*(_inducedDipole[jIndex][0]*psc3+_inducedDipolePolar[jIndex][0]*dsc3)
+         + (
          + rr5*sc3*(_inducedDipole[jIndex][0]*psc5+_inducedDipolePolar[jIndex][0]*dsc5)
          + rr7*sc5*(_inducedDipole[jIndex][0]*psc7+_inducedDipolePolar[jIndex][0]*dsc7))*0.5
          + rr5*usc5*(sci4*_inducedDipolePolar[iIndex][0]+scip4*_inducedDipole[iIndex][0]
@@ -3925,11 +3925,20 @@ RealOpenMM AmoebaReferencePmeMultipoleForce::calculatePmeDirectElectrostaticPair
          + (qkuip1-qiukp1)*dsc5)
          + gfri5*qir1 + gfri6*qkr1;
 
+    // Same water atoms have no induced-dipole/charge interaction
+    if (not( isSameWater )) {
+
+        ftm2ri1 += (
+                - rr3*ck*(_inducedDipole[iIndex][0]*psc3+_inducedDipolePolar[iIndex][0]*dsc3) +
+                rr3*ci*(_inducedDipole[jIndex][0]*psc3+_inducedDipolePolar[jIndex][0]*dsc3)
+            )*0.5;
+    }
+
     RealOpenMM ftm2ri2 = gfri1*yr + 0.5*
-        (- rr3*ck*(_inducedDipole[iIndex][1]*psc3+_inducedDipolePolar[iIndex][1]*dsc3)
+        (
          + rr5*sc4*(_inducedDipole[iIndex][1]*psc5+_inducedDipolePolar[iIndex][1]*dsc5)
          - rr7*sc6*(_inducedDipole[iIndex][1]*psc7+_inducedDipolePolar[iIndex][1]*dsc7))
-         + (rr3*ci*(_inducedDipole[jIndex][1]*psc3+_inducedDipolePolar[jIndex][1]*dsc3)
+         + (
          + rr5*sc3*(_inducedDipole[jIndex][1]*psc5+_inducedDipolePolar[jIndex][1]*dsc5)
          + rr7*sc5*(_inducedDipole[jIndex][1]*psc7+_inducedDipolePolar[jIndex][1]*dsc7))*0.5
          + rr5*usc5*(sci4*_inducedDipolePolar[iIndex][1]+scip4*_inducedDipole[iIndex][1]
@@ -3940,11 +3949,21 @@ RealOpenMM AmoebaReferencePmeMultipoleForce::calculatePmeDirectElectrostaticPair
          + (qkuip2-qiukp2)*dsc5)
          + gfri5*qir2 + gfri6*qkr2;
 
+
+    // Same water atoms have no induced-dipole/charge interaction
+    if (not( isSameWater )) {
+
+        ftm2ri2 += (
+                - rr3*ck*(_inducedDipole[iIndex][1]*psc3+_inducedDipolePolar[iIndex][1]*dsc3) +
+                rr3*ci*(_inducedDipole[jIndex][1]*psc3+_inducedDipolePolar[jIndex][1]*dsc3)
+            )*0.5;
+    }
+
     RealOpenMM ftm2ri3 = gfri1*zr + 0.5*
-        (- rr3*ck*(_inducedDipole[iIndex][2]*psc3+_inducedDipolePolar[iIndex][2]*dsc3)
+        (
          + rr5*sc4*(_inducedDipole[iIndex][2]*psc5+_inducedDipolePolar[iIndex][2]*dsc5)
          - rr7*sc6*(_inducedDipole[iIndex][2]*psc7+_inducedDipolePolar[iIndex][2]*dsc7))
-         + (rr3*ci*(_inducedDipole[jIndex][2]*psc3+_inducedDipolePolar[jIndex][2]*dsc3)
+         + (
          + rr5*sc3*(_inducedDipole[jIndex][2]*psc5+_inducedDipolePolar[jIndex][2]*dsc5)
          + rr7*sc5*(_inducedDipole[jIndex][2]*psc7+_inducedDipolePolar[jIndex][2]*dsc7))*0.5
          + rr5*usc5*(sci4*_inducedDipolePolar[iIndex][2]+scip4*_inducedDipole[iIndex][2]
@@ -3954,6 +3973,17 @@ RealOpenMM AmoebaReferencePmeMultipoleForce::calculatePmeDirectElectrostaticPair
          + 0.5*gfri4*((qkui3-qiuk3)*psc5
          + (qkuip3-qiukp3)*dsc5)
          + gfri5*qir3 + gfri6*qkr3;
+
+
+    // Same water atoms have no induced-dipole/charge interaction
+    if (not( isSameWater )) {
+
+        ftm2ri3 += (
+                - rr3*ck*(_inducedDipole[iIndex][2]*psc3+_inducedDipolePolar[iIndex][2]*dsc3)    +
+                rr3*ci*(_inducedDipole[jIndex][2]*psc3+_inducedDipolePolar[jIndex][2]*dsc3)
+            )*0.5;
+    }
+
 
     // account for partially excluded induced interactions
 
