@@ -2256,13 +2256,15 @@ void AmoebaReferencePmeMultipoleForce::calculateFixedMultipoleFieldPairIxn( cons
 
     getDampedInverseDistances( particleI, particleJ, dscale, pscale, r, dampedDInverseDistances, dampedPInverseDistances);
 
-    RealOpenMM drr3        = dampedDInverseDistances[0];
-    RealOpenMM drr5        = dampedDInverseDistances[1];
-    RealOpenMM drr7        = dampedDInverseDistances[2];
+    RealOpenMM drr1        = dampedDInverseDistances[0];
+    RealOpenMM drr3        = dampedDInverseDistances[1];
+    RealOpenMM drr5        = dampedDInverseDistances[2];
+    RealOpenMM drr7        = dampedDInverseDistances[3];
 
-    RealOpenMM prr3        = dampedPInverseDistances[0];
-    RealOpenMM prr5        = dampedPInverseDistances[1];
-    RealOpenMM prr7        = dampedPInverseDistances[2];
+    RealOpenMM prr1        = dampedPInverseDistances[0];
+    RealOpenMM prr3        = dampedPInverseDistances[1];
+    RealOpenMM prr5        = dampedPInverseDistances[2];
+    RealOpenMM prr7        = dampedPInverseDistances[3];
 
     RealOpenMM dir         = particleI.dipole.dot( deltaR );
 
@@ -3350,13 +3352,13 @@ void AmoebaReferencePmeMultipoleForce::calculateDirectInducedDipolePairIxns( con
 
     // compute the error function scaled and unscaled terms
 
+    // TODO check if we can use get and scale
     RealOpenMM scale3      = 1.0;
     RealOpenMM scale5      = 1.0;
     RealOpenMM damp        = particleI.dampingFactor*particleJ.dampingFactor;
     if( damp != 0.0 ){
 
-        RealOpenMM ratio  = (r/damp);
-              ratio       = ratio*ratio*ratio;
+        RealOpenMM ratio  = pow(r/damp, 4);
         RealOpenMM pgamma = particleI.thole < particleJ.thole ? particleI.thole : particleJ.thole;
               damp        = -pgamma*ratio;
 
@@ -4009,10 +4011,11 @@ RealOpenMM AmoebaReferencePmeMultipoleForce::calculatePmeDirectElectrostaticPair
     RealOpenMM findmp3 = temp3*ddsc33 + temp5*ddsc53;
 
     // modify the forces for partially excluded interactions
+    // FIXME check how to disable this in the xml
 
-    ftm2i1       -= (fridmp1 + findmp1);
-    ftm2i2       -= (fridmp2 + findmp2);
-    ftm2i3       -= (fridmp3 + findmp3);
+//    ftm2i1       -= (fridmp1 + findmp1);
+//    ftm2i2       -= (fridmp2 + findmp2);
+//    ftm2i3       -= (fridmp3 + findmp3);
 
     // correction to convert mutual to direct polarization force
 
