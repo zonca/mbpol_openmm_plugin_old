@@ -1150,7 +1150,6 @@ RealOpenMM MBPolReferenceElectrostaticsForce::calculateElectrostaticPairIxn( con
     RealOpenMM scale7DD = getAndScaleInverseRs( particleI, particleK, r, true, 7, TDD);
 
     // intermediate variables for the permanent components
-
     gf[0] = rr3*gl[0]*scale3CC + // charge -charge
             rr5*gl[1]*scale5CD+       // charge - dipole
             rr5*gl[6]*scale5DD ;      // dipole - dipole
