@@ -1159,7 +1159,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
     energy           *= f;
 
     // intermediate variables for the permanent components
-
+    // TODO check why there is no scaling factors in gf[0] (check with finite differences)
     gf[0] = rr3*gl[0] + rr5*(gl[1]+gl[6]) + rr7*(gl[2]+gl[7]+gl[8]) + rr9*(gl[3]+gl[5]) + rr11*gl[4];
     gf[1] = -particleK.charge*rr3 + sc[3]*rr5 - sc[5]*rr7;
     gf[2] =  particleI.charge*rr3 + sc[2]*rr5 + sc[4]*rr7;
