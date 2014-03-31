@@ -548,7 +548,7 @@ protected:
 
     enum QuadrupoleIndices { QXX, QXY, QXZ, QYY, QYZ, QZZ };
 
-    enum TholeIndices { TCC, TCD, TDDI, TDDOH, TDDHH };
+    enum TholeIndices { TCC, TCD, TDD, TDDOH, TDDHH };
 
     /* 
      * Particle parameters and coordinates

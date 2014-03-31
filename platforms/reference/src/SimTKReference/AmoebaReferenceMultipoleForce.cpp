@@ -356,7 +356,7 @@ void AmoebaReferenceMultipoleForce::loadParticleData( const std::vector<RealVec>
 
         particleData[ii].thole[TCC]           = tholes[5*ii+0];
         particleData[ii].thole[TCD]           = tholes[5*ii+1];
-        particleData[ii].thole[TDDI]          = tholes[5*ii+2];
+        particleData[ii].thole[TDD]          = tholes[5*ii+2];
         particleData[ii].thole[TDDOH]         = tholes[5*ii+3];
         particleData[ii].thole[TDDHH]         = tholes[5*ii+4];
         particleData[ii].dampingFactor        = dampingFactors[ii];
