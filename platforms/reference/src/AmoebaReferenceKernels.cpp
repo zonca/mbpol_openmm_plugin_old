@@ -496,7 +496,7 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
     charges.resize(numMultipoles);
     dipoles.resize(3*numMultipoles);
     quadrupoles.resize(9*numMultipoles);
-    tholes.resize(numMultipoles);
+    tholes.resize(5*numMultipoles);
     dampingFactors.resize(numMultipoles);
     polarity.resize(numMultipoles);
     axisTypes.resize(numMultipoles);
