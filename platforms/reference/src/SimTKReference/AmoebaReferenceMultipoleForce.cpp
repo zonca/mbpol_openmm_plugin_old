@@ -2095,7 +2095,8 @@ void AmoebaReferencePmeMultipoleForce::getDampedInverseDistances( const Multipol
         RealOpenMM ratio   = (r/damp);
                    ratio   = ratio*ratio*ratio;
 
-        RealOpenMM pgamma  = particleI.thole < particleJ.thole ? particleI.thole : particleJ.thole;
+        // TODO implement variable thole in PME
+        RealOpenMM pgamma  = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
                    damp    = -pgamma*ratio;
 
         if( damp > -50.0) {
@@ -3362,7 +3363,8 @@ void AmoebaReferencePmeMultipoleForce::calculateDirectInducedDipolePairIxns( con
 
         RealOpenMM ratio  = (r/damp);
               ratio       = ratio*ratio*ratio;
-        RealOpenMM pgamma = particleI.thole < particleJ.thole ? particleI.thole : particleJ.thole;
+        // TODO implement variable thole in PME
+        RealOpenMM pgamma = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
               damp        = -pgamma*ratio;
 
         if( damp > -50.0) {
@@ -3541,7 +3543,8 @@ RealOpenMM AmoebaReferencePmeMultipoleForce::calculatePmeDirectElectrostaticPair
 
     RealOpenMM damp   = particleI.dampingFactor*particleJ.dampingFactor;
     if( damp != 0.0 ){
-        RealOpenMM pgamma = particleI.thole < particleJ.thole ? particleI.thole : particleJ.thole;
+        // TODO variable thole in PME
+        RealOpenMM pgamma = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
         RealOpenMM ratio  = r/damp;
             damp     = -pgamma*ratio*ratio*ratio;
         if( damp > -50.0 ){
