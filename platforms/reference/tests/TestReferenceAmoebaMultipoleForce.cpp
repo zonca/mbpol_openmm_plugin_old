@@ -286,7 +286,9 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
 
     	for (int i=0; i<numberOfParticles; i++){
         	charges.push_back(-5.1966000e-01);
-        	tholes.push_back(0.4);
+            for (int j=0; j<5; j++){
+                tholes.push_back(0.4);
+            }
         	dampingFactors.push_back(0.001310);
         	polarity.push_back(0.001310);
         	for (int j=0; j<3; j++){

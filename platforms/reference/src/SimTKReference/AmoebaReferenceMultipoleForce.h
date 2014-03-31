@@ -548,7 +548,7 @@ protected:
 
     enum QuadrupoleIndices { QXX, QXY, QXZ, QYY, QYZ, QZZ };
 
-
+    enum TholeIndices { TCC, TCD, TDDI, TDDOH, TDDHH };
 
     /* 
      * Particle parameters and coordinates
@@ -562,7 +562,7 @@ protected:
             RealOpenMM quadrupole[6];
             RealVec chargeDerivatives[3];
             unsigned int otherSiteIndex[3];
-            RealOpenMM thole;
+            RealOpenMM thole[5];
             RealOpenMM dampingFactor;
             RealOpenMM polarity;
             int multipoleAtomZs;
