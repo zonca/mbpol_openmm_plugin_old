@@ -212,9 +212,19 @@ class WrappedAmoebaReferenceMultipoleForce : public AmoebaReferenceMultipoleForc
     void wrapGetAndScaleInverseRs(
             RealOpenMM dampI, RealOpenMM dampJ,
             RealOpenMM tholeI, RealOpenMM tholeJ,
-            RealOpenMM r, bool justScale, RealOpenMM & damp, std::vector<RealOpenMM>& rrI
+            RealOpenMM r, bool justScale, RealOpenMM & damp, MapIntRealOpenMM& rrI
             )   { 
-                    getAndScaleInverseRs(dampI, dampJ, tholeI, tholeJ, r, justScale, damp, rrI);
+
+                    std::vector<MultipoleParticleData> particleData;
+                    particleData.resize(2);
+                    particleData[0].dampingFactor = dampI;
+                    particleData[1].dampingFactor = dampJ;
+                    for (int i=0; i<5; i++) {
+                        particleData[0].thole[i] = tholeI;
+                        particleData[1].thole[i] = tholeJ;
+                    }
+
+                    rrI = getAndScaleInverseRs(particleData[0], particleData[1], r, justScale);
                 }
 };
 
@@ -227,18 +237,19 @@ static void testGetAndScaleInverseRs( FILE* log ) {
     //RealOpenMM dampH=0.28135;
     RealOpenMM dampO=0.001310;
     RealOpenMM dampH=0.000294;
-    std::vector<RealOpenMM> rrI(4);
+    MapIntRealOpenMM rrI;
     RealOpenMM r=9.860634018e-02; // from Water3 test
     RealOpenMM thole=0.400;
+
 
     WrappedAmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForce();;
     amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampH,
                           thole, thole, r, false, damp, rrI);
 
     //ASSERT_EQUAL_TOL_MOD(0., rrI[0], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(5.324612470e+02, rrI[1], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(5.324612470e+02, rrI[3], 1e-5, testName);
     // mbpol multiplies by constant factor (3) later, AMOEBA in this function
-    ASSERT_EQUAL_TOL_MOD(4.747626558e+03*3., rrI[2], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(4.747626558e+03*3., rrI[5], 1e-5, testName);
     //ASSERT_EQUAL_TOL_MOD(             0., rrI[3], 1e-5, testName);
 
 }
@@ -249,7 +260,7 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
 
     RealOpenMM damp=0.;
     RealOpenMM dampO=0.001310;
-    std::vector<RealOpenMM> rrI(4);
+    MapIntRealOpenMM rrI;
     RealOpenMM r=2.771936396e+00*1e-1; // from Water3 test
     RealOpenMM thole=0.400;
 
@@ -257,9 +268,9 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
     amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampO,
                           thole, thole, r, false, damp, rrI);
 
-    ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[0], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(4.695157736e-02*1e3, rrI[1], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(6.110587933e-03*1e5*3., rrI[2], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[1], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(4.695157736e-02*1e3, rrI[3], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(6.110587933e-03*1e5*3., rrI[5], 1e-5, testName);
 
 }
 
