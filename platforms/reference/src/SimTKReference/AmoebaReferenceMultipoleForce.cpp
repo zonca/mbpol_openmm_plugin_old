@@ -657,16 +657,14 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
 
     RealVec deltaR    = particleJ.position - particleI.position;
     RealOpenMM r      = SQRT( deltaR.dot( deltaR ) );
-    std::vector<RealOpenMM> rrI(4);
-    RealOpenMM damp=0.;
  
     // get scaling factors, if needed
   
-    getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor, particleI.thole, particleJ.thole, r, false, damp, rrI );
+    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false);
 
-    RealOpenMM rr3    = rrI[1];
-    RealOpenMM rr5    = rrI[2];
-    RealOpenMM rr7    = rrI[3];
+    RealOpenMM rr3    = rrI[3];
+    RealOpenMM rr5    = rrI[5];
+    RealOpenMM rr7    = rrI[7];
     RealOpenMM rr5_2  = 2.0*rr5;
 
     // field at particle I due multipoles at particle J
@@ -772,17 +770,11 @@ void AmoebaReferenceMultipoleForce::calculateInducedDipolePairIxns( const Multip
 
     RealVec deltaR       = particleJ.position - particleI.position;
     RealOpenMM r         =  SQRT( deltaR.dot( deltaR ) );
-    std::vector<RealOpenMM> rrI(4);
-    RealOpenMM damp;
   
-    getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor,
-                          particleI.thole, particleJ.thole, r, false, damp, rrI );
- 
-    RealOpenMM rr3       = -rrI[1];
-    RealOpenMM rr5       =  rrI[2];
+    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false);
  
     for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
-        calculateInducedDipolePairIxn( particleI.particleIndex, particleJ.particleIndex, rr3, rr5, deltaR,
+        calculateInducedDipolePairIxn( particleI.particleIndex, particleJ.particleIndex, -rrI[3], rrI[5], deltaR,
                                        *(updateInducedDipoleFields[ii].inducedDipoles), updateInducedDipoleFields[ii].inducedDipoleField );
     }
     return;
@@ -943,7 +935,6 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
     // set scale factors for permanent multipole and induced terms
 
     RealOpenMM pdi      = particleI.dampingFactor;
-    RealOpenMM pti      = particleI.thole;
 
     // apply Thole polarization damping to scale factors
 
@@ -986,16 +977,15 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
     //}
 
     RealOpenMM damp=0.;
-    std::vector<RealOpenMM> rrI(4);
-    getAndScaleInverseRs( particleI.dampingFactor, particleK.dampingFactor,
-                          particleI.thole, particleK.thole, r, true, damp, rrI );
+    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleK, r, true);
+
     RealOpenMM expdamp = EXP(damp);
     if( damp != 0.0 ){
         if( damp > -50.0){
-            scale1 = rrI[0];
-            scale3 = rrI[1];
-            scale5 = rrI[2];
-            scale7 = rrI[3];
+            scale1 = rrI[1];
+            scale3 = rrI[3];
+            scale5 = rrI[5];
+            scale7 = rrI[7];
             temp3 = -3.0 * damp * expdamp / r2;
             temp5 = -damp;
             temp7 = -0.2 - 0.6*damp;
@@ -1286,23 +1276,23 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
             deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
             distanceK = SQRT(deltaK.dot(deltaK));
 
-            getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]].dampingFactor, particleK.dampingFactor,
-                    particleData[particleI.otherSiteIndex[s]].thole, particleK.thole, distanceI, true, damp, rrI );
+            rrI = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK,
+                     distanceI, true );
 
             if( damp != 0.0 ){
                 if( damp > -50.0){
-                    scale1I = rrI[0];
-                    scale3I = rrI[1];
+                    scale1I = rrI[1];
+                    scale3I = rrI[3];
                 }
             }
 
-            getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]].dampingFactor, particleI.dampingFactor,
-                    particleData[particleK.otherSiteIndex[s]].thole, particleI.thole, distanceK, true, damp, rrI );
+            rrI = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI,
+                                 distanceI, true );
 
             if( damp != 0.0 ){
                 if( damp > -50.0){
-                    scale1K = rrI[0];
-                    scale3K = rrI[1];
+                    scale1K = rrI[1];
+                    scale3K = rrI[3];
                 }
             }
 
