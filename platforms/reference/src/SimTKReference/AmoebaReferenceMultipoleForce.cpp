@@ -561,10 +561,14 @@ void AmoebaReferenceMultipoleForce::applyRotationMatrix( std::vector<MultipolePa
     return;
 }
 
-void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, RealOpenMM dampJ,
-                                                          RealOpenMM tholeI, RealOpenMM tholeJ,
-                                                          RealOpenMM r, bool justScale, RealOpenMM & damp, std::vector<RealOpenMM>& rrI ) const 
+MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const MultipoleParticleData& particleI,
+                                                                    const MultipoleParticleData& particleK,
+                                                          RealOpenMM r, bool justScale) const
 {
+
+    bool isSameWater = (particleI.multipoleAtomZs == particleK.particleIndex) or
+                (particleI.multipoleAtomYs == particleK.particleIndex) or
+                (particleI.multipoleAtomXs == particleK.particleIndex);
 
     // MB-Pol has additional charge-charge term, and doesn't have quadrupole terms so:
     // rrI[0] = charge-charge (ts0 in mbpol)
@@ -574,44 +578,65 @@ void AmoebaReferenceMultipoleForce::getAndScaleInverseRs( RealOpenMM dampI, Real
     RealOpenMM rI             =  1.0/r;
     RealOpenMM r2I            =  rI*rI;
 
+    MapIntRealOpenMM rrI;
     if (justScale) {
-        for( unsigned int ii  = 0; ii < rrI.size(); ii++ ){ 
-           rrI[ii]         = 1.;
-        }
+        rrI[1]         = 1.;
+        rrI[3]         = 1.;
+        rrI[5]         = 1.;
+        rrI[7]         = 1.;
     } else {
-        rrI[0]                    = rI;
-        rrI[1]                    = rI*r2I;
+        rrI[1]                    = rI;
+        rrI[3]                    = rI*r2I;
         RealOpenMM constantFactor = 3.0;
-        for( unsigned int ii  = 2; ii < rrI.size(); ii++ ){ 
-           rrI[ii]         = constantFactor*rrI[ii-1]*r2I;
+        for( unsigned int ii  = 5; ii <= 7; ii=ii+2 ){
+           rrI[ii]         = constantFactor*rrI[ii-2]*r2I;
            constantFactor += 2.0;
         }
     }
         
-    damp      = pow(dampI*dampJ, 1/6.); // AA in MBPol
+    RealOpenMM damp      = pow(particleI.dampingFactor*particleK.dampingFactor, 1/6.); // AA in MBPol
+    RealOpenMM pgamma, dampForExp;
     if( damp != 0.0 ){
-        RealOpenMM pgamma      = tholeI < tholeJ ? tholeI : tholeJ; // a in MBPol
         RealOpenMM ratio       = pow(r/damp, 4); // rA4 in MBPol
-        RealOpenMM dampForExp  = -pgamma*ratio;
 
         if( damp > -50.0 ){ 
-            RealOpenMM dampExp   = EXP( dampForExp ); // exp1 in MBPol
 
-            rrI[0]              *= 1.0 - dampExp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -dampForExp);
- ;
-            rrI[1]              *= ( 1.0 - dampExp );
-            if( rrI.size() > 2 ){
-                rrI[2]          *= (1.0 - dampExp) - (4./3.) * pgamma * dampExp * ratio;
+            pgamma = min(particleI.thole[TCC], particleK.thole[TCC]);
+            dampForExp = -1 * pgamma * ratio;
+            rrI[1]              *= 1.0 - EXP(dampForExp) + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -dampForExp);
+            dampForExp = -1 * min(particleI.thole[TCD], particleK.thole[TCD]) * ratio;
+            rrI[3]              *= ( 1.0 - EXP(dampForExp) );
+
+
+            if (isSameWater) {
+                // FIXME improve identification of oxygen, now relies only on particles order
+                bool oneIsOxygen = ((particleI.multipoleAtomZs >= particleI.particleIndex) and
+                                    (particleI.multipoleAtomYs >= particleI.particleIndex) and
+                                    (particleI.multipoleAtomXs >= particleI.particleIndex)) or
+                                    ((particleI.multipoleAtomZs >= particleK.particleIndex) and
+                                     (particleI.multipoleAtomYs >= particleK.particleIndex) and
+                                     (particleI.multipoleAtomXs >= particleK.particleIndex));
+                if (oneIsOxygen) {
+                    pgamma = min(particleI.thole[TDDOH],particleK.thole[TDDOH]);
+                    dampForExp = -1 * pgamma * ratio;
+                } else {
+                    pgamma = min(particleI.thole[TDDHH],particleK.thole[TDDHH]);
+                    dampForExp = -1 * pgamma * ratio;
+                }
+            } else {
+                pgamma = min(particleI.thole[TDD],particleK.thole[TDD]);
+                dampForExp = -1 * pgamma * ratio;
             }
+            rrI[5]          *= (1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio;
 
-            if( rrI.size() > 3 ){
-                rrI[3]          *= ((1.0 - dampExp) - (4./3.) * pgamma * dampExp * ratio) - // rrI[2]'s factor
-                        (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * dampExp / pow(damp, 4) * pow(r, 4);
+            // quadrupole not implementede
+            rrI[7]          *= 0;
+            // rrI[7]          *= ((1.0 - dampExp) - (4./3.) * pgamma * dampExp * ratio) - // rrI[2]'s factor
+            //                        (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * dampExp / pow(damp, 4) * pow(r, 4);
             }
        }
-    }
 
-    return;
+    return rrI;
 }
 
 void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const MultipoleParticleData& particleI,
