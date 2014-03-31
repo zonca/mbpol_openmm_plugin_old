@@ -86,14 +86,14 @@ static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMe
     std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
     std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
 
-    for( unsigned int jj = 0; jj < numberOfParticles; jj += 3 ){
-        amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, -1,
-                                            4.000000e-01, 0.001310, 0.001310 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, -1,
-                                            4.000000e-01, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, -1,
-                                            4.000000e-01, 0.000294, 0.000294 );
-    }
+//    for( unsigned int jj = 0; jj < numberOfParticles; jj += 3 ){
+//        amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, -1,
+//                                            4.000000e-01, 0.001310, 0.001310 );
+//        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, -1,
+//                                            4.000000e-01, 0.000294, 0.000294 );
+//        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, -1,
+//                                            4.000000e-01, 0.000294, 0.000294 );
+//    }
 
     system.addForce(amoebaMultipoleForce);
 
@@ -530,19 +530,21 @@ static void testWater3VirtualSite( FILE* log ) {
 
     std::vector<double> zeroDipole(3);
     std::vector<double> zeroQuadrupole(9);
+    std::vector<double> thole(5);
 
     std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
     std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
+    std::fill(thole.begin(), thole.end(), 0.4);
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
         amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
-                                            4.000000e-01, 0.001310, 0.001310 );
+                                            thole, 0.001310, 0.001310 );
         amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
-                                            4.000000e-01, 0.000294, 0.000294 );
+                                            thole, 0.000294, 0.000294 );
         amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
-                                            4.000000e-01, 0.000294, 0.000294 );
+                                            thole, 0.000294, 0.000294 );
         amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
-                                                    4.000000e-01,  0.001310,  0.);
+                                                    thole,  0.001310,  0.);
 //        amoebaMultipoleForce->addMultipole( 0, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
 //                                              4.000000e-01, 0.001310, 0.001310 );
 //          amoebaMultipoleForce->addMultipole(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,

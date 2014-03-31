@@ -128,13 +128,13 @@ void AmoebaMultipoleForce::setEwaldErrorTolerance(double tol) {
 }
 
 int AmoebaMultipoleForce::addMultipole( double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType, 
-                                       int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, double thole, double dampingFactor, double polarity) {
+                                       int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity) {
     multipoles.push_back(MultipoleInfo( charge, molecularDipole, molecularQuadrupole,  axisType, multipoleAtomZ,  multipoleAtomX, multipoleAtomY, thole, dampingFactor, polarity));
     return multipoles.size()-1;
 }
 
 void AmoebaMultipoleForce::getMultipoleParameters(int index, double& charge, std::vector<double>& molecularDipole, std::vector<double>& molecularQuadrupole, 
-                                                  int& axisType, int& multipoleAtomZ, int& multipoleAtomX, int& multipoleAtomY, double& thole, double& dampingFactor, double& polarity ) const {
+                                                  int& axisType, int& multipoleAtomZ, int& multipoleAtomX, int& multipoleAtomY, std::vector<double>& thole, double& dampingFactor, double& polarity ) const {
     charge                      = multipoles[index].charge;
 
     molecularDipole.resize( 3 );
@@ -158,13 +158,15 @@ void AmoebaMultipoleForce::getMultipoleParameters(int index, double& charge, std
     multipoleAtomX              = multipoles[index].multipoleAtomX;
     multipoleAtomY              = multipoles[index].multipoleAtomY;
 
-    thole                       = multipoles[index].thole;
+    thole.resize( 5 );
+    for (int i=0; i<5;i++)
+    thole[i] = multipoles[index].thole[i];
     dampingFactor               = multipoles[index].dampingFactor;
     polarity                    = multipoles[index].polarity;
 }
 
 void AmoebaMultipoleForce::setMultipoleParameters(int index, double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, 
-                                                  int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, double thole, double dampingFactor, double polarity ) {
+                                                  int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>&  thole, double dampingFactor, double polarity ) {
 
     multipoles[index].charge                      = charge;
 
@@ -186,7 +188,8 @@ void AmoebaMultipoleForce::setMultipoleParameters(int index, double charge, cons
     multipoles[index].multipoleAtomZ              = multipoleAtomZ;
     multipoles[index].multipoleAtomX              = multipoleAtomX;
     multipoles[index].multipoleAtomY              = multipoleAtomY;
-    multipoles[index].thole                       = thole;
+    for (int i; i<5;i++)
+        multipoles[index].thole [i]                      = thole[i];
     multipoles[index].dampingFactor               = dampingFactor;
     multipoles[index].polarity                    = polarity;
 

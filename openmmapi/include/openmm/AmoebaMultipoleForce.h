@@ -192,7 +192,7 @@ public:
      * @return the index of the particle that was added
      */
     int addMultipole(double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType,
-                     int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, double thole, double dampingFactor, double polarity);
+                     int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity);
 
     /**
      * Get the multipole parameters for a particle.
@@ -210,7 +210,7 @@ public:
      * @param polarity             polarity parameter
      */
     void getMultipoleParameters(int index, double& charge, std::vector<double>& molecularDipole, std::vector<double>& molecularQuadrupole,
-                                int& axisType, int& multipoleAtomZ, int& multipoleAtomX, int& multipoleAtomY, double& thole, double& dampingFactor, double& polarity) const;
+                                int& axisType, int& multipoleAtomZ, int& multipoleAtomX, int& multipoleAtomY, std::vector<double>& thole, double& dampingFactor, double& polarity) const;
 
     /**
      * Set the multipole parameters for a particle.
@@ -226,7 +226,7 @@ public:
      * @param polarity             polarity parameter
      */
     void setMultipoleParameters(int index, double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole,
-                                int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, double thole, double dampingFactor, double polarity);
+                                int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity);
 
     /**
      * Set the CovalentMap for an atom
@@ -364,25 +364,27 @@ class AmoebaMultipoleForce::MultipoleInfo {
 public:
 
     int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
-    double charge, thole, dampingFactor, polarity;
+    double charge, dampingFactor, polarity;
 
     std::vector<double> molecularDipole;
     std::vector<double> molecularQuadrupole;
     std::vector< std::vector<int> > covalentInfo;
+    std::vector<double> thole;
 
     MultipoleInfo() {
         axisType = multipoleAtomZ = multipoleAtomX = multipoleAtomY = -1;
-        charge   = thole          = dampingFactor  = 0.0;
+        charge = dampingFactor = polarity = 0.0;
 
         molecularDipole.resize(3);
         molecularQuadrupole.resize(9);
+        thole.resize(5);
 
     }
 
     MultipoleInfo(double charge, const std::vector<double>& inputMolecularDipole, const std::vector<double>& inputMolecularQuadrupole,
-                   int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, double thole, double dampingFactor, double polarity) :
+                   int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& inputThole, double dampingFactor, double polarity) :
         charge(charge), axisType(axisType), multipoleAtomZ(multipoleAtomZ), multipoleAtomX(multipoleAtomX), multipoleAtomY(multipoleAtomY),
-        thole(thole), dampingFactor(dampingFactor), polarity(polarity) {
+        dampingFactor(dampingFactor), polarity(polarity) {
 
        covalentInfo.resize(CovalentEnd);
 
@@ -401,6 +403,11 @@ public:
        molecularQuadrupole[6]      = inputMolecularQuadrupole[6];
        molecularQuadrupole[7]      = inputMolecularQuadrupole[7];
        molecularQuadrupole[8]      = inputMolecularQuadrupole[8];
+
+       thole.resize(5);
+       for (int i=0; i<5; i++){
+           thole[i] = inputThole[i];
+       }
     }
 };
 
