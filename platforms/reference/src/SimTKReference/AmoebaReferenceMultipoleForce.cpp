@@ -613,9 +613,9 @@ MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Mul
                 bool oneIsOxygen = ((particleI.multipoleAtomZs >= particleI.particleIndex) and
                                     (particleI.multipoleAtomYs >= particleI.particleIndex) and
                                     (particleI.multipoleAtomXs >= particleI.particleIndex)) or
-                                    ((particleI.multipoleAtomZs >= particleK.particleIndex) and
-                                     (particleI.multipoleAtomYs >= particleK.particleIndex) and
-                                     (particleI.multipoleAtomXs >= particleK.particleIndex));
+                                    ((particleK.multipoleAtomZs >= particleK.particleIndex) and
+                                     (particleK.multipoleAtomYs >= particleK.particleIndex) and
+                                     (particleK.multipoleAtomXs >= particleK.particleIndex));
                 if (oneIsOxygen) {
                     pgamma = min(particleI.thole[TDDOH],particleK.thole[TDDOH]);
                     dampForExp = -1 * pgamma * ratio;
