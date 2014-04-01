@@ -473,6 +473,7 @@ class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaR
 static void testWater3VirtualSite( FILE* log ) {
 
     std::string testName      = "testWater3VirtualSite";
+    std::cout << "Test START: " << testName << std::endl;
 
     int numberOfParticles     = 12;
     double cutoff             = 0.70;
@@ -677,6 +678,7 @@ static void testWater3VirtualSite( FILE* log ) {
     for (int i=0; i<numberOfParticles; i++) {
          std::cout << finiteDifferenceForces[i] << " Kcal/mol/A " << std::endl;
     }
+    std::cout << "Test END: " << testName << std::endl << std::endl;
 
     return;
 }
@@ -689,6 +691,8 @@ class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : pub
         setIncludeChargeRedistribution(false);
 
         string testName = "testCalculateElectrostaticPairIxn";
+        std::cout << "Test START: " << testName << std::endl;
+
         int numberOfParticles = 2;
         std::vector<MultipoleParticleData> particleData;
         particleData.resize(numberOfParticles);
@@ -749,6 +753,7 @@ class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : pub
             ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
         }
         ASSERT_EQUAL_TOL_MOD( 0., energy, tolerance, testName );
+        std::cout << "Test END: " << testName << std::endl << std::endl;
 
     }
 };
@@ -825,6 +830,7 @@ static void testWater3( FILE* log ) {
     Context context(system, integrator, Platform::getPlatformByName( platformName ) );
 
     context.setPositions(positions);
+    context.applyConstraints(1e-4); // update position of virtual site
 
     double tolerance          = 1.0e-04;
 
@@ -863,13 +869,16 @@ static void testWater3( FILE* log ) {
             forces[i][j] /= cal2joule*10;
            }
        }
+
+    std::cout << "Test start: " << testName << std::endl;
+
     std::cout  << std::endl << "Forces:" << std::endl;
 
     for (int i=0; i<numberOfParticles; i++) {
          std::cout << forces[i] << " Kcal/mol/A " << std::endl;
     }
     // Energy elec+ind(kcal/mol): -2.134083549e-02
-    double expectedEnergy = -15.9939592*cal2joule;
+    double expectedEnergy = 0*cal2joule;
     // ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
     std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
     std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
@@ -923,6 +932,7 @@ static void testWater3( FILE* log ) {
     for (int i=0; i<numberOfParticles; i++) {
          std::cout << finiteDifferenceForces[i] << " Kcal/mol/A " << std::endl;
     }
+    std::cout << "Test END: " << testName << std::endl << std::endl;
 
     return;
 }
