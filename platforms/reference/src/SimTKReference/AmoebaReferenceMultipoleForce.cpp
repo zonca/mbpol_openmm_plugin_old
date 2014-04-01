@@ -1244,55 +1244,55 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
 //                     + GRDQ(2, 1, k)*phi[4*n + 2]  // phi(h2)
 //                     + GRDQ(2, 2, k)*phi[4*n + 3]; // phi(M)
 
-    double distanceK, distanceI, scale1I, scale1K, scale3I, scale3K, inducedDipoleI, inducedDipoleK;
-    RealVec deltaI, deltaK;
-    if (not (isSameWater)){
-
-        for (size_t s = 0; s < 3; ++s) {
-
-            // vsH1f, vsH2f, vsMf
-
-            deltaI = particleData[particleI.otherSiteIndex[s]].position-particleK.position;
-            distanceI = SQRT(deltaI.dot(deltaI));
-            deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
-            distanceK = SQRT(deltaK.dot(deltaK));
-
-            getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]].dampingFactor, particleK.dampingFactor,
-                    particleData[particleI.otherSiteIndex[s]].thole, particleK.thole, distanceI, true, damp, rrI );
-
-            if( damp != 0.0 ){
-                if( damp > -50.0){
-                    scale1I = rrI[0];
-                    scale3I = rrI[1];
-                }
-            }
-
-            getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]].dampingFactor, particleI.dampingFactor,
-                    particleData[particleK.otherSiteIndex[s]].thole, particleI.thole, distanceK, true, damp, rrI );
-
-            if( damp != 0.0 ){
-                if( damp > -50.0){
-                    scale1K = rrI[0];
-                    scale3K = rrI[1];
-                }
-            }
-
-            inducedDipoleI = _inducedDipole[kIndex].dot(deltaI);
-            inducedDipoleK = _inducedDipole[iIndex].dot(deltaK);
-
-            for (size_t i = 0; i < 3; ++i) {
-
-
-                ftm2[i] +=  scale1I * (1.0/distanceI) * particleI.chargeDerivatives[s][i] * particleK.charge;
-                ftm2[i] -=  scale1K * (1.0/distanceK) * particleK.chargeDerivatives[s][i] * particleI.charge;
-
-
-                ftm2i[i] += scale3I * pow(1.0/distanceI,3) * particleI.chargeDerivatives[s][i] * inducedDipoleI;
-                ftm2i[i] -= scale3K * pow(1.0/distanceK,3) * particleK.chargeDerivatives[s][i] * inducedDipoleK;
-            }
-
-        }
-    }
+//    double distanceK, distanceI, scale1I, scale1K, scale3I, scale3K, inducedDipoleI, inducedDipoleK;
+//    RealVec deltaI, deltaK;
+//    if (not (isSameWater)){
+//
+//        for (size_t s = 0; s < 3; ++s) {
+//
+//            // vsH1f, vsH2f, vsMf
+//
+//            deltaI = particleData[particleI.otherSiteIndex[s]].position-particleK.position;
+//            distanceI = SQRT(deltaI.dot(deltaI));
+//            deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
+//            distanceK = SQRT(deltaK.dot(deltaK));
+//
+//            getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]].dampingFactor, particleK.dampingFactor,
+//                    particleData[particleI.otherSiteIndex[s]].thole, particleK.thole, distanceI, true, damp, rrI );
+//
+//            if( damp != 0.0 ){
+//                if( damp > -50.0){
+//                    scale1I = rrI[0];
+//                    scale3I = rrI[1];
+//                }
+//            }
+//
+//            getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]].dampingFactor, particleI.dampingFactor,
+//                    particleData[particleK.otherSiteIndex[s]].thole, particleI.thole, distanceK, true, damp, rrI );
+//
+//            if( damp != 0.0 ){
+//                if( damp > -50.0){
+//                    scale1K = rrI[0];
+//                    scale3K = rrI[1];
+//                }
+//            }
+//
+//            inducedDipoleI = _inducedDipole[kIndex].dot(deltaI);
+//            inducedDipoleK = _inducedDipole[iIndex].dot(deltaK);
+//
+//            for (size_t i = 0; i < 3; ++i) {
+//
+//
+//                ftm2[i] +=  scale1I * (1.0/distanceI) * particleI.chargeDerivatives[s][i] * particleK.charge;
+//                ftm2[i] -=  scale1K * (1.0/distanceK) * particleK.chargeDerivatives[s][i] * particleI.charge;
+//
+//
+//                ftm2i[i] += scale3I * pow(1.0/distanceI,3) * particleI.chargeDerivatives[s][i] * inducedDipoleI;
+//                ftm2i[i] -= scale3K * pow(1.0/distanceK,3) * particleK.chargeDerivatives[s][i] * inducedDipoleK;
+//            }
+//
+//        }
+//    }
 
     // correction to convert mutual to direct polarization force
 
@@ -1656,9 +1656,9 @@ void AmoebaReferenceMultipoleForce::setup( const std::vector<RealVec>& particleP
     loadParticleData( particlePositions, charges, dipoles, quadrupoles,
                       tholes, dampingFactors, polarity, multipoleAtomZs, multipoleAtomXs, multipoleAtomYs, particleData );
 
-    for( unsigned int ii = 0; ii < _numParticles; ii=ii+4 ){ // FIXME this assumes only waters
-        computeWaterCharge(particleData[ii], particleData[ii+1], particleData[ii+2], particleData[ii+3]);
-    }
+//    for( unsigned int ii = 0; ii < _numParticles; ii=ii+4 ){ // FIXME this assumes only waters
+//        computeWaterCharge(particleData[ii], particleData[ii+1], particleData[ii+2], particleData[ii+3]);
+//    }
     checkChiral( particleData, multipoleAtomXs, multipoleAtomYs, multipoleAtomZs, axisTypes );
 
     applyRotationMatrix( particleData, multipoleAtomXs, multipoleAtomYs, multipoleAtomZs, axisTypes );
