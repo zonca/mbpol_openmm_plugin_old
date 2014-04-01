@@ -681,6 +681,75 @@ static void testWater3VirtualSite( FILE* log ) {
     return;
 }
 
+class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : public AmoebaReferenceMultipoleForce {
+    public:
+
+    void testCalculateElectrostaticPairIxn ( FILE * log ) {
+
+        string testName = "testCalculateElectrostaticPairIxn";
+        int numberOfParticles = 2;
+        std::vector<MultipoleParticleData> particleData;
+        particleData.resize(numberOfParticles);
+        particleData[0].dampingFactor = 0.001310;
+        particleData[1].dampingFactor = 0.001310;
+        particleData[0].polarity = 0.001310;
+        particleData[1].polarity = 0.001310;
+        RealOpenMM thole = 0.4;
+//        for (int i=0; i<5; i++) {
+            particleData[0].thole = thole;
+            particleData[1].thole = thole;
+//}
+
+            particleData[0].charge = -5.1966000e-01;
+            particleData[1].charge = -5.1966000e-01;
+                std::vector<RealVec> positions(numberOfParticles);
+                positions[0]             = RealVec( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
+                positions[1]             = RealVec( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
+
+                for (int i=0; i<numberOfParticles; i++) {
+                    for (int j=0; j<3; j++) {
+                        particleData[i].position[j] = positions[i][j] * 1e-1;
+                        particleData[i].dipole[j] = 0;
+                    }
+                    for (int j=0; j<9; j++) {
+                        particleData[i].quadrupole[j] = 0;
+                    }
+                 }
+
+
+        _inducedDipole.push_back(Vec3(-7.046394571e-03, -5.104341822e-03, -7.841188329e-02));
+        _inducedDipole.push_back(Vec3( 7.046394571e-03,  5.104341822e-03,  7.841188329e-02));
+        for (int i=0; i<numberOfParticles; i++) {
+                _inducedDipole[i] *= 1e-1;
+                _inducedDipolePolar.push_back(_inducedDipole[i]);
+        }
+
+        std::vector<RealOpenMM> scaleFactors(LAST_SCALE_TYPE_INDEX);
+        for( unsigned int kk = 0; kk < scaleFactors.size(); kk++ ){
+            scaleFactors[kk] = 1.0;
+        }
+
+        std::vector<RealVec> forces;
+        std::vector<RealVec> torque;
+        for (int i=0; i<numberOfParticles; i++) {
+            forces.push_back(Vec3( 0.,  0., 0.  ));
+            torque.push_back(Vec3( 0.,  0., 0.  ));
+        }
+        RealOpenMM energy = calculateElectrostaticPairIxn( particleData, 0, 1,scaleFactors,forces, torque);
+
+        std::vector<RealVec> expectedForces;
+        expectedForces.push_back(Vec3(0.784902, 0.568575, 8.73434));
+        expectedForces.push_back(Vec3(-0.784902, -0.568575, -8.73434));
+
+        double tolerance = 1e-5;
+
+        for( unsigned int ii = 0; ii < forces.size(); ii++ ){
+            ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
+        }
+        ASSERT_EQUAL_TOL_MOD( 0., energy, tolerance, testName );
+
+    }
+};
 int main( int numberOfArguments, char* argv[] ) {
 
     try {
@@ -695,13 +764,17 @@ int main( int numberOfArguments, char* argv[] ) {
         amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
         amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
 
+        WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn();
+        wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
+
         // water 3 mbpol
         // testWater3( log );
 
-        WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
-        wrapperForComputeWaterCharge->testComputeWaterCharge();
-
-        testWater3VirtualSite( log );
+//        WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
+//        wrapperForComputeWaterCharge->testComputeWaterCharge();
+//
+//
+//        testWater3VirtualSite( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;
