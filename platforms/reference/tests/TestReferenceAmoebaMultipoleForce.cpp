@@ -713,6 +713,10 @@ class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : pub
                 positions[1]             = RealVec( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
 
                 for (int i=0; i<numberOfParticles; i++) {
+                    particleData[1].particleIndex = i;
+                    particleData[i].multipoleAtomZs = -1;
+                    particleData[i].multipoleAtomXs = -1;
+                    particleData[i].multipoleAtomYs = -1;
                     for (int j=0; j<3; j++) {
                         particleData[i].position[j] = positions[i][j] * 1e-1;
                         particleData[i].dipole[j] = 0;
