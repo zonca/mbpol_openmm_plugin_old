@@ -618,15 +618,13 @@ MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Mul
                                      (particleK.multipoleAtomXs >= particleK.particleIndex));
                 if (oneIsOxygen) {
                     pgamma = min(particleI.thole[TDDOH],particleK.thole[TDDOH]);
-                    dampForExp = -1 * pgamma * ratio;
                 } else {
                     pgamma = min(particleI.thole[TDDHH],particleK.thole[TDDHH]);
-                    dampForExp = -1 * pgamma * ratio;
                 }
             } else {
                 pgamma = min(particleI.thole[TDD],particleK.thole[TDD]);
-                dampForExp = -1 * pgamma * ratio;
             }
+            dampForExp = -1 * pgamma * ratio;
             rrI[5]          *= (1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio;
 
             // quadrupole not implementede
