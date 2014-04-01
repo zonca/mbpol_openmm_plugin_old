@@ -686,6 +686,8 @@ class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : pub
 
     void testCalculateElectrostaticPairIxn ( FILE * log ) {
 
+        setIncludeChargeRedistribution(false);
+
         string testName = "testCalculateElectrostaticPairIxn";
         int numberOfParticles = 2;
         std::vector<MultipoleParticleData> particleData;
@@ -769,6 +771,7 @@ static void testWater3( FILE* log ) {
     // box dimensions
     AmoebaMultipoleForce* amoebaMultipoleForce        = new AmoebaMultipoleForce();;
     amoebaMultipoleForce->setNonbondedMethod( nonbondedMethod );
+    amoebaMultipoleForce->setIncludeChargeRedistribution(false);
 
     unsigned int particlesPerMolecule = 3;
 

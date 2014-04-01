@@ -411,6 +411,7 @@ private:
     std::vector<int>   multipoleAtomZs;
     std::vector<int>   multipoleAtomXs;
     std::vector<int>   multipoleAtomYs;
+    bool includeChargeRedistribution;
     std::vector< std::vector< std::vector<int> > > multipoleAtomCovalentInfo;
 
     int mutualInducedMaxIterations;

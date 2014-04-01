@@ -400,6 +400,11 @@ public:
      */
     int getMutualInducedDipoleIterations( void ) const;
 
+    void setIncludeChargeRedistribution( bool includeChargeRedistribution );
+
+
+    bool getIncludeChargeRedistribution( void ) const;
+
     /**
      * Get the final epsilon for mutual induced dipoles.
      *
@@ -584,7 +589,7 @@ protected:
 
     NonbondedMethod _nonbondedMethod;
     PolarizationType _polarizationType;
-
+    bool _includeChargeRedistribution;
     RealOpenMM _electric;
     RealOpenMM _dielectric;
 

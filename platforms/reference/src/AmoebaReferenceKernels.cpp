@@ -559,6 +559,8 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
         mutualInducedTargetEpsilon = force.getMutualInducedTargetEpsilon();
     }
 
+
+
     // PME
 
     nonbondedMethod  = force.getNonbondedMethod();
@@ -620,6 +622,8 @@ AmoebaReferenceMultipoleForce* ReferenceCalcAmoebaMultipoleForceKernel::setupAmo
     } else {
         throw OpenMMException("Polarization type not recognzied." );
     }
+
+    amoebaReferenceMultipoleForce->setIncludeChargeRedistribution(includeChargeRedistribution);
 
     return amoebaReferenceMultipoleForce;
 

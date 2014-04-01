@@ -136,6 +136,9 @@ public:
      */
     void setCutoffDistance(double distance);
 
+    void setIncludeChargeRedistribution( bool chargeRedistribution );
+
+    bool getIncludeChargeRedistribution( void ) const;
     /**
      * Get the Ewald alpha parameter.  If this is 0 (the default), a value is chosen automatically
      * based on the Ewald error tolerance.
@@ -356,6 +359,7 @@ private:
     double scalingDistanceCutoff;
     double electricConstant;
     double ewaldErrorTol;
+    bool includeChargeRedistribution;
     class MultipoleInfo;
     std::vector<MultipoleInfo> multipoles;
 };
