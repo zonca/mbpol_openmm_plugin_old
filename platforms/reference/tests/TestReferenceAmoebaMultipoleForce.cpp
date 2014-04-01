@@ -878,7 +878,7 @@ static void testWater3( FILE* log ) {
          std::cout << forces[i] << " Kcal/mol/A " << std::endl;
     }
     // Energy elec+ind(kcal/mol): -2.134083549e-02
-    double expectedEnergy = 0*cal2joule;
+    double expectedEnergy = -19.6545*cal2joule;
     // ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
     std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
     std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
