@@ -559,7 +559,7 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
         mutualInducedTargetEpsilon = force.getMutualInducedTargetEpsilon();
     }
 
-
+    includeChargeRedistribution = force.getIncludeChargeRedistribution();
 
     // PME
 
