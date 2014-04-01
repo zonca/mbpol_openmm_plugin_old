@@ -950,8 +950,9 @@ int main( int numberOfArguments, char* argv[] ) {
         WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
         wrapperForComputeWaterCharge->testComputeWaterCharge();
 
-        //testWater3VirtualSite( log );
         testWater3( log );
+
+        testWater3VirtualSite( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;
