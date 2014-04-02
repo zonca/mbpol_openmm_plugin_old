@@ -67,9 +67,10 @@ void AmoebaMultipoleForceImpl::initialize(ContextImpl& context) {
     for( int ii = 0; ii < system.getNumParticles(); ii++ ){
 
         int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
-        double charge, thole, dampingFactor, polarity ;
+        double charge, dampingFactor, polarity ;
         std::vector<double> molecularDipole;
         std::vector<double> molecularQuadrupole;
+        std::vector<double> thole;
 
         owner.getMultipoleParameters( ii, charge, molecularDipole, molecularQuadrupole, axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY,
                                       thole, dampingFactor, polarity );

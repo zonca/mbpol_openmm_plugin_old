@@ -496,7 +496,7 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
     charges.resize(numMultipoles);
     dipoles.resize(3*numMultipoles);
     quadrupoles.resize(9*numMultipoles);
-    tholes.resize(numMultipoles);
+    tholes.resize(5*numMultipoles);
     dampingFactors.resize(numMultipoles);
     polarity.resize(numMultipoles);
     axisTypes.resize(numMultipoles);
@@ -507,6 +507,7 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
 
     int dipoleIndex      = 0;
     int quadrupoleIndex  = 0;
+    int tholeIndex       = 0;
     int maxCovalentRange = 0;
     double totalCharge   = 0.0;
     for( int ii = 0; ii < numMultipoles; ii++ ){
@@ -514,11 +515,12 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
         // multipoles
 
         int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
-        double charge, tholeD, dampingFactorD, polarityD;
+        double charge, dampingFactorD, polarityD;
         std::vector<double> dipolesD;
         std::vector<double> quadrupolesD;
+        std::vector<double> tholesD;
         force.getMultipoleParameters(ii, charge, dipolesD, quadrupolesD, axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY,
-                                     tholeD, dampingFactorD, polarityD );
+                                     tholesD, dampingFactorD, polarityD );
 
         totalCharge                       += charge;
         axisTypes[ii]                      = axisType;
@@ -527,7 +529,7 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
         multipoleAtomYs[ii]                = multipoleAtomY;
 
         charges[ii]                        = static_cast<RealOpenMM>(charge);
-        tholes[ii]                         = static_cast<RealOpenMM>(tholeD);
+
         dampingFactors[ii]                 = static_cast<RealOpenMM>(dampingFactorD);
         polarity[ii]                       = static_cast<RealOpenMM>(polarityD);
 
@@ -544,6 +546,12 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
         quadrupoles[quadrupoleIndex++]     = static_cast<RealOpenMM>(quadrupolesD[6]);
         quadrupoles[quadrupoleIndex++]     = static_cast<RealOpenMM>(quadrupolesD[7]);
         quadrupoles[quadrupoleIndex++]     = static_cast<RealOpenMM>(quadrupolesD[8]);
+
+        tholes[tholeIndex++]             = static_cast<RealOpenMM>(tholesD[0]);
+        tholes[tholeIndex++]             = static_cast<RealOpenMM>(tholesD[1]);
+        tholes[tholeIndex++]             = static_cast<RealOpenMM>(tholesD[2]);
+        tholes[tholeIndex++]             = static_cast<RealOpenMM>(tholesD[3]);
+        tholes[tholeIndex++]             = static_cast<RealOpenMM>(tholesD[4]);
 
         // covalent info
 
@@ -700,10 +708,12 @@ void ReferenceCalcAmoebaMultipoleForceKernel::copyParametersToContext(ContextImp
 
     int dipoleIndex = 0;
     int quadrupoleIndex = 0;
+    int tholeIndex = 0;
     for (int i = 0; i < numMultipoles; ++i) {
         int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
-        double charge, tholeD, dampingFactorD, polarityD;
+        double charge, dampingFactorD, polarityD;
         std::vector<double> dipolesD;
+        std::vector<double> tholeD;
         std::vector<double> quadrupolesD;
         force.getMultipoleParameters(i, charge, dipolesD, quadrupolesD, axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY, tholeD, dampingFactorD, polarityD);
         axisTypes[i] = axisType;
@@ -711,7 +721,11 @@ void ReferenceCalcAmoebaMultipoleForceKernel::copyParametersToContext(ContextImp
         multipoleAtomXs[i] = multipoleAtomX;
         multipoleAtomYs[i] = multipoleAtomY;
         charges[i] = (RealOpenMM) charge;
-        tholes[i] = (RealOpenMM) tholeD;
+        tholes[tholeIndex++] = (RealOpenMM) tholeD[0];
+        tholes[tholeIndex++] = (RealOpenMM) tholeD[1];
+        tholes[tholeIndex++] = (RealOpenMM) tholeD[2];
+        tholes[tholeIndex++] = (RealOpenMM) tholeD[3];
+        tholes[tholeIndex++] = (RealOpenMM) tholeD[4];
         dampingFactors[i] = (RealOpenMM) dampingFactorD;
         polarity[i] = (RealOpenMM) polarityD;
         dipoles[dipoleIndex++] = (RealOpenMM) dipolesD[0];
