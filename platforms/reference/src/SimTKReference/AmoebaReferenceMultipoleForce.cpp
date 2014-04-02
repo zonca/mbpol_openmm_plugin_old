@@ -1282,7 +1282,8 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
             // vsH1f, vsH2f, vsMf
 
             deltaI = particleData[particleI.otherSiteIndex[s]].position-particleK.position;
-            distanceI = SQRT(deltaI.dot(deltaI));            deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
+            distanceI = SQRT(deltaI.dot(deltaI));
+            deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
             distanceK = SQRT(deltaK.dot(deltaK));
 
             rrI = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true );
