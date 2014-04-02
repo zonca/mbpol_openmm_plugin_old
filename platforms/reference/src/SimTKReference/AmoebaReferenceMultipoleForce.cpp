@@ -1287,15 +1287,14 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
 
             rrI = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true );
 
-            scale1I = rrI[0];
-            scale3I = rrI[1];
+            scale1I = rrI[1];
+            scale3I = rrI[3];
 
 
             rrI = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI, distanceK, true );
 
-            scale1K = rrI[0];
-            scale3K = rrI[1];
-
+            scale1K = rrI[1];
+            scale3K = rrI[3];
 
             inducedDipoleI = _inducedDipole[kIndex].dot(deltaI);
             inducedDipoleK = _inducedDipole[iIndex].dot(deltaK);
