@@ -639,9 +639,8 @@ MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Mul
             rrI[5]          *= (1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio;
 
             // quadrupole not implementede
-            rrI[7]          *= 0;
-            // rrI[7]          *= ((1.0 - dampExp) - (4./3.) * pgamma * dampExp * ratio) - // rrI[2]'s factor
-            //                        (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * dampExp / pow(damp, 4) * pow(r, 4);
+             rrI[7]          *= ((1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio) - // rrI[2]'s factor
+                                    (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * EXP(dampForExp) / pow(damp, 4) * pow(r, 4);
             }
        }
 
