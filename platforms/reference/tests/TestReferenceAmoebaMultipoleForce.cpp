@@ -53,6 +53,7 @@
 
 using namespace OpenMM;
 const double TOL = 1e-4;
+const double cal2joule = 4.184;
 
 static void setupWater3System( AmoebaMultipoleForce::NonbondedMethod nonbondedMethod,
                  AmoebaMultipoleForce::PolarizationType polarizationType,
@@ -702,33 +703,33 @@ class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : pub
         particleData[1].polarity = 0.001310;
         RealOpenMM thole = 0.4;
 //        for (int i=0; i<5; i++) {
-            particleData[0].thole = thole;
-            particleData[1].thole = thole;
+        particleData[0].thole = thole;
+        particleData[1].thole = thole;
 //}
 
-            particleData[0].charge = -5.1966000e-01;
-            particleData[1].charge = -5.1966000e-01;
-                std::vector<RealVec> positions(numberOfParticles);
-                positions[0]             = RealVec( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
-                positions[1]             = RealVec( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
+        particleData[0].charge = -5.1966000e-01;
+        particleData[1].charge = -5.1966000e-01;
+        std::vector<RealVec> positions(numberOfParticles);
+        positions[0]             = RealVec( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
+        positions[1]             = RealVec( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
 
-                for (int i=0; i<numberOfParticles; i++) {
-                    particleData[1].particleIndex = i;
-                    particleData[i].multipoleAtomZs = -1;
-                    particleData[i].multipoleAtomXs = -1;
-                    particleData[i].multipoleAtomYs = -1;
-                    for (int j=0; j<3; j++) {
-                        particleData[i].position[j] = positions[i][j] * 1e-1;
-                        particleData[i].dipole[j] = 0;
-                    }
-                    for (int j=0; j<9; j++) {
-                        particleData[i].quadrupole[j] = 0;
-                    }
-                 }
+        for (int i=0; i<numberOfParticles; i++) {
+            particleData[1].particleIndex = i;
+            particleData[i].multipoleAtomZs = -1;
+            particleData[i].multipoleAtomXs = -1;
+            particleData[i].multipoleAtomYs = -1;
+            for (int j=0; j<3; j++) {
+                particleData[i].position[j] = positions[i][j] * 1e-1;
+                particleData[i].dipole[j] = 0;
+            }
+            for (int j=0; j<9; j++) {
+                particleData[i].quadrupole[j] = 0;
+            }
+         }
 
 
-        _inducedDipole.push_back(Vec3(-7.046394571e-03, -5.104341822e-03, -7.841188329e-02));
-        _inducedDipole.push_back(Vec3( 7.046394571e-03,  5.104341822e-03,  7.841188329e-02));
+        _inducedDipole.push_back(Vec3(-0.128403739, -0.0930144581, -1.4288696));
+        _inducedDipole.push_back(Vec3(0.128403739, 0.0930144581, 1.4288696));
         for (int i=0; i<numberOfParticles; i++) {
                 _inducedDipole[i] *= 1e-1;
                 _inducedDipolePolar.push_back(_inducedDipole[i]);
@@ -748,15 +749,19 @@ class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : pub
         RealOpenMM energy = calculateElectrostaticPairIxn( particleData, 0, 1,scaleFactors,forces, torque);
 
         std::vector<RealVec> expectedForces;
-        expectedForces.push_back(Vec3(0.784902, 0.568575, 8.73434));
-        expectedForces.push_back(Vec3(-0.784902, -0.568575, -8.73434));
+        expectedForces.push_back(Vec3(3.11046, 2.25319, 34.6131));
+        expectedForces.push_back(Vec3(-3.11046, -2.25319, -34.6131));
 
         double tolerance = 1e-5;
 
         for( unsigned int ii = 0; ii < forces.size(); ii++ ){
+            forces[ii] /= (cal2joule * 10);
             ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
+            std::cout << forces[ii] << " Kcal/mol/A" << std::endl;
         }
-        ASSERT_EQUAL_TOL_MOD( 0., energy, tolerance, testName );
+        energy /= cal2joule;
+        ASSERT_EQUAL_TOL_MOD( 0.0634441, energy, tolerance, testName );
+        std::cout << "Energy: " << energy << " Kcal/mol "<< std::endl;
         std::cout << "Test END: " << testName << std::endl << std::endl;
 
     }
@@ -843,7 +848,6 @@ static void testWater3( FILE* log ) {
     State state                = context.getState(State::Forces | State::Energy);
     std::vector<Vec3> forces   = state.getForces();
     double energy              = state.getPotentialEnergy();
-    double cal2joule = 4.184;
 //    std::cout << "Forces" << std::endl;
 
 
@@ -950,16 +954,13 @@ int main( int numberOfArguments, char* argv[] ) {
 
         testGetAndScaleInverseRs( log );
         testGetAndScaleInverseRsInterMulecolar( log );
-//
+
         WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();
         amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
         amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
 
         WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn();
         wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
-
-        // water 3 mbpol
-        // testWater3( log );
 
         WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
         wrapperForComputeWaterCharge->testComputeWaterCharge();
