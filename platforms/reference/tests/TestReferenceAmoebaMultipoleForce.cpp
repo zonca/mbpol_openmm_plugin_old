@@ -646,7 +646,7 @@ static void testWater3( FILE* log ) {
     std::vector<double> thole(5);
     std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
     std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
-    std::fill(thole.begin(), thole.end(), 0.);
+    std::fill(thole.begin(), thole.end(), 0.4);
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += particlesPerMolecule ){
         amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
