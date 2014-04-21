@@ -30,7 +30,21 @@
 using std::vector;
 using OpenMM::RealVec;
 
-double pot_nasa(const RealVec& positionO, const RealVec& positionH1, const RealVec& positionH2, RealVec& forceO, RealVec& forceH1, RealVec& forceH2)
+
+
+/**---------------------------------------------------------------------------------------
+
+   Calculate Amoeba stretch bend angle ixn (force and energy)
+
+   pot_nasa in mbpol
+
+   @return energy
+
+   --------------------------------------------------------------------------------------- */
+
+
+double AmoebaReferenceStretchBendForce::calculateStretchBendIxn(const RealVec& positionO, const RealVec& positionH1, const RealVec& positionH2,
+        RealVec& forceO, RealVec& forceH1, RealVec& forceH2) const
 {
     double ROH1[3], ROH2[3], RHH[3], dROH1(0), dROH2(0), dRHH(0);
 
@@ -160,34 +174,6 @@ double pot_nasa(const RealVec& positionO, const RealVec& positionH1, const RealV
 }
 
 
-/**---------------------------------------------------------------------------------------
-
-   Calculate Amoeba stretch bend angle ixn (force and energy)
-
-   @param positionAtomA           Cartesian coordinates of atom A
-   @param positionAtomB           Cartesian coordinates of atom B
-   @param positionAtomC           Cartesian coordinates of atom C
-   @param positionAtomD           Cartesian coordinates of atom D
-   @param angleLength             angle
-   @param angleK                  quadratic angle force
-   @param angleCubic              cubic angle force parameter
-   @param angleQuartic            quartic angle force parameter
-   @param anglePentic             pentic angle force parameter
-   @param angleSextic             sextic angle force parameter
-   @param forces                  force vector
-
-   @return energy
-
-   --------------------------------------------------------------------------------------- */
-
-RealOpenMM AmoebaReferenceStretchBendForce::calculateStretchBendIxn( const RealVec& positionO, const RealVec& positionH1,
-                                                                     const RealVec& positionH2,
-                                                                     RealOpenMM lengthAB,      RealOpenMM lengthCB,
-                                                                     RealOpenMM idealAngle,    RealOpenMM kParameter,
-                                                                     RealVec* forces ) const {
-    return 0;
-}
-
 RealOpenMM AmoebaReferenceStretchBendForce::calculateForceAndEnergy( int numStretchBends, vector<RealVec>& posData,
                                                                        const std::vector<int>&  particleO,
                                                                        const std::vector<int>&  particleH1,
@@ -203,7 +189,7 @@ RealOpenMM AmoebaReferenceStretchBendForce::calculateForceAndEnergy( int numStre
         int particleH1Index      = particleH1[ii];
         int particleH2Index      = particleH2[ii];
         RealVec forceO, forceH1, forceH2;
-        energy                 +=  pot_nasa(posData[particleOIndex], posData[particleH1Index], posData[particleH2Index], forceO, forceH1, forceH2);
+        energy                 +=  calculateStretchBendIxn(posData[particleOIndex], posData[particleH1Index], posData[particleH2Index], forceO, forceH1, forceH2);
 
         // accumulate forces
     

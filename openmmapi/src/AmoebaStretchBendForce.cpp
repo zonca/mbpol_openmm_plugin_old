@@ -39,32 +39,21 @@ using namespace OpenMM;
 AmoebaStretchBendForce::AmoebaStretchBendForce() {
 }
 
-int AmoebaStretchBendForce::addStretchBend(int particle1, int particle2, int particle3,
-                                           double lengthAB,  double lengthCB, double angle, double k) {
-    stretchBends.push_back(StretchBendInfo(particle1, particle2, particle3, lengthAB,  lengthCB, angle, k));
+int AmoebaStretchBendForce::addStretchBend(int particle1, int particle2, int particle3   ) {
+    stretchBends.push_back(StretchBendInfo(particle1, particle2, particle3));
     return stretchBends.size()-1;
 }
 
-void AmoebaStretchBendForce::getStretchBendParameters(int index, int& particle1, int& particle2, int& particle3,
-                                                      double& lengthAB, double& lengthCB, double& angle, double& k ) const {
+void AmoebaStretchBendForce::getStretchBendParameters(int index, int& particle1, int& particle2, int& particle3) const {
     particle1       = stretchBends[index].particle1;
     particle2       = stretchBends[index].particle2;
     particle3       = stretchBends[index].particle3;
-    lengthAB        = stretchBends[index].lengthAB;
-    lengthCB        = stretchBends[index].lengthCB;
-    angle           = stretchBends[index].angle;
-    k               = stretchBends[index].k;
 }
 
-void AmoebaStretchBendForce::setStretchBendParameters(int index, int particle1, int particle2, int particle3, 
-                                                      double lengthAB,  double lengthCB, double angle, double k) {
+void AmoebaStretchBendForce::setStretchBendParameters(int index, int particle1, int particle2, int particle3) {
     stretchBends[index].particle1  = particle1;
     stretchBends[index].particle2  = particle2;
     stretchBends[index].particle3  = particle3;
-    stretchBends[index].lengthAB   = lengthAB;
-    stretchBends[index].lengthCB   = lengthCB;
-    stretchBends[index].angle      = angle;
-    stretchBends[index].k          = k;
 }
 
 ForceImpl* AmoebaStretchBendForce::createImpl() const {

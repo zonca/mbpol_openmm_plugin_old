@@ -87,24 +87,13 @@ private:
     
        Calculate Amoeba stretch bend angle ixn (force and energy)
     
-       @param positionAtomA           Cartesian coordinates of atom A
-       @param positionAtomB           Cartesian coordinates of atom B
-       @param positionAtomC           Cartesian coordinates of atom C
-       @param lengthAB                ideal AB bondlength
-       @param lengthCB                ideal CB bondlength
-       @param idealAngle              ideal angle
-       @param kParameter              k
-       @param forces                  force vector
     
        @return energy
     
        --------------------------------------------------------------------------------------- */
 
-    RealOpenMM calculateStretchBendIxn( const OpenMM::RealVec& positionAtomA, const OpenMM::RealVec& positionAtomB,
-                                        const OpenMM::RealVec& positionAtomC,
-                                        RealOpenMM lengthAB,      RealOpenMM lengthCB,
-                                        RealOpenMM idealAngle,    RealOpenMM kParameter,
-                                        OpenMM::RealVec* forces ) const;
+    double calculateStretchBendIxn(const OpenMM::RealVec& positionO, const OpenMM::RealVec& positionH1, const OpenMM::RealVec& positionH2,
+            OpenMM::RealVec& forceO, OpenMM::RealVec& forceH1, OpenMM::RealVec& forceH2) const;
  
 };
 
