@@ -928,6 +928,7 @@ static void testWater3( FILE* log ) {
 
     }
 
+    // Flip sign to convert gradient -> forces
     for (int i=0; i<numberOfParticles; i++) {
            for (int j=0; j<3; j++) {
             finiteDifferenceForces[i][j] /= -1*cal2joule*10;
