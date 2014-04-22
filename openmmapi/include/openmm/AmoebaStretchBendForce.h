@@ -74,8 +74,7 @@ public:
      * @param k             the force constant for the stretch-bend
      * @return the index of the stretch-bend that was added
      */
-    int addStretchBend(int particle1, int particle2, int particle3, double lengthAB,  double lengthCB, double angle,
-                       double k );
+    int addStretchBend(int particle1, int particle2, int particle3);
 
     /**
      * Get the force field parameters for a stretch-bend term.
@@ -89,8 +88,7 @@ public:
      * @param angle         the equilibrium angle in radians
      * @param k             the force constant for the stretch-bend
      */
-    void getStretchBendParameters(int index, int& particle1, int& particle2, int& particle3,
-                                  double& lengthAB, double& lengthCB, double& angle, double& k ) const;
+    void getStretchBendParameters(int index, int& particle1, int& particle2, int& particle3 ) const;
 
     /**
      * Set the force field parameters for a stretch-bend term.
@@ -104,8 +102,7 @@ public:
      * @param angle         the equilibrium angle in radians
      * @param k             the force constant for the stretch-bend
      */
-    void setStretchBendParameters(int index, int particle1, int particle2, int particle3, 
-                                  double lengthAB,  double lengthCB, double angle, double k );
+    void setStretchBendParameters(int index, int particle1, int particle2, int particle3 );
     /**
      * Update the per-stretch-bend term parameters in a Context to match those stored in this Force object.  This method provides
      * an efficient method to update certain parameters in an existing Context without needing to reinitialize it.
@@ -127,15 +124,13 @@ private:
 class AmoebaStretchBendForce::StretchBendInfo {
 public:
     int particle1, particle2, particle3;
-    double lengthAB, lengthCB, angle, k;
+
     StretchBendInfo() {
         particle1 = particle2  = particle3 = -1;
-        lengthAB  = lengthCB   = angle     = k   = 0.0;
+
     }
-    StretchBendInfo(int particle1, int particle2, int particle3, 
-                    double lengthAB,  double lengthCB, double angle, double k ) :
-                    particle1(particle1), particle2(particle2), particle3(particle3), 
-                    lengthAB(lengthAB), lengthCB(lengthCB), angle(angle), k(k) {
+    StretchBendInfo(int particle1, int particle2, int particle3 ) :
+                    particle1(particle1), particle2(particle2), particle3(particle3) {
      
     }
 };

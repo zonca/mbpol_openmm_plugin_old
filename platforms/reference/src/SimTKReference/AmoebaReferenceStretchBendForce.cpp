@@ -25,132 +25,160 @@
 #include "AmoebaReferenceForce.h"
 #include "AmoebaReferenceStretchBendForce.h"
 #include <vector>
+#include "mbpol_interaction_constants.h"
 
 using std::vector;
 using OpenMM::RealVec;
+
+
 
 /**---------------------------------------------------------------------------------------
 
    Calculate Amoeba stretch bend angle ixn (force and energy)
 
-   @param positionAtomA           Cartesian coordinates of atom A
-   @param positionAtomB           Cartesian coordinates of atom B
-   @param positionAtomC           Cartesian coordinates of atom C
-   @param positionAtomD           Cartesian coordinates of atom D
-   @param angleLength             angle
-   @param angleK                  quadratic angle force
-   @param angleCubic              cubic angle force parameter
-   @param angleQuartic            quartic angle force parameter
-   @param anglePentic             pentic angle force parameter
-   @param angleSextic             sextic angle force parameter
-   @param forces                  force vector
+   pot_nasa in mbpol
 
    @return energy
 
    --------------------------------------------------------------------------------------- */
 
-RealOpenMM AmoebaReferenceStretchBendForce::calculateStretchBendIxn( const RealVec& positionAtomA, const RealVec& positionAtomB,
-                                                                     const RealVec& positionAtomC,
-                                                                     RealOpenMM lengthAB,      RealOpenMM lengthCB,
-                                                                     RealOpenMM idealAngle,    RealOpenMM kParameter,
-                                                                     RealVec* forces ) const {
 
-   // ---------------------------------------------------------------------------------------
+double AmoebaReferenceStretchBendForce::calculateStretchBendIxn(const RealVec& positionO, const RealVec& positionH1, const RealVec& positionH2,
+        RealVec& forceO, RealVec& forceH1, RealVec& forceH2) const
+{
+    double ROH1[3], ROH2[3], RHH[3], dROH1(0), dROH2(0), dRHH(0);
 
-    //static const std::string methodName = "AmoebaReferenceStretchBendForce::calculateStretchBendIxn";
- 
-    static const RealOpenMM zero          = 0.0;
-    static const RealOpenMM one           = 1.0;
+    double c5z[245];
+    // scaling factors for contributions to emperical potential
+    const double f5z = 0.999677885;
+    const double fbasis = 0.15860145369897;
+    const double fcore = -1.6351695982132;
+    const double frest = 1.0;
 
-   // ---------------------------------------------------------------------------------------
+    for (size_t i = 0; i < 3; ++i) {
+        ROH1[i] = positionH1[i] - positionO[i]; // H1 - O
+        ROH2[i] = positionH2[i] - positionO[i]; // H2 - O
+        RHH[i] = positionH1[i] - positionH2[i]; // H1 - H2
 
-   enum { A, B, C, LastAtomIndex };
-   enum { AB, CB, CBxAB, ABxP, CBxP, LastDeltaIndex };
+        // nm -> A
+        ROH1[i] *= 10.;
+        ROH2[i] *= 10.;
+        RHH[i] *= 10.;
 
-   // ---------------------------------------------------------------------------------------
-
-   // get deltaR between various combinations of the 3 atoms
-   // and various intermediate terms
-
-    std::vector<RealOpenMM> deltaR[LastDeltaIndex];
-    for( unsigned int ii = 0; ii < LastDeltaIndex; ii++ ){
-        deltaR[ii].resize(3);
+        dROH1 += ROH1[i]*ROH1[i];
+        dROH2 += ROH2[i]*ROH2[i];
+        dRHH += RHH[i]*RHH[i];
     }
-    AmoebaReferenceForce::loadDeltaR( positionAtomB, positionAtomA, deltaR[AB] );
-    AmoebaReferenceForce::loadDeltaR( positionAtomB, positionAtomC, deltaR[CB] );
-    RealOpenMM  rAB2 = AmoebaReferenceForce::getNormSquared3( deltaR[AB] );
-    RealOpenMM  rAB  = SQRT( rAB2 );
-    RealOpenMM  rCB2 = AmoebaReferenceForce::getNormSquared3( deltaR[CB] );
-    RealOpenMM  rCB  = SQRT( rCB2 );
 
-    AmoebaReferenceForce::getCrossProduct( deltaR[CB], deltaR[AB], deltaR[CBxAB] );
-    RealOpenMM  rP   = AmoebaReferenceForce::getNorm3( deltaR[CBxAB] );
-    if( rP <= zero ){
-       return zero;
+    dROH1 = std::sqrt(dROH1);
+    dROH2 = std::sqrt(dROH2);
+    dRHH = std::sqrt(dRHH);
+
+    const double costh =
+        (ROH1[0]*ROH2[0] + ROH1[1]*ROH2[1] + ROH1[2]*ROH2[2])/(dROH1*dROH2);
+
+        for (size_t i = 0; i < 245; ++i)
+            c5z[i] = f5z*c5zA[i] + fbasis*cbasis[i]
+                   + fcore*ccore[i] + frest*crest[i];
+
+    const double deoh = f5z*deohA;
+    const double phh1 = f5z*phh1A*std::exp(phh2);
+
+    const double costhe = -.24780227221366464506;
+
+    const double exp1 = std::exp(-alphaoh*(dROH1 - roh));
+    const double exp2 = std::exp(-alphaoh*(dROH2 - roh));
+
+    const double Va = deoh*(exp1*(exp1 - 2.0) + exp2*(exp2 - 2.0));
+    const double Vb = phh1*std::exp(-phh2*dRHH);
+
+    const double dVa1= 2.0*alphaoh*deoh*exp1*(1.0 - exp1)/dROH1;
+    const double dVa2= 2.0*alphaoh*deoh*exp2*(1.0 - exp2)/dROH2;
+    const double dVb = -phh2*Vb/dRHH;
+
+    const double x1 = (dROH1 - reoh)/reoh;
+    const double x2 = (dROH2 - reoh)/reoh;
+    const double x3 = costh - costhe;
+
+    double fmat[3][16];
+
+    for (size_t i = 0; i < 3; ++i) {
+        fmat[i][0] = 0.0;
+        fmat[i][1] = 1.0;
     }
-    RealOpenMM dot    = AmoebaReferenceForce::getDotProduct3( deltaR[CB], deltaR[AB] );
-    RealOpenMM cosine = dot/(rAB*rCB);
- 
-    RealOpenMM angle;
-    if( cosine >= one ){
-       angle = zero;
-    } else if( cosine <= -one ){
-       angle = PI_M;
-    } else {
-       angle = RADIAN*ACOS(cosine);
+
+    for (size_t j = 2; j < 16; ++j) {
+        fmat[0][j] = fmat[0][j - 1]*x1;
+        fmat[1][j] = fmat[1][j - 1]*x2;
+        fmat[2][j] = fmat[2][j - 1]*x3;
     }
- 
-    RealOpenMM termA = -RADIAN/(rAB2*rP);
-    RealOpenMM termC =  RADIAN/(rCB2*rP);
- 
-    // P = CBxAB
- 
-    AmoebaReferenceForce::getCrossProduct( deltaR[AB], deltaR[CBxAB], deltaR[ABxP] );
-    AmoebaReferenceForce::getCrossProduct( deltaR[CB], deltaR[CBxAB], deltaR[CBxP] );
-    for( int ii = 0; ii < 3; ii++ ){
-       deltaR[ABxP][ii] *= termA;
-       deltaR[CBxP][ii] *= termC;
+
+    const double efac = std::exp(-b1*(std::pow((dROH1 - reoh), 2)
+                                    + std::pow((dROH2 - reoh), 2)));
+
+    double sum0(0), sum1(0), sum2(0), sum3(0);
+
+    for (size_t j = 1; j < 245; ++j) {
+        const size_t inI = idx1[j];
+        const size_t inJ = idx2[j];
+        const size_t inK = idx3[j];
+
+        sum0 += c5z[j]*(fmat[0][inI]*fmat[1][inJ]
+                      + fmat[0][inJ]*fmat[1][inI])*fmat[2][inK];
+
+        sum1 += c5z[j]*((inI - 1)*fmat[0][inI - 1]*fmat[1][inJ]
+                      + (inJ - 1)*fmat[0][inJ - 1]*fmat[1][inI])*fmat[2][inK];
+
+        sum2 += c5z[j]*((inJ - 1)*fmat[0][inI]*fmat[1][inJ - 1]
+                      + (inI - 1)*fmat[0][inJ]*fmat[1][inI - 1])*fmat[2][inK];
+
+        sum3 += c5z[j]*(fmat[0][inI]*fmat[1][inJ] + fmat[0][inJ]*fmat[1][inI])
+                      *(inK - 1)*fmat[2][inK - 1];
     }
- 
-    RealOpenMM dr    = rAB - lengthAB + rCB - lengthCB;
-    termA            = one/rAB;
-    termC            = one/rCB;
- 
-    // ---------------------------------------------------------------------------------------
- 
-    // forces
- 
-    // calculate forces for atoms a, b, c
-    // the force for b is then -( a + c)
- 
-    std::vector<RealOpenMM> subForce[LastAtomIndex];
-    for( int ii = 0; ii < LastAtomIndex; ii++ ){
-        subForce[ii].resize(3);
+
+    // energy
+    const double Vc = 2*c5z[0] + efac*sum0;
+    double e1 = Va + Vb + Vc;
+
+    e1 += 0.44739574026257; // correction
+    e1 *= cm1_kcalmol; // cm-1 --> Kcal/mol
+
+    // derivatives
+
+    const double dVcdr1 =
+        (-2*b1*efac*(dROH1 - reoh)*sum0 + efac*sum1/reoh)/dROH1;
+
+    const double dVcdr2 =
+        (-2*b1*efac*(dROH2 - reoh)*sum0 + efac*sum2/reoh)/dROH2;
+
+    const double dVcdcth = efac*sum3;
+
+    for (size_t i = 0; i < 3; ++i) {
+        // H1
+        forceH1[i] = dVa1*ROH1[i] + dVb*RHH[i] + dVcdr1*ROH1[i]
+        + dVcdcth*(ROH2[i]/(dROH1*dROH2) - costh*ROH1[i]/(dROH1*dROH1));
+        // H2
+        forceH2[i] = dVa2*ROH2[i] - dVb*RHH[i] + dVcdr2*ROH2[i]
+        + dVcdcth*(ROH1[i]/(dROH1*dROH2) - costh*ROH2[i]/(dROH2*dROH2));
+        // O
+        forceO[i] = -(forceH1[i] + forceH2[i]);
     }
-    RealOpenMM dt = angle - idealAngle*RADIAN;
-    for( int jj = 0; jj < 3; jj++ ){
-       subForce[A][jj] = kParameter*(dt*termA*deltaR[AB][jj] + dr*deltaR[ABxP][jj] );
-       subForce[C][jj] = kParameter*(dt*termC*deltaR[CB][jj] + dr*deltaR[CBxP][jj] );
-       subForce[B][jj] = -( subForce[A][jj] + subForce[C][jj] );
+
+    double cal2joule = 4.184;
+    for (size_t i = 0; i < 3; ++i)
+    { // added *10 A -> nm
+        forceH1[i] *= cm1_kcalmol * cal2joule * 10.; // cm-1 --> Kcal/mol
+        forceH2[i] *= cm1_kcalmol * cal2joule * 10.; // cm-1 --> Kcal/mol
+        forceO[i] *= cm1_kcalmol  * cal2joule * 10; // cm-1 --> Kcal/mol
     }
- 
-    // add in forces
- 
-    for( int jj = 0; jj < LastAtomIndex; jj++ ){
-        forces[jj][0] = subForce[jj][0];
-        forces[jj][1] = subForce[jj][1];
-        forces[jj][2] = subForce[jj][2];
-    }
- 
-    // ---------------------------------------------------------------------------------------
- 
-    return (kParameter*dt*dr);
+    return e1 * cal2joule;
 }
 
+
 RealOpenMM AmoebaReferenceStretchBendForce::calculateForceAndEnergy( int numStretchBends, vector<RealVec>& posData,
-                                                                       const std::vector<int>&  particle1,
-                                                                       const std::vector<int>&  particle2,
-                                                                       const std::vector<int>&  particle3,
+                                                                       const std::vector<int>&  particleO,
+                                                                       const std::vector<int>&  particleH1,
+                                                                       const std::vector<int>&  particleH2,
                                                                        const std::vector<RealOpenMM>& lengthABParameters,
                                                                        const std::vector<RealOpenMM>& lengthCBParameters,
                                                                        const std::vector<RealOpenMM>&  angle,
@@ -158,22 +186,18 @@ RealOpenMM AmoebaReferenceStretchBendForce::calculateForceAndEnergy( int numStre
                                                                        vector<RealVec>& forceData) const {
     RealOpenMM energy      = 0.0; 
     for (unsigned int ii = 0; ii < static_cast<unsigned int>(numStretchBends); ii++) {
-        int particle1Index      = particle1[ii];
-        int particle2Index      = particle2[ii];
-        int particle3Index      = particle3[ii];
-        RealOpenMM abLength     = lengthABParameters[ii];
-        RealOpenMM cbLength     = lengthCBParameters[ii];
-        RealOpenMM idealAngle   = angle[ii];
-        RealOpenMM angleK       = kQuadratic[ii];
-        RealVec forces[3];
-        energy                 += calculateStretchBendIxn( posData[particle1Index], posData[particle2Index], posData[particle3Index],
-                                                           abLength, cbLength, idealAngle, angleK, forces );
+        int particleOIndex      = particleO[ii];
+        int particleH1Index      = particleH1[ii];
+        int particleH2Index      = particleH2[ii];
+        RealVec forceO, forceH1, forceH2;
+        energy                 +=  calculateStretchBendIxn(posData[particleOIndex], posData[particleH1Index], posData[particleH2Index], forceO, forceH1, forceH2);
+
         // accumulate forces
     
         for( int jj = 0; jj < 3; jj++ ){
-            forceData[particle1Index][jj] -= forces[0][jj];
-            forceData[particle2Index][jj] -= forces[1][jj];
-            forceData[particle3Index][jj] -= forces[2][jj];
+            forceData[particleOIndex][jj] -=  forceO[jj];
+            forceData[particleH1Index][jj] -= forceH1[jj];
+            forceData[particleH2Index][jj] -= forceH2[jj];
         }
 
     }   

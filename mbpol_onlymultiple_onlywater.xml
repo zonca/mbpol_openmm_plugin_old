@@ -18,4 +18,7 @@
    <Polarize type="380" polarizability="0.001310" thole="0.4"    pgrp1="381"  />
    <Polarize type="381" polarizability="0.000294" thole="0.4"    pgrp1="380"  />
  </AmoebaMultipoleForce>
+ <MBPol1BForce globalPar="0.0">
+   <1BResidue name="HOH" localPar="0.0"  />
+ </MBPol1BForce>
 </ForceField>
