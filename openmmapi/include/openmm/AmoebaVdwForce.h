@@ -117,7 +117,7 @@ public:
      *                        at which the interaction site should be placed
      * @return index of added particle
      */
-    int addParticle(int parentIndex, double sigma, double epsilon, double reductionFactor);
+    int addParticle(vector<int> particleIndices);
 
     /**
      * Set sigma combining rule
@@ -232,16 +232,13 @@ private:
 
 class AmoebaVdwForce::VdwInfo {
 public:
-    int parentIndex;
-    double reductionFactor, sigma, epsilon, cutoff;
+    vector<int> particleIndices;
+
     VdwInfo() {
-        parentIndex = -1;
-        reductionFactor      = 0.0;
-        sigma                = 1.0;
-        epsilon              = 0.0;
+
     }
-    VdwInfo(int parentIndex, double sigma, double epsilon, double reductionFactor) :
-        parentIndex(parentIndex), sigma(sigma), epsilon(epsilon), reductionFactor(reductionFactor)  {
+    VdwInfo(vector<int> particleIndices) :
+        particleIndices(particleIndices)  {
     }
 };
 

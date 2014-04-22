@@ -41,25 +41,9 @@ using std::vector;
 AmoebaVdwForce::AmoebaVdwForce() : nonbondedMethod(NoCutoff), sigmaCombiningRule("CUBIC-MEAN"), epsilonCombiningRule("HHG"), cutoff(1.0e+10), useDispersionCorrection(true) {
 }
 
-int AmoebaVdwForce::addParticle(int parentIndex, double sigma, double epsilon, double reductionFactor ) {
-    parameters.push_back(VdwInfo(parentIndex, sigma, epsilon, reductionFactor));
+int AmoebaVdwForce::addParticle(vector<int> particleIndices ) {
+    parameters.push_back(VdwInfo(particleIndices));
     return parameters.size()-1;
-}
-
-void AmoebaVdwForce::getParticleParameters(int particleIndex, int& parentIndex,
-                                           double& sigma, double& epsilon, double& reductionFactor ) const {
-    parentIndex     = parameters[particleIndex].parentIndex;
-    sigma           = parameters[particleIndex].sigma;
-    epsilon         = parameters[particleIndex].epsilon;
-    reductionFactor = parameters[particleIndex].reductionFactor;
-}
-
-void AmoebaVdwForce::setParticleParameters(int particleIndex, int parentIndex,
-                                           double sigma, double epsilon, double reductionFactor ) {
-    parameters[particleIndex].parentIndex     = parentIndex;
-    parameters[particleIndex].sigma           = sigma;
-    parameters[particleIndex].epsilon         = epsilon;
-    parameters[particleIndex].reductionFactor = reductionFactor;
 }
 
 void AmoebaVdwForce::setSigmaCombiningRule( const std::string& inputSigmaCombiningRule ) {
