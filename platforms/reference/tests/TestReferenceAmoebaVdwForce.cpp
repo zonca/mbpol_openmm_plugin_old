@@ -58,61 +58,39 @@ void testVdw( FILE* log ) {
     System system;
     int numberOfParticles          = 6;
     AmoebaVdwForce* amoebaVdwForce = new AmoebaVdwForce();
-    std::string sigmaCombiningRule = std::string("CUBIC-MEAN");
-    amoebaVdwForce->setSigmaCombiningRule( sigmaCombiningRule );
 
-    std::string epsilonCombiningRule = std::string("HHG");
-    amoebaVdwForce->setEpsilonCombiningRule( epsilonCombiningRule );
-    for( int ii = 0; ii < numberOfParticles; ii++ ){
-        int indexIV;
-        double mass, sigma, epsilon, reduction;
-        std::vector< int > exclusions;
-        if( ii == 0 || ii == 3 ){
-            mass        = 16.0;
-            indexIV     = ii;
-            sigma       = 1.70250E+00;
-            epsilon     = 1.10000E-01;
-            reduction   = 0.0;
-        } else {
-            mass        = 1.0;
-            indexIV     = ii < 3 ? 0 : 3;
-            sigma       = 1.32750E+00;
-            epsilon     = 1.35000E-02;
-            reduction   = 0.91;
+    unsigned int particlesPerMolecule = 3;
+
+    std::vector<int> particleIndices(3);
+    for( unsigned int jj = 0; jj < numberOfParticles; jj += particlesPerMolecule ){
+        system.addParticle( 1.5999000e+01 );
+        system.addParticle( 1.0080000e+00 );
+        system.addParticle( 1.0080000e+00 );
+        for (unsigned int i=0; i < 3; i++) {
+            particleIndices[i] = jj+i;
         }
-
-        // exclusions
-
-        if( ii < 3 ){
-            exclusions.push_back ( 0 );
-            exclusions.push_back ( 1 );
-            exclusions.push_back ( 2 );
-        } else {
-            exclusions.push_back ( 3 );
-            exclusions.push_back ( 4 );
-            exclusions.push_back ( 5 );
-        }
-        system.addParticle(mass);
-        amoebaVdwForce->addParticle( indexIV, sigma, epsilon, reduction );
-        amoebaVdwForce->setParticleExclusions( ii, exclusions );
+        amoebaVdwForce->addParticle( particleIndices);
     }
+
+
     LangevinIntegrator integrator(0.0, 0.1, 0.01);
 
     std::vector<Vec3> positions(numberOfParticles);
     std::vector<Vec3> expectedForces(numberOfParticles);
     double expectedEnergy;
 
-    positions[0]          = Vec3( -0.254893450E+02, -0.876646600E+01,  0.174761600E+01 );
-    positions[1]          = Vec3( -0.263489690E+02, -0.907798000E+01,  0.205385100E+01 );
-    positions[2]          = Vec3( -0.252491680E+02, -0.949411200E+01,  0.115017600E+01 );
-    positions[3]          = Vec3(  0.172827200E+01,  0.195873090E+02,  0.100059800E+01 );
-    positions[4]          = Vec3(  0.129370700E+01,  0.190112810E+02,  0.169576300E+01 );
-    positions[5]          = Vec3(  0.256122300E+01,  0.191601930E+02,  0.854382000E+00 );
+    positions[0]             = Vec3( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
+    positions[1]             = Vec3( -6.218989773e-01, -6.009430735e-01,  1.572437625e+00  );
+    positions[2]             = Vec3( -2.017613812e+00, -4.190350349e-01,  2.239642849e+00  );
 
-    double offset         = 27.0;
-    for( int ii = 0; ii < 3; ii++ ){
-       positions[ii][0]      += offset;
-       positions[ii][1]      += offset;
+    positions[3]             = Vec3( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
+    positions[4]             = Vec3( -1.903851736e+00, -4.935677617e-01, -3.457810126e-01  );
+    positions[5]             = Vec3( -2.527904158e+00, -7.613550077e-01, -1.733803676e+00  );
+
+    for (int i=0; i<numberOfParticles; i++) {
+        for (int j=0; j<3; j++) {
+            positions[i][j] *= 1e-1;
+        }
     }
 
     expectedForces[0]     = Vec3(  -0.729561040E+03,  0.425828484E+04, -0.769114213E+03 );
@@ -133,21 +111,14 @@ void testVdw( FILE* log ) {
         positions[ii][1] *= AngstromToNm;
         positions[ii][2] *= AngstromToNm;
     }
-    for( int ii = 0; ii < amoebaVdwForce->getNumParticles();  ii++ ){
-        int indexIV;
-        double sigma, epsilon, reduction;
-        amoebaVdwForce->getParticleParameters( ii, indexIV, sigma, epsilon, reduction );
-        sigma        *= AngstromToNm;
-        epsilon      *= CalToJoule;
-        amoebaVdwForce->setParticleParameters( ii, indexIV, sigma, epsilon, reduction );
-    }
+
     platformName = "Reference";
     Context context(system, integrator, Platform::getPlatformByName( platformName ) );
 
     context.setPositions(positions);
     State state                      = context.getState(State::Forces | State::Energy);
     std::vector<Vec3> forces         = state.getForces();
-    const double conversion          = -AngstromToNm/CalToJoule;
+    const double conversion          = AngstromToNm/CalToJoule;
 
     for( unsigned int ii = 0; ii < forces.size(); ii++ ){
         forces[ii][0] *= conversion;
@@ -172,35 +143,7 @@ void testVdw( FILE* log ) {
         ASSERT_EQUAL_VEC( expectedForces[ii], forces[ii], tolerance );
     }
     ASSERT_EQUAL_TOL( expectedEnergy, state.getPotentialEnergy(), tolerance );
-    
-    // Try changing the particle parameters and make sure it's still correct.
-    
-    for (int i = 0; i < numberOfParticles; i++) {
-        int indexIV;
-        double mass, sigma, epsilon, reduction;
-        amoebaVdwForce->getParticleParameters(i, indexIV, sigma, epsilon, reduction);
-        amoebaVdwForce->setParticleParameters(i, indexIV, 0.9*sigma, 2.0*epsilon, 0.95*reduction);
-    }
-    LangevinIntegrator integrator2(0.0, 0.1, 0.01);
-    Context context2(system, integrator2, Platform::getPlatformByName(platformName));
-    context2.setPositions(positions);
-    State state1 = context.getState(State::Forces | State::Energy);
-    State state2 = context2.getState(State::Forces | State::Energy);
-    bool exceptionThrown = false;
-    try {
-        // This should throw an exception.
-        for (int i = 0; i < numberOfParticles; i++)
-            ASSERT_EQUAL_VEC(state1.getForces()[i], state2.getForces()[i], tolerance);
-    }
-    catch (std::exception ex) {
-        exceptionThrown = true;
-    }
-    ASSERT(exceptionThrown);
-    amoebaVdwForce->updateParametersInContext(context);
-    state1 = context.getState(State::Forces | State::Energy);
-    for (int i = 0; i < numberOfParticles; i++)
-        ASSERT_EQUAL_VEC(state1.getForces()[i], state2.getForces()[i], tolerance);
-    ASSERT_EQUAL_TOL(state1.getPotentialEnergy(), state2.getPotentialEnergy(), tolerance);
+
 }
 
 void setupAndGetForcesEnergyVdwAmmonia( const std::string& sigmaCombiningRule, const std::string& epsilonCombiningRule, double cutoff,
