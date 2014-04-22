@@ -78,26 +78,41 @@ void testOneStretchBend( FILE* log ) {
     positions[1]             = Vec3( -6.218989773e-01, -6.009430735e-01,  1.572437625e+00  );
     positions[2]             = Vec3( -2.017613812e+00, -4.190350349e-01,  2.239642849e+00  );
 
+    for (int i=0; i<numberOfParticles; i++) {
+        for (int j=0; j<3; j++) {
+            positions[i][j] *= 1e-1;
+        }
+    }
+
     context.setPositions(positions);
     
     State state                      = context.getState(State::Forces | State::Energy);
-    const std::vector<Vec3> forces   = state.getForces();
+    std::vector<Vec3> forces   = state.getForces();
     double cal2joule = 4.184;
 
     std::vector<Vec3> expectedForces(numberOfParticles);
-    expectedForces[0]         = Vec3( -1.029233628e-01,  1.752006876e-01, -2.394228296e-01  );
-    expectedForces[1]         = Vec3(  1.238286503e-01, -9.713944883e-02,  9.278441270e-02  );
-    expectedForces[2]         = Vec3( -1.992936921e-02, -8.084103617e-02,  1.660930712e-01  );
 
+    expectedForces[0]         = Vec3(-27.48162433,     8.92495995,   2.80995323 );
+    expectedForces[1]         = Vec3( 30.78909844,   -11.48714187,  -0.27204770 );
+    expectedForces[2]         = Vec3( -3.30747410,     2.56218193,  -2.53790553 );
+
+    // MBPol gives the gradients, we use forces in OpenMM, need to flip sign
     for (int i=0; i<numberOfParticles; i++) {
-        for (int j=0; j<3; j++) {
-            expectedForces[i][j] *= cal2joule*10;
+            for (int j=0; j<3; j++) {
+                expectedForces[i][j] *= -1;
+            }
         }
-    }
+
     double tolerance=1e-4;
-    double expectedEnergy = -15.9939592*cal2joule;
+    double expectedEnergy = 0.55975882;
 
     std::cout  << std::endl << "Forces:" << std::endl;
+
+    for (int i=0; i<numberOfParticles; i++) {
+           for (int j=0; j<3; j++) {
+            forces[i][j] /= cal2joule*10;
+           }
+       }
 
     for (int i=0; i<numberOfParticles; i++) {
          std::cout << forces[i] << " Kcal/mol/A " << std::endl;
@@ -112,12 +127,12 @@ void testOneStretchBend( FILE* log ) {
     double energy = state.getPotentialEnergy();
 
     std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
-    std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
+    std::cout << "Expected energy: " << expectedEnergy << " Kcal/mol "<< std::endl;
 
     for( unsigned int ii = 0; ii < forces.size(); ii++ ){
         ASSERT_EQUAL_VEC( expectedForces[ii], forces[ii], tolerance );
     }
-    ASSERT_EQUAL_TOL( expectedEnergy, energy, tolerance );
+    ASSERT_EQUAL_TOL( expectedEnergy, energy/cal2joule, tolerance );
 
 }
 

@@ -164,13 +164,14 @@ double AmoebaReferenceStretchBendForce::calculateStretchBendIxn(const RealVec& p
         forceO[i] = -(forceH1[i] + forceH2[i]);
     }
 
+    double cal2joule = 4.184;
     for (size_t i = 0; i < 3; ++i)
     { // added *10 A -> nm
-        forceH1[i] *= cm1_kcalmol * 10.; // cm-1 --> Kcal/mol
-        forceH2[i] *= cm1_kcalmol * 10.; // cm-1 --> Kcal/mol
-        forceO[i] *= cm1_kcalmol * 10; // cm-1 --> Kcal/mol
+        forceH1[i] *= cm1_kcalmol * cal2joule * 10.; // cm-1 --> Kcal/mol
+        forceH2[i] *= cm1_kcalmol * cal2joule * 10.; // cm-1 --> Kcal/mol
+        forceO[i] *= cm1_kcalmol  * cal2joule * 10; // cm-1 --> Kcal/mol
     }
-    return e1;
+    return e1 * cal2joule;
 }
 
 
@@ -193,7 +194,7 @@ RealOpenMM AmoebaReferenceStretchBendForce::calculateForceAndEnergy( int numStre
 
         // accumulate forces
     
-        for( int jj = 0; jj < 3; jj++ ){  // FIXME add or remove forces?
+        for( int jj = 0; jj < 3; jj++ ){
             forceData[particleOIndex][jj] -=  forceO[jj];
             forceData[particleH1Index][jj] -= forceH1[jj];
             forceData[particleH2Index][jj] -= forceH2[jj];
