@@ -804,21 +804,21 @@ int main( int numberOfArguments, char* argv[] ) {
         std::cout << "TestReferenceAmoebaMultipoleForce running test..." << std::endl;
 
         FILE* log = NULL;
-
-        testGetAndScaleInverseRs( log );
-        testGetAndScaleInverseRsInterMulecolar( log );
-
-        WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();
-        amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
-        amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
-
-        WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn();
-        wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
-
-        WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
-        wrapperForComputeWaterCharge->testComputeWaterCharge();
-
-        testWater3( log );
+//
+//        testGetAndScaleInverseRs( log );
+//        testGetAndScaleInverseRsInterMulecolar( log );
+//
+//        WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();
+//        amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
+//        amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
+//
+//        WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn();
+//        wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
+//
+//        WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
+//        wrapperForComputeWaterCharge->testComputeWaterCharge();
+//
+//        testWater3( log );
 
         testWater3VirtualSite( log );
 
