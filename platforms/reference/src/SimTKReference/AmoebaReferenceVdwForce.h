@@ -72,13 +72,13 @@ public:
        --------------------------------------------------------------------------------------- */
  
     AmoebaReferenceVdwForce( );
- 
+
     /**---------------------------------------------------------------------------------------
-       
+
        Constructor
-       
+
        --------------------------------------------------------------------------------------- */
- 
+
     AmoebaReferenceVdwForce( const std::string& sigmaCombiningRule,
                              const std::string& epsilonCombiningRule );
  
@@ -232,9 +232,7 @@ public:
        --------------------------------------------------------------------------------------- */
     
     RealOpenMM calculateForceAndEnergy( int numParticles, const std::vector<OpenMM::RealVec>& particlePositions, 
-                                        const std::vector<int>& indexIVs, 
-                                        const std::vector<RealOpenMM>& sigmas, const std::vector<RealOpenMM>& epsilons,
-                                        const std::vector<RealOpenMM>& reductions,
+                                        const std::vector<std::vector<int> >& allParticleIndices,
                                         const NeighborList& neighborList,
                                         std::vector<OpenMM::RealVec>& forces ) const;
          
@@ -266,71 +264,71 @@ private:
     RealOpenMM  hhgEpsilonCombiningRule(       RealOpenMM epsilonI, RealOpenMM epsilonJ ) const;
 
     /**---------------------------------------------------------------------------------------
-    
-       Set reduced positions: position used to calculate vdw interaction is moved towards 
+
+       Set reduced positions: position used to calculate vdw interaction is moved towards
        covalent partner
-       
-    
+
+
        @param  numParticles         number of particles
        @param  particlePositions    current particle positions
        @param  indexIVs             particle index of covalent partner
        @param  reductions           fraction of bond length to move particle interacting site;
-                                    reductions[i] = zero, 
+                                    reductions[i] = zero,
                                     if interacting position == particle position
        @param  reducedPositions     output: modfied or original position depending on whether
                                     reduction factor is nonzero
-    
+
        --------------------------------------------------------------------------------------- */
-    
+
     void setReducedPositions( int numParticles, const std::vector<RealVec>& particlePositions,
                               const std::vector<int>& indexIVs, const std::vector<RealOpenMM>& reductions,
                               std::vector<Vec3>& reducedPositions ) const;
 
     /**---------------------------------------------------------------------------------------
-    
+
        Add reduced forces to force vector
-    
+
        @param  particleI            index of particleI
        @param  particleIV           index of particleIV
        @param  reduction            reduction factor
        @param  sign                 +1 or -1 for add/sutracting forces
        @param  force                force vector to add
        @param  forces               force vector for particles
-    
+
        --------------------------------------------------------------------------------------- */
-    
+
     void addReducedForce( unsigned int particleI, unsigned int particleIV,
                           RealOpenMM reduction, RealOpenMM sign,
                           Vec3& force, std::vector<OpenMM::RealVec>& forces ) const;
-    
+
     /**---------------------------------------------------------------------------------------
-    
+
        Set taper coefficients
-    
+
        @param  cutoff cutoff
 
        --------------------------------------------------------------------------------------- */
-    
+
     void setTaperCoefficients( double cutoff );
 
     /**---------------------------------------------------------------------------------------
-    
+
        Calculate pair ixn
-    
+
        @param  combindedSigma       combined sigmas
        @param  combindedEpsilon     combined epsilons
-       @param  particleIPosition    particle I position 
-       @param  particleJPosition    particle J position 
+       @param  particleIPosition    particle I position
+       @param  particleJPosition    particle J position
        @param  force                output force
-    
+
        @return energy for ixn
 
        --------------------------------------------------------------------------------------- */
-    
-    RealOpenMM calculatePairIxn( RealOpenMM combindedSigma, RealOpenMM combindedEpsilon,
-                                 const Vec3& particleIPosition, const Vec3& particleJPosition,
-                                 Vec3& force ) const;
 
+    RealOpenMM calculatePairIxn( int siteI, int siteJ,
+                                                          const std::vector<RealVec> & particlePositions,
+                                                          const std::vector<std::vector<int> >& allParticleIndices,
+                                                          std::vector<RealVec>& forces ) const;
 };
 
 // ---------------------------------------------------------------------------------------

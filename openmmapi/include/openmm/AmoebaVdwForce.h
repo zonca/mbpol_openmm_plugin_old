@@ -68,6 +68,7 @@ public:
          * each other particle.  Interactions beyond the cutoff distance are ignored.
          */
         CutoffPeriodic = 1,
+        CutoffNonPeriodic = 2,
     };
 
     /**
@@ -92,7 +93,7 @@ public:
      * @param reductionFactor the fraction of the distance along the line from the parent particle to this particle
      *                        at which the interaction site should be placed
      */
-    void setParticleParameters(int particleIndex, int parentIndex, double sigma, double epsilon, double reductionFactor);
+    void setParticleParameters(int particleIndex, std::vector<int>& particleIndices);
 
     /**
      * Get the force field parameters for a vdw particle.
@@ -104,7 +105,7 @@ public:
      * @param reductionFactor the fraction of the distance along the line from the parent particle to this particle
      *                        at which the interaction site should be placed
      */
-    void getParticleParameters(int particleIndex, int& parentIndex, double& sigma, double& epsilon, double& reductionFactor) const;
+    void getParticleParameters(int particleIndex, std::vector<int>& particleIndices) const;
 
 
     /**
@@ -117,8 +118,9 @@ public:
      *                        at which the interaction site should be placed
      * @return index of added particle
      */
-    int addParticle(vector<int> particleIndices);
+    int addParticle(const std::vector<int> & particleIndices);
 
+    int getNumMolecules(void) const;
     /**
      * Set sigma combining rule
      * 
@@ -232,12 +234,12 @@ private:
 
 class AmoebaVdwForce::VdwInfo {
 public:
-    vector<int> particleIndices;
+    std::vector<int> particleIndices;
 
     VdwInfo() {
 
     }
-    VdwInfo(vector<int> particleIndices) :
+    VdwInfo( std::vector<int> particleIndices) :
         particleIndices(particleIndices)  {
     }
 };

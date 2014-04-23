@@ -56,7 +56,7 @@ void AmoebaVdwForceProxy::serialize(const void* object, SerializationNode& node)
 
         int ivIndex;
         double sigma, epsilon, reductionFactor;
-        force.getParticleParameters( ii, ivIndex, sigma, epsilon, reductionFactor );
+        // force.getParticleParameters( ii, ivIndex, sigma, epsilon, reductionFactor );
 
         SerializationNode& particle = particles.createChildNode("Particle");
         particle.setIntProperty("ivIndex", ivIndex).setDoubleProperty("sigma", sigma).setDoubleProperty("epsilon", epsilon).setDoubleProperty("reductionFactor", reductionFactor);
@@ -85,7 +85,7 @@ void* AmoebaVdwForceProxy::deserialize(const SerializationNode& node) const {
         const SerializationNode& particles = node.getChildNode("VdwParticles");
         for (unsigned int ii = 0; ii < particles.getChildren().size(); ii++) {
             const SerializationNode& particle = particles.getChildren()[ii];
-            force->addParticle(particle.getIntProperty("ivIndex"), particle.getDoubleProperty("sigma"), particle.getDoubleProperty("epsilon"), particle.getDoubleProperty("reductionFactor"));
+            // force->addParticle(particle.getIntProperty("ivIndex"), particle.getDoubleProperty("sigma"), particle.getDoubleProperty("epsilon"), particle.getDoubleProperty("reductionFactor"));
 
             // exclusions
 

@@ -26,6 +26,8 @@
 #include "AmoebaReferenceVdwForce.h"
 #include <algorithm>
 #include <cctype>
+#include "mbpol_2body_constants.h"
+#include "poly-2b-v6x.h"
 
 using std::vector;
 using OpenMM::RealVec;
@@ -162,202 +164,210 @@ RealOpenMM AmoebaReferenceVdwForce::hhgEpsilonCombiningRule( RealOpenMM epsilonI
     return (epsilonI != 0.0 && epsilonJ != 0.0) ? 4.0*(epsilonI*epsilonJ)/(denominator*denominator) : 0.0;
 }
 
-void AmoebaReferenceVdwForce::addReducedForce( unsigned int particleI, unsigned int particleIV,
-                                               RealOpenMM reduction, RealOpenMM sign,
-                                               Vec3& force, vector<RealVec>& forces ) const {
+RealOpenMM AmoebaReferenceVdwForce::calculatePairIxn( int siteI, int siteJ,
+                                                      const std::vector<RealVec>& particlePositions,
+                                                      const std::vector<std::vector<int> >& allParticleIndices,
+                                                      vector<RealVec>& forces ) const {
 
-// ---------------------------------------------------------------------------------------
+        // siteI and siteJ are indices in a oxygen-only array, in order to get the position of an oxygen, we need:
+        // allParticleIndices[siteI][0]
+        // first hydrogen: allParticleIndices[siteI][1]
+        // second hydrogen: allParticleIndices[siteI][2]
+        // same for the second water molecule
+        const double nm_to_A = 10.;
+        const double dOO[3] = {particlePositions[allParticleIndices[siteI][0]][0]*nm_to_A - particlePositions[allParticleIndices[siteJ][0]][0]*nm_to_A,
+                               particlePositions[allParticleIndices[siteI][0]][1]*nm_to_A - particlePositions[allParticleIndices[siteJ][0]][1]*nm_to_A,
+                               particlePositions[allParticleIndices[siteI][0]][2]*nm_to_A - particlePositions[allParticleIndices[siteJ][0]][2]*nm_to_A};
 
-    static const RealOpenMM one           = 1.0;
+        const double rOOsq = dOO[0]*dOO[0] + dOO[1]*dOO[1] + dOO[2]*dOO[2];
+        const double rOO = std::sqrt(rOOsq);
 
-   // ---------------------------------------------------------------------------------------
+        if (rOO > r2f)
+            return 0.0;
 
-    forces[particleI][0]  += sign*force[0]*reduction;
-    forces[particleI][1]  += sign*force[1]*reduction;
-    forces[particleI][2]  += sign*force[2]*reduction;
+        // offsets
 
-    forces[particleIV][0] += sign*force[0]*(one - reduction);
-    forces[particleIV][1] += sign*force[1]*(one - reduction);
-    forces[particleIV][2] += sign*force[2]*(one - reduction);
-}
+        const int Oa  = 0;
+        const int Ha1 = 3;
+        const int Ha2 = 6;
 
-RealOpenMM AmoebaReferenceVdwForce::calculatePairIxn( RealOpenMM combindedSigma, RealOpenMM combindedEpsilon,
-                                                      const Vec3& particleIPosition,
-                                                      const Vec3& particleJPosition,
-                                                      Vec3& force ) const {
+        const int Ob  = 9;
+        const int Hb1 = 12;
+        const int Hb2 = 15;
 
-   // ---------------------------------------------------------------------------------------
+        const int Xa1 = 18;
+        const int Xa2 = 21;
 
-    static const RealOpenMM one           = 1.0;
-    static const RealOpenMM two           = 2.0;
-    static const RealOpenMM seven         = 7.0;
+        const int Xb1 = 24;
+        const int Xb2 = 27;
 
-    static const RealOpenMM dhal          = 0.07;
-    static const RealOpenMM ghal          = 0.12;
+        double xcrd[30]; // coordinates including extra-points
 
-   // ---------------------------------------------------------------------------------------
+        for (unsigned int i=0; i < 3; i++) {
+            // first water molecule
+            xcrd[Oa + i] =  particlePositions[allParticleIndices[siteI][0]][i]*nm_to_A;
+            xcrd[Ha1 + i] = particlePositions[allParticleIndices[siteI][1]][i]*nm_to_A;
+            xcrd[Ha2 + i] = particlePositions[allParticleIndices[siteI][2]][i]*nm_to_A;
+            // second water molecule
+            xcrd[Ob + i] =  particlePositions[allParticleIndices[siteJ][0]][i]*nm_to_A;
+            xcrd[Hb1 + i] = particlePositions[allParticleIndices[siteJ][1]][i]*nm_to_A;
+            xcrd[Hb2 + i] = particlePositions[allParticleIndices[siteJ][2]][i]*nm_to_A;
+        }
 
-    RealOpenMM xr           = particleIPosition[0] - particleJPosition[0];
-    RealOpenMM yr           = particleIPosition[1] - particleJPosition[1];
-    RealOpenMM zr           = particleIPosition[2] - particleJPosition[2];
+        // the extra-points
 
-    if( _nonbondedMethod == CutoffPeriodic ){
-               xr          -= static_cast<RealOpenMM>((floor(xr/_periodicBoxDimensions[0]+0.5)*_periodicBoxDimensions[0]));
-               yr          -= static_cast<RealOpenMM>((floor(yr/_periodicBoxDimensions[1]+0.5)*_periodicBoxDimensions[1]));
-               zr          -= static_cast<RealOpenMM>((floor(zr/_periodicBoxDimensions[2]+0.5)*_periodicBoxDimensions[2]));
-    }
+        monomer ma, mb;
 
-    RealOpenMM r_ij_2       = xr*xr + yr*yr + zr*zr;
-    RealOpenMM r_ij         = SQRT(r_ij_2);
-    RealOpenMM sigma_7      = combindedSigma*combindedSigma*combindedSigma;
-               sigma_7      = sigma_7*sigma_7*combindedSigma;
+        ma.setup(xcrd + Oa,
+                 in_plane_gamma, out_of_plane_gamma,
+                 xcrd + Xa1, xcrd + Xa2);
 
-    RealOpenMM r_ij_6       = r_ij_2*r_ij_2*r_ij_2;
-    RealOpenMM r_ij_7       = r_ij_6*r_ij;
+        mb.setup(xcrd + Ob,
+                 in_plane_gamma, out_of_plane_gamma,
+                 xcrd + Xb1, xcrd + Xb2);
 
-    RealOpenMM rho          = r_ij_7 + ghal*sigma_7;
+        // variables
 
-    RealOpenMM tau          = (dhal + one)/(r_ij + dhal*combindedSigma);
-    RealOpenMM tau_7        = tau*tau*tau;
-               tau_7        = tau_7*tau_7*tau;
+        const double d0_intra = 1.0;
+        const double d0_inter = 4.0;
 
-    RealOpenMM dtau         = tau/(dhal + one);
+        double v[31]; // stored separately (gets passed to poly::eval)
 
-    RealOpenMM ratio        = (sigma_7/rho);
-    RealOpenMM gtau         = combindedEpsilon*tau_7*r_ij_6*(ghal+one)*ratio*ratio;
+        variable ctxt[31];
 
-    RealOpenMM energy       = combindedEpsilon*tau_7*sigma_7*( (ghal+one)*sigma_7/rho - two);
+        v[0] = ctxt[0].v_exp(d0_intra, k_HH_intra, xcrd, Ha1, Ha2);
+        v[1] = ctxt[1].v_exp(d0_intra, k_HH_intra, xcrd, Hb1, Hb2);
 
-    RealOpenMM dEdR         = -seven*(dtau*energy + gtau);
+        v[2] = ctxt[2].v_exp(d0_intra, k_OH_intra, xcrd, Oa, Ha1);
+        v[3] = ctxt[3].v_exp(d0_intra, k_OH_intra, xcrd, Oa, Ha2);
+        v[4] = ctxt[4].v_exp(d0_intra, k_OH_intra, xcrd, Ob, Hb1);
+        v[5] = ctxt[5].v_exp(d0_intra, k_OH_intra, xcrd, Ob, Hb2);
 
-    // tapering
+        v[6] = ctxt[6].v_coul(d0_inter, k_HH_coul, xcrd, Ha1, Hb1);
+        v[7] = ctxt[7].v_coul(d0_inter, k_HH_coul, xcrd, Ha1, Hb2);
+        v[8] = ctxt[8].v_coul(d0_inter, k_HH_coul, xcrd, Ha2, Hb1);
+        v[9] = ctxt[9].v_coul(d0_inter, k_HH_coul, xcrd, Ha2, Hb2);
 
-    if( (_nonbondedMethod == CutoffNonPeriodic || _nonbondedMethod == CutoffPeriodic) && r_ij > _taperCutoff ){
-        RealOpenMM delta    = r_ij - _taperCutoff;
-        RealOpenMM taper    = 1.0 + delta*delta*delta*(_taperCoefficients[C3] + delta*(_taperCoefficients[C4] + delta*_taperCoefficients[C5]));
-        RealOpenMM dtaper   = delta*delta*(3.0*_taperCoefficients[C3] + delta*(4.0*_taperCoefficients[C4] + delta*5.0*_taperCoefficients[C5]));
-        dEdR                = energy*dtaper + dEdR*taper;
-        energy             *= taper;
-    }
+        v[10] = ctxt[10].v_coul(d0_inter, k_OH_coul, xcrd, Oa, Hb1);
+        v[11] = ctxt[11].v_coul(d0_inter, k_OH_coul, xcrd, Oa, Hb2);
+        v[12] = ctxt[12].v_coul(d0_inter, k_OH_coul, xcrd, Ob, Ha1);
+        v[13] = ctxt[13].v_coul(d0_inter, k_OH_coul, xcrd, Ob, Ha2);
 
-    dEdR                   /= r_ij;
+        v[14] = ctxt[14].v_coul(d0_inter, k_OO_coul, xcrd, Oa, Ob);
 
-    force[0]                = dEdR*xr;
-    force[1]                = dEdR*yr;
-    force[2]                = dEdR*zr;
+        v[15] = ctxt[15].v_exp(d0_inter, k_XH_main, xcrd, Xa1, Hb1);
+        v[16] = ctxt[16].v_exp(d0_inter, k_XH_main, xcrd, Xa1, Hb2);
+        v[17] = ctxt[17].v_exp(d0_inter, k_XH_main, xcrd, Xa2, Hb1);
+        v[18] = ctxt[18].v_exp(d0_inter, k_XH_main, xcrd, Xa2, Hb2);
+        v[19] = ctxt[19].v_exp(d0_inter, k_XH_main, xcrd, Xb1, Ha1);
+        v[20] = ctxt[20].v_exp(d0_inter, k_XH_main, xcrd, Xb1, Ha2);
+        v[21] = ctxt[21].v_exp(d0_inter, k_XH_main, xcrd, Xb2, Ha1);
+        v[22] = ctxt[22].v_exp(d0_inter, k_XH_main, xcrd, Xb2, Ha2);
+
+        v[23] = ctxt[23].v_exp(d0_inter, k_XO_main, xcrd, Oa, Xb1);
+        v[24] = ctxt[24].v_exp(d0_inter, k_XO_main, xcrd, Oa, Xb2);
+        v[25] = ctxt[25].v_exp(d0_inter, k_XO_main, xcrd, Ob, Xa1);
+        v[26] = ctxt[26].v_exp(d0_inter, k_XO_main, xcrd, Ob, Xa2);
+
+        v[27] = ctxt[27].v_exp(d0_inter, k_XX_main, xcrd, Xa1, Xb1);
+        v[28] = ctxt[28].v_exp(d0_inter, k_XX_main, xcrd, Xa1, Xb2);
+        v[29] = ctxt[29].v_exp(d0_inter, k_XX_main, xcrd, Xa2, Xb1);
+        v[30] = ctxt[30].v_exp(d0_inter, k_XX_main, xcrd, Xa2, Xb2);
+
+        double g[31];
+        const double E_poly = poly_2b_v6x_eval(thefit, v, g);
+
+        double xgrd[30];
+        std::fill(xgrd, xgrd + 30, 0.0);
+
+        ctxt[0].grads(g[0], xgrd, Ha1, Ha2);
+        ctxt[1].grads(g[1], xgrd, Hb1, Hb2);
+
+        ctxt[2].grads(g[2], xgrd, Oa, Ha1);
+        ctxt[3].grads(g[3], xgrd, Oa, Ha2);
+        ctxt[4].grads(g[4], xgrd, Ob, Hb1);
+        ctxt[5].grads(g[5], xgrd, Ob, Hb2);
+
+        ctxt[6].grads(g[6], xgrd, Ha1, Hb1);
+        ctxt[7].grads(g[7], xgrd, Ha1, Hb2);
+        ctxt[8].grads(g[8], xgrd, Ha2, Hb1);
+        ctxt[9].grads(g[9], xgrd, Ha2, Hb2);
+
+        ctxt[10].grads(g[10], xgrd, Oa, Hb1);
+        ctxt[11].grads(g[11], xgrd, Oa, Hb2);
+        ctxt[12].grads(g[12], xgrd, Ob, Ha1);
+        ctxt[13].grads(g[13], xgrd, Ob, Ha2);
+
+        ctxt[14].grads(g[14], xgrd, Oa, Ob);
+
+        ctxt[15].grads(g[15], xgrd, Xa1, Hb1);
+        ctxt[16].grads(g[16], xgrd, Xa1, Hb2);
+        ctxt[17].grads(g[17], xgrd, Xa2, Hb1);
+        ctxt[18].grads(g[18], xgrd, Xa2, Hb2);
+        ctxt[19].grads(g[19], xgrd, Xb1, Ha1);
+        ctxt[20].grads(g[20], xgrd, Xb1, Ha2);
+        ctxt[21].grads(g[21], xgrd, Xb2, Ha1);
+        ctxt[22].grads(g[22], xgrd, Xb2, Ha2);
+
+        ctxt[23].grads(g[23], xgrd, Oa, Xb1);
+        ctxt[24].grads(g[24], xgrd, Oa, Xb2);
+        ctxt[25].grads(g[25], xgrd, Ob, Xa1);
+        ctxt[26].grads(g[26], xgrd, Ob, Xa2);
+
+        ctxt[27].grads(g[27], xgrd, Xa1, Xb1);
+        ctxt[28].grads(g[28], xgrd, Xa1, Xb2);
+        ctxt[29].grads(g[29], xgrd, Xa2, Xb1);
+        ctxt[30].grads(g[30], xgrd, Xa2, Xb2);
+
+        // distribute gradients w.r.t. the X-points
+
+        ma.grads(xgrd + Xa1, xgrd + Xa2,
+                 in_plane_gamma, out_of_plane_gamma,
+                 xgrd + Oa);
+
+        mb.grads(xgrd + Xb1, xgrd + Xb2,
+                 in_plane_gamma, out_of_plane_gamma,
+                 xgrd + Ob);
+
+        // the switch
+
+        double gsw;
+        const double sw = f_switch(rOO, gsw);
+
+        double cal2joule = 4.184;
+
+        for (int i = 0; i < 3; ++i) {
+            // first water molecule
+            forces[allParticleIndices[siteI][0]][i] += sw*xgrd[Oa + i]  * cal2joule * 10.;
+            forces[allParticleIndices[siteI][1]][i] += sw*xgrd[Ha1 + i] * cal2joule * 10.;
+            forces[allParticleIndices[siteI][2]][i] += sw*xgrd[Ha2 + i] * cal2joule * 10.;
+            // second water molecule
+            forces[allParticleIndices[siteJ][0]][i] += sw*xgrd[Ob + i]  * cal2joule * 10.;
+            forces[allParticleIndices[siteJ][1]][i] += sw*xgrd[Hb1 + i] * cal2joule * 10.;
+            forces[allParticleIndices[siteJ][2]][i] += sw*xgrd[Hb2 + i] * cal2joule * 10.;
+        }
+
+        // gradient of the switch
+        gsw *= E_poly/rOO;
+        for (int i = 0; i < 3; ++i) {
+            const double d = gsw*dOO[i];
+            forces[allParticleIndices[siteI][0]][i] += d * cal2joule * 10.;
+            forces[allParticleIndices[siteJ][0]][i] -= d * cal2joule * 10.;
+        }
+
+    RealOpenMM energy=sw*E_poly * cal2joule;
 
     return energy;
 
 }
 
-void AmoebaReferenceVdwForce::setReducedPositions( int numParticles,
-                                                   const vector<RealVec>& particlePositions,
-                                                   const std::vector<int>& indexIVs, 
-                                                   const std::vector<RealOpenMM>& reductions,
-                                                   std::vector<Vec3>& reducedPositions ) const {
-
-    static const RealOpenMM zero          = 0.0;
-
-    reducedPositions.resize(numParticles);
-    for( unsigned int ii = 0; ii <  static_cast<unsigned int>(numParticles); ii++ ){
-        if( reductions[ii] != zero ){
-            int reductionIndex     = indexIVs[ii];
-            reducedPositions[ii]   = Vec3( reductions[ii]*( particlePositions[ii][0] - particlePositions[reductionIndex][0] ) + particlePositions[reductionIndex][0], 
-                                           reductions[ii]*( particlePositions[ii][1] - particlePositions[reductionIndex][1] ) + particlePositions[reductionIndex][1], 
-                                           reductions[ii]*( particlePositions[ii][2] - particlePositions[reductionIndex][2] ) + particlePositions[reductionIndex][2] ); 
-        } else {
-            reducedPositions[ii]   = Vec3( particlePositions[ii][0], particlePositions[ii][1], particlePositions[ii][2] ); 
-        }
-    }
-}
-
 RealOpenMM AmoebaReferenceVdwForce::calculateForceAndEnergy( int numParticles,
                                                              const vector<RealVec>& particlePositions,
-                                                             const std::vector<int>& indexIVs, 
-                                                             const std::vector<RealOpenMM>& sigmas,
-                                                             const std::vector<RealOpenMM>& epsilons,
-                                                             const std::vector<RealOpenMM>& reductions,
-                                                             const std::vector< std::set<int> >& allExclusions,
-                                                             vector<RealVec>& forces ) const {
-
-    // ---------------------------------------------------------------------------------------
-
-    static const RealOpenMM zero          = 0.0;
-    static const RealOpenMM one           = 1.0;
-    static const RealOpenMM two           = 2.0;
-
-    // ---------------------------------------------------------------------------------------
-
-    // set reduced coordinates
-
-    std::vector<Vec3> reducedPositions;
-    setReducedPositions( numParticles, particlePositions, indexIVs, reductions, reducedPositions );
-
-    // loop over all particle pairs
-
-    //    (1) initialize exclusion vector
-    //    (2) calculate pair ixn, if not excluded
-    //    (3) accumulate forces: if particle is a site where interaction position != particle position,
-    //        then call addReducedForce() to apportion force to particle and its covalent partner
-    //        based on reduction factor
-    //    (4) reset exclusion vector
-
-    RealOpenMM energy = zero;
-    std::vector<unsigned int> exclusions(numParticles, 0);
-    for( unsigned int ii = 0; ii < static_cast<unsigned int>(numParticles); ii++ ){
- 
-        RealOpenMM sigmaI      = sigmas[ii];
-        RealOpenMM epsilonI    = epsilons[ii];
-        for( std::set<int>::const_iterator jj = allExclusions[ii].begin(); jj != allExclusions[ii].end(); jj++ ){
-            exclusions[*jj] = 1;
-        }
-
-        for( unsigned int jj = ii+1; jj < static_cast<unsigned int>(numParticles); jj++ ){
-            if( exclusions[jj] == 0 ){
-
-                RealOpenMM combindedSigma   = (this->*_combineSigmas)(sigmaI, sigmas[jj] );
-                RealOpenMM combindedEpsilon = (this->*_combineEpsilons)(epsilonI, epsilons[jj] );
-
-                Vec3 force;
-                energy                     += calculatePairIxn( combindedSigma, combindedEpsilon,
-                                                                reducedPositions[ii], reducedPositions[jj],
-                                                                force );
-                
-                if( indexIVs[ii] == ii ){
-                    forces[ii][0] -= force[0];
-                    forces[ii][1] -= force[1];
-                    forces[ii][2] -= force[2];
-                } else {
-                    addReducedForce( ii, indexIVs[ii], reductions[ii], -one, force, forces );
-                }
-                if( indexIVs[jj] == jj ){
-                    forces[jj][0] += force[0];
-                    forces[jj][1] += force[1];
-                    forces[jj][2] += force[2];
-                } else {
-                    addReducedForce( jj, indexIVs[jj], reductions[jj], one, force, forces );
-                }
-
-            }
-        }
-
-        for( std::set<int>::const_iterator jj = allExclusions[ii].begin(); jj != allExclusions[ii].end(); jj++ ){
-            exclusions[*jj] = 0;
-        }
-    }
-
-    return energy;
-}
-
-RealOpenMM AmoebaReferenceVdwForce::calculateForceAndEnergy( int numParticles,
-                                                             const vector<RealVec>& particlePositions,
-                                                             const std::vector<int>& indexIVs, 
-                                                             const std::vector<RealOpenMM>& sigmas,
-                                                             const std::vector<RealOpenMM>& epsilons,
-                                                             const std::vector<RealOpenMM>& reductions,
+                                                             const std::vector<std::vector<int> >& allParticleIndices,
                                                              const NeighborList& neighborList,
                                                              vector<RealVec>& forces ) const {
 
+
     // ---------------------------------------------------------------------------------------
 
     static const RealOpenMM zero          = 0.0;
@@ -368,8 +378,8 @@ RealOpenMM AmoebaReferenceVdwForce::calculateForceAndEnergy( int numParticles,
 
     // set reduced coordinates
 
-    std::vector<Vec3> reducedPositions;
-    setReducedPositions( numParticles, particlePositions, indexIVs, reductions, reducedPositions );
+    //std::vector<Vec3> reducedPositions;
+    //setReducedPositions( numParticles, particlePositions, indexIVs, reductions, reducedPositions );
  
     // loop over neighbor list
     //    (1) calculate pair vdw ixn
@@ -384,27 +394,8 @@ RealOpenMM AmoebaReferenceVdwForce::calculateForceAndEnergy( int numParticles,
         int siteI                   = pair.first;
         int siteJ                   = pair.second;
 
-        RealOpenMM combindedSigma   = (this->*_combineSigmas)( sigmas[siteI], sigmas[siteJ] );
-        RealOpenMM combindedEpsilon = (this->*_combineEpsilons)( epsilons[siteI], epsilons[siteJ] );
-
-        Vec3 force;
-        energy                     += calculatePairIxn( combindedSigma, combindedEpsilon,
-                                                        reducedPositions[siteI], reducedPositions[siteJ], force );
-                
-        if( indexIVs[siteI] == siteI ){
-            forces[siteI][0] -= force[0];
-            forces[siteI][1] -= force[1];
-            forces[siteI][2] -= force[2];
-        } else {
-            addReducedForce( siteI, indexIVs[siteI], reductions[siteI], -one, force, forces );
-        }
-        if( indexIVs[siteJ] == siteJ ){
-            forces[siteJ][0] += force[0];
-            forces[siteJ][1] += force[1];
-            forces[siteJ][2] += force[2];
-        } else {
-            addReducedForce( siteJ, indexIVs[siteJ], reductions[siteJ], one, force, forces );
-        }
+        energy                     += calculatePairIxn( siteI, siteJ,
+                particlePositions, allParticleIndices, forces );
 
     }
 

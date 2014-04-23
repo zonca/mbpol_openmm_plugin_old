@@ -460,14 +460,8 @@ private:
     int useCutoff;
     int usePBC;
     double cutoff;
-    double dispersionCoefficient;
-    std::vector<int> indexIVs;
+    std::vector< std::vector<int> > allParticleIndices;
     std::vector< std::set<int> > allExclusions;
-    std::vector<RealOpenMM> sigmas;
-    std::vector<RealOpenMM> epsilons;
-    std::vector<RealOpenMM> reductions;
-    std::string sigmaCombiningRule;
-    std::string epsilonCombiningRule;
     const System& system;
     NeighborList* neighborList;
 };
