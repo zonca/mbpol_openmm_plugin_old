@@ -365,7 +365,12 @@ static void testWater3VirtualSite( FILE* log ) {
 
     std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
     std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
-    std::fill(thole.begin(), thole.end(), 0.4);
+
+    thole[TCC] = 0.4;
+    thole[TCD] = 0.4;
+    thole[TDD] = 0.055;
+    thole[TDDOH]  = 0.626;
+    thole[TDDHH] = 0.055;
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
         amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
