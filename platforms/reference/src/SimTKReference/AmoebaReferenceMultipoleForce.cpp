@@ -574,7 +574,7 @@ void AmoebaReferenceMultipoleForce::applyRotationMatrix( std::vector<MultipolePa
 
 MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const MultipoleParticleData& particleI,
                                                                     const MultipoleParticleData& particleK,
-                                                          RealOpenMM r, bool justScale) const
+                                                          RealOpenMM r, bool justScale, bool forEnergy) const
 {
 
     bool isSameWater = (particleI.multipoleAtomZs == particleK.particleIndex) or
@@ -606,7 +606,7 @@ MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Mul
     }
         
     RealOpenMM damp      = pow(particleI.dampingFactor*particleK.dampingFactor, 1/6.); // AA in MBPol
-    RealOpenMM pgamma, dampForExp;
+    RealOpenMM pgamma, pgammaDipole, dampForExp;
     if( damp != 0.0 ){
         RealOpenMM ratio       = pow(r/damp, 4); // rA4 in MBPol
 
@@ -615,7 +615,8 @@ MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Mul
             pgamma = min(particleI.thole[TCC], particleK.thole[TCC]);
             dampForExp = -1 * pgamma * ratio;
             rrI[1]              *= 1.0 - EXP(dampForExp) + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -dampForExp);
-            dampForExp = -1 * min(particleI.thole[TCD], particleK.thole[TCD]) * ratio;
+            pgamma = min(particleI.thole[TCD], particleK.thole[TCD]);
+            dampForExp = -1 * pgamma * ratio;
             rrI[3]              *= ( 1.0 - EXP(dampForExp) );
 
 
@@ -628,19 +629,24 @@ MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Mul
                                      (particleK.multipoleAtomYs >= particleK.particleIndex) and
                                      (particleK.multipoleAtomXs >= particleK.particleIndex));
                 if (oneIsOxygen) {
-                    pgamma = min(particleI.thole[TDDOH],particleK.thole[TDDOH]);
+                    pgammaDipole = min(particleI.thole[TDDOH],particleK.thole[TDDOH]);
                 } else {
-                    pgamma = min(particleI.thole[TDDHH],particleK.thole[TDDHH]);
+                    pgammaDipole = min(particleI.thole[TDDHH],particleK.thole[TDDHH]);
                 }
             } else {
-                pgamma = min(particleI.thole[TDD],particleK.thole[TDD]);
+                pgammaDipole = min(particleI.thole[TDD],particleK.thole[TDD]);
+            }
+
+            if (forEnergy) {
+                pgamma = pgammaDipole;
             }
             dampForExp = -1 * pgamma * ratio;
             rrI[5]          *= (1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio;
 
             // quadrupole not implementede
-             rrI[7]          *= ((1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio) - // rrI[2]'s factor
-                                    (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * EXP(dampForExp) / pow(damp, 4) * pow(r, 4);
+            dampForExp = -1 * pgammaDipole * ratio;
+             rrI[7]          *= ((1.0 - EXP(dampForExp)) - (4./3.) * pgammaDipole * EXP(dampForExp) * ratio) - // rrI[2]'s factor
+                                    (4./15.) * pgammaDipole * (4. * pgammaDipole * ratio - 1.) * EXP(dampForExp) / pow(damp, 4) * pow(r, 4);
             }
        }
 
@@ -668,7 +674,7 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
  
     // get scaling factors, if needed
   
-    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false);
+    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false, false);
 
     RealOpenMM rr3    = rrI[3];
     RealOpenMM rr5    = rrI[5];
@@ -779,7 +785,7 @@ void AmoebaReferenceMultipoleForce::calculateInducedDipolePairIxns( const Multip
     RealVec deltaR       = particleJ.position - particleI.position;
     RealOpenMM r         =  SQRT( deltaR.dot( deltaR ) );
   
-    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false);
+    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false, false);
  
     for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
         calculateInducedDipolePairIxn( particleI.particleIndex, particleJ.particleIndex, -rrI[3], rrI[5], deltaR,
@@ -985,7 +991,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
     //}
 
     RealOpenMM damp      = pow(particleI.dampingFactor*particleK.dampingFactor, 1/6.); // AA in MBPol
-    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleK, r, true);
+    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleK, r, true, true);
 
     RealOpenMM expdamp = EXP(damp);
     if( damp != 0.0 ){
@@ -1285,13 +1291,13 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
             deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
             distanceK = SQRT(deltaK.dot(deltaK));
 
-            rrI = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true );
+            rrI = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true, false );
 
             scale1I = rrI[1];
             scale3I = rrI[3];
 
 
-            rrI = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI, distanceK, true );
+            rrI = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI, distanceK, true, false );
 
             scale1K = rrI[1];
             scale3K = rrI[3];

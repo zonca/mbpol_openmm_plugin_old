@@ -35,6 +35,8 @@ typedef std::map< unsigned int, RealOpenMM> MapIntRealOpenMM;
 typedef MapIntRealOpenMM::iterator MapIntRealOpenMMI;
 typedef MapIntRealOpenMM::const_iterator MapIntRealOpenMMCI;
 
+enum TholeIndices { TCC, TCD, TDD, TDDOH, TDDHH };
+
 /**
  * 2-dimensional int vector
  */
@@ -553,7 +555,6 @@ protected:
 
     enum QuadrupoleIndices { QXX, QXY, QXZ, QYY, QYZ, QZZ };
 
-    enum TholeIndices { TCC, TCD, TDD, TDDOH, TDDHH };
 
     /* 
      * Particle parameters and coordinates
@@ -744,7 +745,7 @@ protected:
 
     MapIntRealOpenMM getAndScaleInverseRs(  const MultipoleParticleData& particleI,
             const MultipoleParticleData& particleJ,
-                               RealOpenMM r, bool justScale) const;
+                               RealOpenMM r, bool justScale, bool forEnergy) const;
 
     /**
      * Check if multipoles at chiral site should be inverted.
