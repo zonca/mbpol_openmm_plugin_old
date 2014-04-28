@@ -95,17 +95,18 @@ void AmoebaMultipoleForceProxy::serialize(const void* object, SerializationNode&
     for (unsigned int ii = 0; ii < static_cast<unsigned int>(force.getNumMultipoles()); ii++) {
 
         int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
-        double charge, thole, dampingFactor, polarity;
+        double charge, dampingFactor, polarity;
 
         std::vector<double> molecularDipole;
         std::vector<double> molecularQuadrupole;
+        std::vector<double> thole;
 
         force.getMultipoleParameters( ii, charge, molecularDipole, molecularQuadrupole,
                                       axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY, thole, dampingFactor, polarity );
 
         SerializationNode& particle    = particles.createChildNode("Particle");
         particle.setIntProperty("axisType", axisType).setIntProperty("multipoleAtomZ", multipoleAtomZ).setIntProperty("multipoleAtomX", multipoleAtomX).setIntProperty("multipoleAtomY", multipoleAtomY);
-        particle.setDoubleProperty("charge", charge).setDoubleProperty("thole", thole).setDoubleProperty("damp", dampingFactor).setDoubleProperty("polarity", polarity);
+        particle.setDoubleProperty("charge", charge).setDoubleProperty("damp", dampingFactor).setDoubleProperty("polarity", polarity);
 
         SerializationNode& dipole      = particle.createChildNode("Dipole");
         dipole.setDoubleProperty( "d0", molecularDipole[0] ).setDoubleProperty( "d1", molecularDipole[1] ).setDoubleProperty( "d2", molecularDipole[2] );
@@ -114,6 +115,10 @@ void AmoebaMultipoleForceProxy::serialize(const void* object, SerializationNode&
         quadrupole.setDoubleProperty( "q0", molecularQuadrupole[0] ).setDoubleProperty( "q1", molecularQuadrupole[1] ).setDoubleProperty( "q2", molecularQuadrupole[2] );
         quadrupole.setDoubleProperty( "q3", molecularQuadrupole[3] ).setDoubleProperty( "q4", molecularQuadrupole[4] ).setDoubleProperty( "q5", molecularQuadrupole[5] );
         quadrupole.setDoubleProperty( "q6", molecularQuadrupole[6] ).setDoubleProperty( "q7", molecularQuadrupole[7] ).setDoubleProperty( "q8", molecularQuadrupole[8] );
+
+        SerializationNode& tholeNode  = particle.createChildNode("Thole");
+        tholeNode.setDoubleProperty("thole_charge_charge", thole[0]).setDoubleProperty("thole_charge_dipole", thole[1]);
+        tholeNode.setDoubleProperty("thole_dipole_dipole_inter", thole[2]).setDoubleProperty("thole_dipole_dipole_OH", thole[3]).setDoubleProperty("thole_dipole_dipole_HH", thole[4]);
 
         for (unsigned int jj = 0; jj < covalentTypes.size(); jj++) {
             std::vector< int > covalentMap;
@@ -177,12 +182,20 @@ void* AmoebaMultipoleForceProxy::deserialize(const SerializationNode& node) cons
             molecularQuadrupole.push_back( quadrupole.getDoubleProperty( "q7" ) );
             molecularQuadrupole.push_back( quadrupole.getDoubleProperty( "q8" ) );
 
+            std::vector<double> thole;
+            const SerializationNode& tholeNode = particle.getChildNode("Thole");
+            thole.push_back( tholeNode.getDoubleProperty( "thole_charge_charge" ) );
+            thole.push_back( tholeNode.getDoubleProperty( "thole_charge_dipole" ) );
+            thole.push_back( tholeNode.getDoubleProperty( "thole_dipole_dipole_inter" ) );
+            thole.push_back( tholeNode.getDoubleProperty( "thole_dipole_dipole_OH" ) );
+            thole.push_back( tholeNode.getDoubleProperty( "thole_dipole_dipole_HH" ) );
+
             force->addMultipole( particle.getDoubleProperty("charge"), molecularDipole, molecularQuadrupole,
                                 particle.getIntProperty("axisType"),
                                 particle.getIntProperty("multipoleAtomZ"),
                                 particle.getIntProperty("multipoleAtomX"),
                                 particle.getIntProperty("multipoleAtomY"),
-                                particle.getDoubleProperty("thole"),
+                                thole,
                                 particle.getDoubleProperty("damp"), particle.getDoubleProperty("polarity"));
 
             // covalent maps 
