@@ -674,11 +674,9 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
  
     // get scaling factors, if needed
   
-    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false, true);
-
-    RealOpenMM rr3    = rrI[3]; // charge - charge
-    RealOpenMM rr5    = rrI[5]; // charge - charge
-    RealOpenMM rr7    = rrI[7]; // charge - charge
+    RealOpenMM rr3    = getAndScaleInverseRs( particleI, particleJ, r, false, 3, TCC); // charge - charge
+    RealOpenMM rr5    = getAndScaleInverseRs( particleI, particleJ, r, false, 5, TCC);; // charge - charge
+    RealOpenMM rr7    = getAndScaleInverseRs( particleI, particleJ, r, false, 7, TCC);; // charge - charge
     RealOpenMM rr5_2  = 2.0*rr5;
 
     // field at particle I due multipoles at particle J
@@ -785,12 +783,11 @@ void AmoebaReferenceMultipoleForce::calculateInducedDipolePairIxns( const Multip
     RealVec deltaR       = particleJ.position - particleI.position;
     RealOpenMM r         =  SQRT( deltaR.dot( deltaR ) );
   
-    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false, true);
-
-// rrI[3] and 5 with a_DD
+    RealOpenMM scale3 = getAndScaleInverseRs( particleI, particleJ, r, false, 3, TDD);
+    RealOpenMM scale5 = getAndScaleInverseRs( particleI, particleJ, r, false, 5, TDD);
  
     for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
-        calculateInducedDipolePairIxn( particleI.particleIndex, particleJ.particleIndex, -rrI[3], rrI[5], deltaR,
+        calculateInducedDipolePairIxn( particleI.particleIndex, particleJ.particleIndex, -scale3, scale5, deltaR,
                                        *(updateInducedDipoleFields[ii].inducedDipoles), updateInducedDipoleFields[ii].inducedDipoleField );
     }
     return;
@@ -996,7 +993,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
 
     // rrI like forEnergy = True
 
-    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleK, r, true, true);
+    MapIntRealOpenMM rrI;// = getAndScaleInverseRs( particleI, particleK, r, true, true);
 
     RealOpenMM expdamp = EXP(damp);
     if( damp != 0.0 ){
@@ -1323,16 +1320,11 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
             deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
             distanceK = SQRT(deltaK.dot(deltaK));
 
-            rrI = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true, true );
+            scale1I = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true, 1, TCC );
+            scale3I = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true, 3, TCC );
 
-            scale1I = rrI[1];
-            scale3I = rrI[3];
-
-
-            rrI = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI, distanceK, true, true );
-
-            scale1K = rrI[1];
-            scale3K = rrI[3];
+            scale1K = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI, distanceK, true, 1, TCC );
+            scale3K = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI, distanceK, true, 3, TCC );
 
             inducedDipoleI = _inducedDipole[kIndex].dot(deltaI);
             inducedDipoleK = _inducedDipole[iIndex].dot(deltaK);
