@@ -73,7 +73,9 @@ class WrappedAmoebaReferenceMultipoleForce : public AmoebaReferenceMultipoleForc
                         particleData[1].thole[i] = tholeJ;
                     }
 
-                    rrI = getAndScaleInverseRs(particleData[0], particleData[1], r, justScale, true);
+                    for (int order=1; order <=7; order+=2) {
+                        rrI[order] = getAndScaleInverseRs(particleData[0], particleData[1], r, justScale, order, TCC);
+                    }
                 }
 };
 
@@ -95,11 +97,11 @@ static void testGetAndScaleInverseRs( FILE* log ) {
     amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampH,
                           thole, thole, r, false, damp, rrI);
 
-    //ASSERT_EQUAL_TOL_MOD(0., rrI[0], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(5.324612470e+02, rrI[3], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(9.33047, rrI[1], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
+    ASSERT_EQUAL_TOL_MOD(5.324612470e+02, rrI[3], 1e-5, testName); // from mbpol
     // mbpol multiplies by constant factor (3) later, AMOEBA in this function
-    ASSERT_EQUAL_TOL_MOD(4.747626558e+03*3., rrI[5], 1e-5, testName);
-    //ASSERT_EQUAL_TOL_MOD(             0., rrI[3], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(4.747626558e+03*3., rrI[5], 1e-5, testName); // from mbpol
+    ASSERT_EQUAL_TOL_MOD(             -2.13404e+07, rrI[7], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
 
 }
 
@@ -117,10 +119,10 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
     amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampO,
                           thole, thole, r, false, damp, rrI);
 
-    ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[1], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(4.695157736e-02*1e3, rrI[3], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(6.110587933e-03*1e5*3., rrI[5], 1e-5, testName);
-
+    ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[1], 1e-5, testName); // from mbpol
+    ASSERT_EQUAL_TOL_MOD(4.695157736e-02*1e3, rrI[3], 1e-5, testName); // from mbpol
+    ASSERT_EQUAL_TOL_MOD(6.110587933e-03*1e5*3., rrI[5], 1e-5, testName); // from mbpol
+    ASSERT_EQUAL_TOL_MOD(119289, rrI[7], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
 }
 
 class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceMultipoleForce {
@@ -435,45 +437,40 @@ static void testWater3VirtualSite( FILE* log ) {
     std::vector<Vec3> forces   = state.getForces();
     double energy              = state.getPotentialEnergy();
     double cal2joule = 4.184;
-//    std::cout << "Forces" << std::endl;
 
+    double expectedEnergy = -15.818784*cal2joule;
+    std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
+    std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
 
-//    std::vector<Vec3> expectedForces(numberOfParticles);
-//    expectedForces[0]         = Vec3( -1.029233628e-01,  1.752006876e-01, -2.394228296e-01  );
-//    expectedForces[1]         = Vec3(  1.238286503e-01, -9.713944883e-02,  9.278441270e-02  );
-//    expectedForces[2]         = Vec3( -1.992936921e-02, -8.084103617e-02,  1.660930712e-01  );
-//    expectedForces[3]         = Vec3(  2.181116801e-01,  1.127169979e-01, -1.998507867e-01  );
-//    expectedForces[4]         = Vec3( -1.021411513e-01, -6.244910893e-02,  1.595471969e-01  );
-//    expectedForces[5]         = Vec3( -1.214347018e-01, -6.329887574e-02,  2.105405984e-02  );
-//    expectedForces[6]         = Vec3(  1.708442625e-01,  1.860776100e-01,  2.249030303e-02  );
-//    expectedForces[7]         = Vec3( -7.205290616e-02, -7.830256131e-02,  4.942309713e-02  );
-//    expectedForces[8]         = Vec3( -9.430310162e-02, -9.196426456e-02, -7.211852443e-02  );
-//    for (int i=0; i<numberOfParticles; i++) {
-//        for (int j=0; j<3; j++) {
-//            expectedForces[i][j] *= cal2joule*10;
-//        }
-//    }
+    std::vector<Vec3> expectedForces(numberOfParticles);
+    expectedForces[0]         = Vec3(  2.38799956, 0.126835228,   8.86189407  );
+    expectedForces[1]         = Vec3( -4.21263312, -0.72316292,   3.37076777  );
+    expectedForces[2]         = Vec3(  2.19240288, -2.24806806,   1.96210789  );
+    expectedForces[4]         = Vec3(  3.59486021, -2.16710895,   3.57138432  );
+    expectedForces[5]         = Vec3( -4.54547068, -4.58639226,  -17.4258666  );
+    expectedForces[6]         = Vec3( -3.27239433, -1.96722979,    1.1170853  );
+    expectedForces[8]         = Vec3( -1.44387205, -3.22471108,  -2.61329967  );
+    expectedForces[9]         = Vec3(  3.35011312,  6.07136704, -0.197008793  );
+    expectedForces[10]         = Vec3(  1.94899441,   8.7184708,   1.35293571  );
 
-
-    //for( unsigned int ii = 0; ii < forces.size(); ii++ ){
-    //    ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
-    //}
-
+    // gradient -> forces
     for (int i=0; i<numberOfParticles; i++) {
            for (int j=0; j<3; j++) {
             forces[i][j] /= cal2joule*10;
+            if ((i+1) % 4 == 0) { // Set virtual site force to 0
+                forces[i][j] = 0;
+            }
+           }
+       }
+
+    for (int i=0; i<numberOfParticles; i++) {
+           for (int j=0; j<3; j++) {
+               expectedForces[i][j] *= -1;
            }
        }
     std::cout  << std::endl << "Forces:" << std::endl;
 
-    for (int i=0; i<numberOfParticles; i++) {
-         std::cout << forces[i] << " Kcal/mol/A " << std::endl;
-    }
-    // Energy elec+ind(kcal/mol): -2.134083549e-02
-    double expectedEnergy = -15.9939592*cal2joule;
-    // ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
-    std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
-    std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
+
     const double eps = 1.0e-4;
 
     double x_orig;
@@ -522,13 +519,23 @@ static void testWater3VirtualSite( FILE* log ) {
            }
 
        }
-    std::cout  << std::endl << "Finite difference forces:" << std::endl;
-
 
     for (int i=0; i<numberOfParticles; i++) {
-         std::cout << finiteDifferenceForces[i] << " Kcal/mol/A " << std::endl;
+        std::cout << "Force atom " << i << ": " << expectedForces[i] << " Kcal/mol/A <mbpol>" << std::endl;
+        std::cout << "Force atom " << i << ": " << forces[i] << " Kcal/mol/A <openmm-mbpol>" << std::endl;
+        std::cout << "Force atom " << i << ": " << finiteDifferenceForces[i] << " Kcal/mol/A <openmm-mbpol finite differences>" << std::endl << std::endl;
     }
-    std::cout << "Test END: " << testName << std::endl << std::endl;
+
+    std::cout << "Comparison of energy and forces with tolerance: " << tolerance << std::endl << std::endl;
+
+    ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
+
+    for( unsigned int ii = 0; ii < forces.size(); ii++ ){
+        ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
+    }
+
+    std::cout << "Test Successful: " << testName << std::endl << std::endl;
+
 
     return;
 }
@@ -804,21 +811,21 @@ int main( int numberOfArguments, char* argv[] ) {
         std::cout << "TestReferenceAmoebaMultipoleForce running test..." << std::endl;
 
         FILE* log = NULL;
-//
-//        testGetAndScaleInverseRs( log );
-//        testGetAndScaleInverseRsInterMulecolar( log );
-//
-//        WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();
-//        amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
-//        amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
-//
-//        WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn();
-//        wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
-//
-//        WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
-//        wrapperForComputeWaterCharge->testComputeWaterCharge();
-//
-//        testWater3( log );
+
+        testGetAndScaleInverseRs( log );
+        testGetAndScaleInverseRsInterMulecolar( log );
+
+        WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();
+        amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
+        amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
+
+        WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn();
+        wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
+
+        WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
+        wrapperForComputeWaterCharge->testComputeWaterCharge();
+
+        testWater3( log );
 
         testWater3VirtualSite( log );
 
