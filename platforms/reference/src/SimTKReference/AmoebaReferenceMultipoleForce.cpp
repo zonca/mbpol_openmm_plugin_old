@@ -581,10 +581,11 @@ MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Mul
                 (particleI.multipoleAtomYs == particleK.particleIndex) or
                 (particleI.multipoleAtomXs == particleK.particleIndex);
 
-    // MB-Pol has additional charge-charge term, and doesn't have quadrupole terms so:
-    // rrI[0] = charge-charge (ts0 in mbpol)
-    // rrI[1] = dipole-charge (ts1 in mbpol)
-    // rrI[2] = dipole-dipole (ts2 in mbpol)
+    // MB-Pol has additional charge-charge term:
+    // rrI[1] = charge-charge (ts0 in mbpol)
+    // rrI[3] = dipole-charge (ts1 in mbpol)
+    // rrI[5] = dipole-dipole (ts2 in mbpol)
+    // rrI[7] = quadrupole
 
     RealOpenMM rI             =  1.0/r;
     RealOpenMM r2I            =  rI*rI;
