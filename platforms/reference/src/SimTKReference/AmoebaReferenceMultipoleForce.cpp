@@ -1152,9 +1152,9 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
 
     // intermediate variables for the permanent components
 
-    gf[0] = rr3*gl[0] + // charge -charge // FIXME scaling??
-            rr5*gl[1]+       // charge - dipole
-            rr5*gl[6] ;      // dipole - dipole
+    gf[0] = rr3*gl[0]*scale3CC + // charge -charge
+            rr5*gl[1]*scale5CD+       // charge - dipole
+            rr5*gl[6]*scale5DD ;      // dipole - dipole
 //            rr7*(gl[2]+gl[7]+gl[8]) + // quadrupole components
 //            rr9*(gl[3]+gl[5]) + // quadrupole components
 //            rr11*gl[4]; // quadrupole - quadrupole
