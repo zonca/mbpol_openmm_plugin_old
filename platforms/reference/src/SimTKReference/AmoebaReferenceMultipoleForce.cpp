@@ -1186,11 +1186,11 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
     // get the permanent force components
 
     RealVec ftm2 = delta*gf[0] +
-                   particleI.dipole*(-particleK.charge*scale3CD ) +
-                   particleI.dipole*sc[3]*scale5DD + // dipole - dipole
+                   particleI.dipole*(-particleK.charge*rr3*scale3CD ) +
+                   particleI.dipole*sc[3]*rr5*scale5DD + // dipole - dipole
                    // particleI.dipole*(- sc[5]*rr7)+ // dipole - quadrupole
-                   particleK.dipole*(particleI.charge*scale3CD ) +
-                   particleK.dipole*sc[2]*scale5DD; // dipole - dipole
+                   particleK.dipole*(particleI.charge*rr3*scale3CD ) +
+                   particleK.dipole*sc[2]*rr5*scale5DD; // dipole - dipole
 //                   particleK.dipole*(sc[4]*rr7)+ // dipole - quadrupole
 //                   (qkdi -qidk)*gf[3] + qir*gf[4] + // quadrupoles
 //                   qkr*gf[5] + (qiqkr+qkqir)*gf[6]; // quadrupoles
