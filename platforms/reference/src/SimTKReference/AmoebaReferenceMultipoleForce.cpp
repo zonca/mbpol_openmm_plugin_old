@@ -675,11 +675,11 @@ void AmoebaReferenceMultipoleForce::calculateFixedMultipoleFieldPairIxn( const M
  
     // get scaling factors, if needed
   
-    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false, false);
+    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false, true);
 
-    RealOpenMM rr3    = rrI[3];
-    RealOpenMM rr5    = rrI[5];
-    RealOpenMM rr7    = rrI[7];
+    RealOpenMM rr3    = rrI[3]; // charge - charge
+    RealOpenMM rr5    = rrI[5]; // charge - charge
+    RealOpenMM rr7    = rrI[7]; // charge - charge
     RealOpenMM rr5_2  = 2.0*rr5;
 
     // field at particle I due multipoles at particle J
@@ -786,7 +786,9 @@ void AmoebaReferenceMultipoleForce::calculateInducedDipolePairIxns( const Multip
     RealVec deltaR       = particleJ.position - particleI.position;
     RealOpenMM r         =  SQRT( deltaR.dot( deltaR ) );
   
-    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false, false);
+    MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleJ, r, false, true);
+
+// rrI[3] and 5 with a_DD
  
     for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
         calculateInducedDipolePairIxn( particleI.particleIndex, particleJ.particleIndex, -rrI[3], rrI[5], deltaR,
@@ -992,6 +994,9 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
     //}
 
     RealOpenMM damp      = pow(particleI.dampingFactor*particleK.dampingFactor, 1/6.); // AA in MBPol
+
+    // rrI like forEnergy = True
+
     MapIntRealOpenMM rrI = getAndScaleInverseRs( particleI, particleK, r, true, true);
 
     RealOpenMM expdamp = EXP(damp);
@@ -1153,7 +1158,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
     // calculate the gl functions for permanent components
 
     gl[0] = particleI.charge*particleK.charge;
-    gl[1] = particleK.charge*sc[2] - particleI.charge*sc[3];
+    gl[1] = particleK.charge*sc[2] - particleI.charge*sc[3]; // charge - dipole
     gl[2] = particleI.charge*sc[5] + particleK.charge*sc[4] - sc[2]*sc[3];
     gl[3] = sc[2]*sc[5] - sc[3]*sc[4];
     gl[4] = sc[4]*sc[5];
@@ -1187,9 +1192,22 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
     }
     // compute the energy contributions for this interaction
 
-    RealOpenMM energy = scale1*rr1*gl[0] + scale3*rr3*(gl[1]+gl[6]) + scale5*rr5*(gl[2]+gl[7]+gl[8]) + scale7*rr7*(gl[3]+gl[5]) + rr9*gl[4];
+    RealOpenMM energy = scale1*rr1*gl[0] + // charge-charge
+                        scale3*rr3*gl[1] +  // charge - dipole
+                        scale3*rr3*gl[6] +  // dipole - dipole
+                        scale5*rr5*gl[2] + // charge - quadrupole
+                        scale5*rr5*gl[7] + // dipole - quadrupole
+                        scale5*rr5*gl[8] + // quadrupole - quadrupole
+                        scale7*rr7*(gl[3]) + // dipole - quadrupole
+                        scale7*rr7*(gl[5]) + // quadrupole - quadrupole
+                        rr9*gl[4]; // quadrupole - quadrupole
     energy           *= scalingFactors[M_SCALE];
-    energy           += 0.5*(rr3*(gli[0]+gli[5])*psc3 + rr5*(gli[1]+gli[6])*psc5 + rr7*gli[2]*psc7);
+    energy           += 0.5*(
+                        rr3*(gli[0])*psc3 + // charge - induced dipole
+                        rr3*(gli[5])*psc3 + // dipole - induced dipole
+                        rr5*(gli[1])*psc5 + // dipole - induced dipole
+                        rr5*(gli[6])*psc5 + // quadrupole - induced dipole
+                        rr7*gli[2]*psc7);  // quadrupole - induced dipole
     energy           *= f;
 
     // intermediate variables for the permanent components
@@ -1204,20 +1222,34 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
 
     // intermediate variables for the induced components
 
-    gfi[0] = 0.5 * rr5 * ((gli[0]+gli[5])*psc5 + (glip[0]+glip[5])*dsc5 + scip[1]*scale5i)
-           + 0.5 * rr7 * ((gli[6]+gli[1])*psc7 + (glip[6]+glip[1])*dsc7 - (sci[2]*scip[3]+scip[2]*sci[3])*scale7i)
+    gfi[0] = 0.5 * rr5 * (gli[0])*psc5 + // charge - induced dipole
+            0.5 * rr5 * (gli[5])*psc5 + // dipole - induced dipole
+            0.5 * rr5 * glip[0]*dsc5 +// charge - induced dipole
+            0.5 * rr5 * glip[5]*dsc5 + // dipole - induced dipole
+            0.5 * rr5 *  scip[1]*scale5i + // induced dipole - induced dipole
+            0.5 * rr7 * (gli[6])*psc7 + // quadrupole - induced dipole
+           + 0.5 * rr7 * (gli[1])*psc7 + // dipole - induced dipole
+           0.5 * rr7 * (glip[6]+glip[1])*dsc7 + // same for polar
+           - 0.5 * rr7 * (sci[2]*scip[3]+scip[2]*sci[3])*scale7i + // induced dipole - induced dipole
            + 0.5 * rr9 * (gli[2]*psc7+glip[2]*dsc7); // this should be psc9 but we do not have quadrupoles anyway
 
-    gfi[1] = -rr3*particleK.charge + rr5*sc[3] - rr7*sc[5];
-    gfi[2] =  rr3*particleI.charge + rr5*sc[2] + rr7*sc[4];
+    gfi[1] = -rr3*particleK.charge + rr5*sc[3] - rr7*sc[5]; // not used
+    gfi[2] =  rr3*particleI.charge + rr5*sc[2] + rr7*sc[4]; // not used
     gfi[3] = 2.0*rr5;
-    gfi[4] = rr7*(sci[3]*psc7+scip[3]*dsc7);
-    gfi[5] = -rr7*(sci[2]*psc7+scip[2]*dsc7);
+    gfi[4] = rr7*(sci[3]*psc7+scip[3]*dsc7); // quadrupole - induced dipole
+    gfi[5] = -rr7*(sci[2]*psc7+scip[2]*dsc7); // quadrupole - induced dipole
 
     // get the permanent force components
 
-    RealVec ftm2 = delta*gf[0] + particleI.dipole*gf[1] + particleK.dipole*gf[2] + (qkdi -qidk)*gf[3] + qir*gf[4] +
-                   qkr*gf[5] + (qiqkr+qkqir)*gf[6];
+    RealVec ftm2 = delta*gf[0] + // charge - charge
+                   particleI.dipole*(-particleK.charge*rr3 ) +
+                   particleI.dipole*sc[3]*rr5 + // dipole - dipole
+                   particleI.dipole*(- sc[5]*rr7)+ // dipole - quadrupole
+                   particleK.dipole*(particleI.charge*rr3 ) +
+                   particleK.dipole*sc[2]*rr5 + // dipole - dipole
+                   particleK.dipole*(sc[4]*rr7)+ // dipole - quadrupole
+                   (qkdi -qidk)*gf[3] + qir*gf[4] + // quadrupoles
+                   qkr*gf[5] + (qiqkr+qkqir)*gf[6]; // quadrupoles
 
     // get the induced force components
 
@@ -1229,10 +1261,10 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
             (_inducedDipole[kIndex]*psc5 + _inducedDipolePolar[kIndex]*dsc5)*(rr5*sc[2]) +   // idipole_i * dipole_k
             (_inducedDipole[kIndex]*psc7 + _inducedDipolePolar[kIndex]*dsc7)*(rr7*sc[4]) +   // idipole_i * quadrupole_k
             (_inducedDipolePolar[iIndex]*sci[3] + _inducedDipole[iIndex]*scip[3] +// iPdipole_i * idipole_k
-             _inducedDipolePolar[kIndex]*sci[2] + _inducedDipole[kIndex]*scip[2])*(rr5*scale5i) +
-            particleI.dipole*((sci[3]*psc5  + scip[3]*dsc5)*rr5) +
-            particleK.dipole*((sci[2]*psc5  + scip[2]*dsc5)*rr5) +
-            ((qkui - qiuk)*psc5 + (qkuip - qiukp)*dsc5)*(gfi[3])
+             _inducedDipolePolar[kIndex]*sci[2] + _inducedDipole[kIndex]*scip[2])*(rr5*scale5i) + //// iPdipole_k * idipole_i
+            particleI.dipole*((sci[3]*psc5  + scip[3]*dsc5)*rr5) + // dipole - induced dipole
+            particleK.dipole*((sci[2]*psc5  + scip[2]*dsc5)*rr5) + // dipole - induced dipole
+            ((qkui - qiuk)*psc5 + (qkuip - qiukp)*dsc5)*(gfi[3]) // quadrupoles
     )*0.5;
     // Same water atoms have no induced-dipole/charge interaction
     if (not( isSameWater )) {
@@ -1246,19 +1278,19 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
 
     // account for partially excluded induced interactions
 
-    temp3 = rr3 * ((gli[0]+gli[5])*scalingFactors[P_SCALE] +(glip[0]+glip[5])*scalingFactors[D_SCALE]);
-    temp5 = rr5 * ((gli[1]+gli[6])*scalingFactors[P_SCALE] +(glip[1]+glip[6])*scalingFactors[D_SCALE]);
-    temp7 = rr7 * (gli[2]*scalingFactors[P_SCALE] +glip[2]*scalingFactors[D_SCALE]);
-
-    RealVec fridmp,findmp;
-    fridmp = (ddsc3*temp3 + ddsc5*temp5 + ddsc7*temp7);
-
-    // find some scaling terms for induced-induced force
-
-    temp3 =  rr3*scalingFactors[U_SCALE]*scip[1];
-    temp5 = -rr5*scalingFactors[U_SCALE]*(sci[2]*scip[3]+scip[2]*sci[3]);
-
-    findmp = (ddsc3*temp3 + ddsc5*temp5);
+//    temp3 = rr3 * ((gli[0]+gli[5])*scalingFactors[P_SCALE] +(glip[0]+glip[5])*scalingFactors[D_SCALE]);
+//    temp5 = rr5 * ((gli[1]+gli[6])*scalingFactors[P_SCALE] +(glip[1]+glip[6])*scalingFactors[D_SCALE]);
+//    temp7 = rr7 * (gli[2]*scalingFactors[P_SCALE] +glip[2]*scalingFactors[D_SCALE]);
+//
+//    RealVec fridmp,findmp;
+//    fridmp = (ddsc3*temp3 + ddsc5*temp5 + ddsc7*temp7);
+//
+//    // find some scaling terms for induced-induced force
+//
+//    temp3 =  rr3*scalingFactors[U_SCALE]*scip[1];
+//    temp5 = -rr5*scalingFactors[U_SCALE]*(sci[2]*scip[3]+scip[2]*sci[3]);
+//
+//    findmp = (ddsc3*temp3 + ddsc5*temp5);
 
     // modify induced force for partially excluded interactions
     // FIXME check how to disable this in the xml
@@ -1292,13 +1324,13 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
             deltaK = particleData[particleK.otherSiteIndex[s]].position-particleI.position;
             distanceK = SQRT(deltaK.dot(deltaK));
 
-            rrI = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true, false );
+            rrI = getAndScaleInverseRs( particleData[particleI.otherSiteIndex[s]], particleK, distanceI, true, true );
 
             scale1I = rrI[1];
             scale3I = rrI[3];
 
 
-            rrI = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI, distanceK, true, false );
+            rrI = getAndScaleInverseRs( particleData[particleK.otherSiteIndex[s]], particleI, distanceK, true, true );
 
             scale1K = rrI[1];
             scale3K = rrI[3];
@@ -1309,31 +1341,31 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
             for (size_t i = 0; i < 3; ++i) {
 
 
-                ftm2[i] +=  scale1I * (1.0/distanceI) * particleI.chargeDerivatives[s][i] * particleK.charge;
-                ftm2[i] -=  scale1K * (1.0/distanceK) * particleK.chargeDerivatives[s][i] * particleI.charge;
+                ftm2[i] +=  scale1I * (1.0/distanceI) * particleI.chargeDerivatives[s][i] * particleK.charge; // charge - charge
+                ftm2[i] -=  scale1K * (1.0/distanceK) * particleK.chargeDerivatives[s][i] * particleI.charge;// charge - charge
 
 
-                ftm2i[i] += scale3I * pow(1.0/distanceI,3) * particleI.chargeDerivatives[s][i] * inducedDipoleI;
-                ftm2i[i] -= scale3K * pow(1.0/distanceK,3) * particleK.chargeDerivatives[s][i] * inducedDipoleK;
+                ftm2i[i] += scale3I * pow(1.0/distanceI,3) * particleI.chargeDerivatives[s][i] * inducedDipoleI;// charge - charge
+                ftm2i[i] -= scale3K * pow(1.0/distanceK,3) * particleK.chargeDerivatives[s][i] * inducedDipoleK;// charge - charge
             }
 
         }
     }
 
-    // correction to convert mutual to direct polarization force
-
-    if( getPolarizationType() == AmoebaReferenceMultipoleForce::Direct ){
-       RealOpenMM gfd   = (rr5*scip[1]*scale3i - rr7*(scip[2]*sci[3]+sci[2]*scip[3])*scale5i);
-       temp5            = rr5*scale5i;
-
-       RealVec fdir;
-       fdir = delta*gfd + (_inducedDipolePolar[iIndex]*sci[3] +
-                           _inducedDipole[iIndex]*scip[3] +
-                           _inducedDipolePolar[kIndex]*sci[2] +
-                           _inducedDipole[kIndex]*scip[2])*temp5;
-
-       ftm2i += ( findmp - fdir )*0.5;
-    }
+//    // correction to convert mutual to direct polarization force
+//
+//    if( getPolarizationType() == AmoebaReferenceMultipoleForce::Direct ){
+//       RealOpenMM gfd   = (rr5*scip[1]*scale3i - rr7*(scip[2]*sci[3]+sci[2]*scip[3])*scale5i);
+//       temp5            = rr5*scale5i;
+//
+//       RealVec fdir;
+//       fdir = delta*gfd + (_inducedDipolePolar[iIndex]*sci[3] +
+//                           _inducedDipole[iIndex]*scip[3] +
+//                           _inducedDipolePolar[kIndex]*sci[2] +
+//                           _inducedDipole[kIndex]*scip[2])*temp5;
+//
+//       ftm2i += ( findmp - fdir )*0.5;
+//    }
 
     // intermediate terms for induced torque on multipoles
 
