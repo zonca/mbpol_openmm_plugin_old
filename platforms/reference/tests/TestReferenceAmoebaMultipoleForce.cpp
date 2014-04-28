@@ -95,11 +95,11 @@ static void testGetAndScaleInverseRs( FILE* log ) {
     amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampH,
                           thole, thole, r, false, damp, rrI);
 
-    //ASSERT_EQUAL_TOL_MOD(0., rrI[0], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(5.324612470e+02, rrI[3], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(9.33047, rrI[1], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
+    ASSERT_EQUAL_TOL_MOD(5.324612470e+02, rrI[3], 1e-5, testName); // from mbpol
     // mbpol multiplies by constant factor (3) later, AMOEBA in this function
-    ASSERT_EQUAL_TOL_MOD(4.747626558e+03*3., rrI[5], 1e-5, testName);
-    //ASSERT_EQUAL_TOL_MOD(             0., rrI[3], 1e-5, testName);
+    ASSERT_EQUAL_TOL_MOD(4.747626558e+03*3., rrI[5], 1e-5, testName); // from mbpol
+    ASSERT_EQUAL_TOL_MOD(             -2.13404e+07, rrI[7], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
 
 }
 
@@ -117,10 +117,10 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
     amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampO,
                           thole, thole, r, false, damp, rrI);
 
-    ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[1], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(4.695157736e-02*1e3, rrI[3], 1e-5, testName);
-    ASSERT_EQUAL_TOL_MOD(6.110587933e-03*1e5*3., rrI[5], 1e-5, testName);
-
+    ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[1], 1e-5, testName); // from mbpol
+    ASSERT_EQUAL_TOL_MOD(4.695157736e-02*1e3, rrI[3], 1e-5, testName); // from mbpol
+    ASSERT_EQUAL_TOL_MOD(6.110587933e-03*1e5*3., rrI[5], 1e-5, testName); // from mbpol
+    ASSERT_EQUAL_TOL_MOD(119289, rrI[7], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
 }
 
 class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceMultipoleForce {
