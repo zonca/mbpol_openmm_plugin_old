@@ -1147,7 +1147,7 @@ RealOpenMM AmoebaReferenceMultipoleForce::calculateElectrostaticPairIxn( const s
 
     RealOpenMM scale3CC = getAndScaleInverseRs( particleI, particleK, r, true, 3, TCC);
     RealOpenMM scale5CD = getAndScaleInverseRs( particleI, particleK, r, true, 5, TCD);
-    RealOpenMM scale7DD = getAndScaleInverseRs( particleI, particleK, r, true, 5, TCD);
+    RealOpenMM scale7DD = getAndScaleInverseRs( particleI, particleK, r, true, 7, TDD);
 
     // intermediate variables for the permanent components
 
