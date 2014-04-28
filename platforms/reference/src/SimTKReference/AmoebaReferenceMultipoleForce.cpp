@@ -587,13 +587,12 @@ RealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Multipole
     // rrI[5] = dipole-dipole (ts2 in mbpol)
     // rrI[7] = quadrupole
 
-    RealOpenMM rI             =  1.0/r;
-    RealOpenMM r2I            =  rI*rI;
-
     RealOpenMM rrI;
     if (justScale) {
         rrI         = 1.;
     } else {
+        RealOpenMM rI             =  1.0/r;
+        RealOpenMM r2I            =  rI*rI;
         rrI                    = rI;
         for( unsigned int ii  = 3; ii <= interactionOrder; ii=ii+2 ){
            rrI *= (ii-2)*r2I;
