@@ -572,9 +572,9 @@ void AmoebaReferenceMultipoleForce::applyRotationMatrix( std::vector<MultipolePa
     return;
 }
 
-MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const MultipoleParticleData& particleI,
+RealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const MultipoleParticleData& particleI,
                                                                     const MultipoleParticleData& particleK,
-                                                          RealOpenMM r, bool justScale, bool forEnergy) const
+                                                          RealOpenMM r, bool justScale, int interactionOrder, int interactionType) const
 {
 
     bool isSameWater = (particleI.multipoleAtomZs == particleK.particleIndex) or
@@ -590,66 +590,65 @@ MapIntRealOpenMM AmoebaReferenceMultipoleForce::getAndScaleInverseRs(  const Mul
     RealOpenMM rI             =  1.0/r;
     RealOpenMM r2I            =  rI*rI;
 
-    MapIntRealOpenMM rrI;
+    RealOpenMM rrI;
     if (justScale) {
-        rrI[1]         = 1.;
-        rrI[3]         = 1.;
-        rrI[5]         = 1.;
-        rrI[7]         = 1.;
+        rrI         = 1.;
     } else {
-        rrI[1]                    = rI;
-        rrI[3]                    = rI*r2I;
-        RealOpenMM constantFactor = 3.0;
-        for( unsigned int ii  = 5; ii <= 7; ii=ii+2 ){
-           rrI[ii]         = constantFactor*rrI[ii-2]*r2I;
-           constantFactor += 2.0;
+        rrI                    = rI;
+        for( unsigned int ii  = 3; ii <= interactionOrder; ii=ii+2 ){
+           rrI *= (ii-2)*r2I;
         }
     }
-        
-    RealOpenMM damp      = pow(particleI.dampingFactor*particleK.dampingFactor, 1/6.); // AA in MBPol
-    RealOpenMM pgamma, pgammaDipole, dampForExp;
-    if( damp != 0.0 ){
-        RealOpenMM ratio       = pow(r/damp, 4); // rA4 in MBPol
 
-        if( damp > -50.0 ){ 
+    RealOpenMM pgamma = min(particleI.thole[interactionType], particleK.thole[interactionType]);
 
-            pgamma = min(particleI.thole[TCC], particleK.thole[TCC]);
-            dampForExp = -1 * pgamma * ratio;
-            rrI[1]              *= 1.0 - EXP(dampForExp) + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -dampForExp);
-            pgamma = min(particleI.thole[TCD], particleK.thole[TCD]);
-            dampForExp = -1 * pgamma * ratio;
-            rrI[3]              *= ( 1.0 - EXP(dampForExp) );
+    if (interactionType == TDD) {
+        // dipole - dipole thole parameters is different for 3 cases:
+        // 1) different water molecules : thole[TDD]
+        // 2) same water hydrogen-hydrogen : thole[TDDHH]
+        // 3) same water hydrogen-oxygen : thole[TDDOH]
 
-
-            if (isSameWater) {
-                // FIXME improve identification of oxygen, now relies only on particles order
-                bool oneIsOxygen = ((particleI.multipoleAtomZs >= particleI.particleIndex) and
-                                    (particleI.multipoleAtomYs >= particleI.particleIndex) and
-                                    (particleI.multipoleAtomXs >= particleI.particleIndex)) or
-                                    ((particleK.multipoleAtomZs >= particleK.particleIndex) and
-                                     (particleK.multipoleAtomYs >= particleK.particleIndex) and
-                                     (particleK.multipoleAtomXs >= particleK.particleIndex));
-                if (oneIsOxygen) {
-                    pgammaDipole = min(particleI.thole[TDDOH],particleK.thole[TDDOH]);
-                } else {
-                    pgammaDipole = min(particleI.thole[TDDHH],particleK.thole[TDDHH]);
-                }
+        if (isSameWater) {
+            // FIXME improve identification of oxygen, now relies only on particles order
+            bool oneIsOxygen = ((particleI.multipoleAtomZs >= particleI.particleIndex) and
+                                (particleI.multipoleAtomYs >= particleI.particleIndex) and
+                                (particleI.multipoleAtomXs >= particleI.particleIndex)) or
+                                ((particleK.multipoleAtomZs >= particleK.particleIndex) and
+                                 (particleK.multipoleAtomYs >= particleK.particleIndex) and
+                                 (particleK.multipoleAtomXs >= particleK.particleIndex));
+            if (oneIsOxygen) {
+                pgamma = min(particleI.thole[TDDOH],particleK.thole[TDDOH]);
             } else {
-                pgammaDipole = min(particleI.thole[TDD],particleK.thole[TDD]);
+                pgamma = min(particleI.thole[TDDHH],particleK.thole[TDDHH]);
             }
+        } else {
+            pgamma = min(particleI.thole[TDD],particleK.thole[TDD]);
+        }
+    }
 
-            if (forEnergy) {
-                pgamma = pgammaDipole;
-            }
-            dampForExp = -1 * pgamma * ratio;
-            rrI[5]          *= (1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio;
+    RealOpenMM damp      = pow(particleI.dampingFactor*particleK.dampingFactor, 1/6.); // AA in MBPol
 
-            // quadrupole not implementede
-            dampForExp = -1 * pgammaDipole * ratio;
-             rrI[7]          *= ((1.0 - EXP(dampForExp)) - (4./3.) * pgammaDipole * EXP(dampForExp) * ratio) - // rrI[2]'s factor
-                                    (4./15.) * pgammaDipole * (4. * pgammaDipole * ratio - 1.) * EXP(dampForExp) / pow(damp, 4) * pow(r, 4);
-            }
-       }
+    if( (damp != 0.0) and ( damp > -50.0 ) ) { // damp or not
+
+        RealOpenMM ratio       = pow(r/damp, 4); // rA4 in MBPol
+        RealOpenMM dampForExp = -1 * pgamma * ratio;
+
+        switch (interactionOrder) {
+
+        case 1:
+            return rrI * (1.0 - EXP(dampForExp) + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -dampForExp));
+
+        case 3:
+            return rrI * ( 1.0 - EXP(dampForExp) );
+
+        case 5:
+            return rrI * ((1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio);
+
+        case 7:
+            return rrI * (((1.0 - EXP(dampForExp)) - (4./3.) * pgamma * EXP(dampForExp) * ratio) -
+                                (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * EXP(dampForExp) / pow(damp, 4) * pow(r, 4));
+        }
+    }
 
     return rrI;
 }

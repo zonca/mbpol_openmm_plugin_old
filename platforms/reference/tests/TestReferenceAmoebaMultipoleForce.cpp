@@ -73,7 +73,9 @@ class WrappedAmoebaReferenceMultipoleForce : public AmoebaReferenceMultipoleForc
                         particleData[1].thole[i] = tholeJ;
                     }
 
-                    rrI = getAndScaleInverseRs(particleData[0], particleData[1], r, justScale, true);
+                    for (int order=1; order <=7; order+=2) {
+                        rrI[order] = getAndScaleInverseRs(particleData[0], particleData[1], r, justScale, order, TCC);
+                    }
                 }
 };
 

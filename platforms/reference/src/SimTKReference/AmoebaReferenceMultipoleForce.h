@@ -743,9 +743,9 @@ protected:
      */
 
 
-    MapIntRealOpenMM getAndScaleInverseRs(  const MultipoleParticleData& particleI,
-            const MultipoleParticleData& particleJ,
-                               RealOpenMM r, bool justScale, bool forEnergy) const;
+    RealOpenMM getAndScaleInverseRs(  const MultipoleParticleData& particleI,
+                                                                        const MultipoleParticleData& particleK,
+                                                              RealOpenMM r, bool justScale, int interactionOrder, int interactionType) const;
 
     /**
      * Check if multipoles at chiral site should be inverted.
