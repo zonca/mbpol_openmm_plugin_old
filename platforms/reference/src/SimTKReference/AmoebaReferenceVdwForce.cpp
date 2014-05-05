@@ -22,6 +22,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 #include "AmoebaReferenceForce.h"
 #include "AmoebaReferenceVdwForce.h"
 #include <algorithm>
@@ -32,20 +33,8 @@
 using std::vector;
 using OpenMM::RealVec;
 
-AmoebaReferenceVdwForce::AmoebaReferenceVdwForce( ) : _nonbondedMethod(NoCutoff), _cutoff(1.0e+10), _taperCutoffFactor(0.9) {
+AmoebaReferenceVdwForce::AmoebaReferenceVdwForce( ) : _nonbondedMethod(NoCutoff), _cutoff(1.0e+10) {
 
-    setTaperCoefficients( _cutoff );
-    setSigmaCombiningRule( "ARITHMETIC" );
-    setEpsilonCombiningRule( "GEOMETRIC" );
-    _periodicBoxDimensions = RealVec( 0.0, 0.0, 0.0 );
-}
-
-
-AmoebaReferenceVdwForce::AmoebaReferenceVdwForce( const std::string& sigmaCombiningRule, const std::string& epsilonCombiningRule ) : _nonbondedMethod(NoCutoff), _cutoff(1.0e+10), _taperCutoffFactor(0.9) {
-
-    setTaperCoefficients( _cutoff );
-    setSigmaCombiningRule( sigmaCombiningRule );
-    setEpsilonCombiningRule( epsilonCombiningRule );
     _periodicBoxDimensions = RealVec( 0.0, 0.0, 0.0 );
 }
 
@@ -57,22 +46,8 @@ void AmoebaReferenceVdwForce::setNonbondedMethod( AmoebaReferenceVdwForce::Nonbo
     _nonbondedMethod = nonbondedMethod;
 }
 
-void AmoebaReferenceVdwForce::setTaperCoefficients( double cutoff ){
-    _taperCutoff = cutoff*_taperCutoffFactor;
-    if( _taperCutoff != cutoff ){
-        _taperCoefficients[C3] = 10.0/pow(_taperCutoff - cutoff, 3.0);
-        _taperCoefficients[C4] = 15.0/pow(_taperCutoff - cutoff, 4.0);
-        _taperCoefficients[C5] =  6.0/pow(_taperCutoff - cutoff, 5.0);
-    } else {
-        _taperCoefficients[C3] = 0.0;
-        _taperCoefficients[C4] = 0.0;
-        _taperCoefficients[C5] = 0.0;
-    }
-}
-
 void AmoebaReferenceVdwForce::setCutoff( double cutoff ){
     _cutoff  = cutoff;
-    setTaperCoefficients( _cutoff );
 }
 
 double AmoebaReferenceVdwForce::getCutoff( void ) const {
@@ -85,83 +60,6 @@ void AmoebaReferenceVdwForce::setPeriodicBox( const RealVec& box ){
 
 RealVec AmoebaReferenceVdwForce::getPeriodicBox( void ) const {
     return _periodicBoxDimensions;
-}
-
-void AmoebaReferenceVdwForce::setSigmaCombiningRule( const std::string& sigmaCombiningRule ){
-
-    _sigmaCombiningRule = sigmaCombiningRule;
-
-    // convert to upper case and set combining function
-
-    std::transform( _sigmaCombiningRule.begin(), _sigmaCombiningRule.end(), _sigmaCombiningRule.begin(),  (int(*)(int)) std::toupper);
-    if( _sigmaCombiningRule == "GEOMETRIC" ){
-        _combineSigmas = &AmoebaReferenceVdwForce::geometricSigmaCombiningRule;
-    } else if( _sigmaCombiningRule == "CUBIC-MEAN" ){
-        _combineSigmas = &AmoebaReferenceVdwForce::cubicMeanSigmaCombiningRule;
-    } else {
-        _combineSigmas = &AmoebaReferenceVdwForce::arithmeticSigmaCombiningRule;
-    }
-}
-
-std::string AmoebaReferenceVdwForce::getSigmaCombiningRule( void ) const {
-    return _sigmaCombiningRule;
-}
-
-RealOpenMM AmoebaReferenceVdwForce::arithmeticSigmaCombiningRule( RealOpenMM sigmaI, RealOpenMM sigmaJ ) const {
-    return (sigmaI + sigmaJ);
-}
-
-RealOpenMM AmoebaReferenceVdwForce::geometricSigmaCombiningRule( RealOpenMM sigmaI, RealOpenMM sigmaJ ) const {
-    return 2.0*SQRT(sigmaI*sigmaJ);
-}
-
-RealOpenMM AmoebaReferenceVdwForce::cubicMeanSigmaCombiningRule( RealOpenMM sigmaI, RealOpenMM sigmaJ ) const {
-
-    const RealOpenMM zero = 0.0;
-
-    RealOpenMM sigmaI2    = sigmaI*sigmaI;
-    RealOpenMM sigmaJ2    = sigmaJ*sigmaJ;
-
-    return sigmaI != zero && sigmaJ != 0.0 ? 2.0*(sigmaI2*sigmaI + sigmaJ2*sigmaJ)/(sigmaI2 + sigmaJ2) : zero;
-}
-
-void AmoebaReferenceVdwForce::setEpsilonCombiningRule( const std::string& epsilonCombiningRule ){
-
-    _epsilonCombiningRule = epsilonCombiningRule;
-    std::transform( _epsilonCombiningRule.begin(), _epsilonCombiningRule.end(), _epsilonCombiningRule.begin(),  (int(*)(int)) std::toupper);
-
-    // convert to upper case and set combining function
-
-    if( _epsilonCombiningRule == "ARITHMETIC" ){
-         _combineEpsilons = &AmoebaReferenceVdwForce::arithmeticEpsilonCombiningRule;
-    } else if( _epsilonCombiningRule == "HARMONIC" ){
-         _combineEpsilons = &AmoebaReferenceVdwForce::harmonicEpsilonCombiningRule;
-    } else if( _epsilonCombiningRule == "HHG" ){
-         _combineEpsilons = &AmoebaReferenceVdwForce::hhgEpsilonCombiningRule;
-    } else {
-         _combineEpsilons = &AmoebaReferenceVdwForce::geometricEpsilonCombiningRule;
-    }
-}
-
-std::string AmoebaReferenceVdwForce::getEpsilonCombiningRule( void ) const {
-    return _epsilonCombiningRule;
-}
-
-RealOpenMM AmoebaReferenceVdwForce::arithmeticEpsilonCombiningRule( RealOpenMM epsilonI, RealOpenMM epsilonJ ) const {
-    return 0.5*(epsilonI + epsilonJ);
-}
-
-RealOpenMM AmoebaReferenceVdwForce::geometricEpsilonCombiningRule( RealOpenMM epsilonI, RealOpenMM epsilonJ ) const {
-    return SQRT(epsilonI*epsilonJ);
-}
-
-RealOpenMM AmoebaReferenceVdwForce::harmonicEpsilonCombiningRule( RealOpenMM epsilonI, RealOpenMM epsilonJ ) const {
-    return (epsilonI != 0.0 && epsilonJ != 0.0) ? 2.0*(epsilonI*epsilonJ)/(epsilonI + epsilonJ) : 0.0;
-}
-
-RealOpenMM AmoebaReferenceVdwForce::hhgEpsilonCombiningRule( RealOpenMM epsilonI, RealOpenMM epsilonJ ) const {
-    RealOpenMM denominator = SQRT(epsilonI) + SQRT(epsilonJ);
-    return (epsilonI != 0.0 && epsilonJ != 0.0) ? 4.0*(epsilonI*epsilonJ)/(denominator*denominator) : 0.0;
 }
 
 RealOpenMM AmoebaReferenceVdwForce::calculatePairIxn( int siteI, int siteJ,
@@ -367,27 +265,13 @@ RealOpenMM AmoebaReferenceVdwForce::calculateForceAndEnergy( int numParticles,
                                                              const NeighborList& neighborList,
                                                              vector<RealVec>& forces ) const {
 
-
-    // ---------------------------------------------------------------------------------------
-
-    static const RealOpenMM zero          = 0.0;
-    static const RealOpenMM one           = 1.0;
-    static const RealOpenMM two           = 2.0;
-
-    // ---------------------------------------------------------------------------------------
-
-    // set reduced coordinates
-
-    //std::vector<Vec3> reducedPositions;
-    //setReducedPositions( numParticles, particlePositions, indexIVs, reductions, reducedPositions );
- 
     // loop over neighbor list
     //    (1) calculate pair vdw ixn
     //    (2) accumulate forces: if particle is a site where interaction position != particle position,
     //        then call addReducedForce() to apportion force to particle and its covalent partner
     //        based on reduction factor
 
-    RealOpenMM energy = zero;
+    RealOpenMM energy = 0.;
     for( unsigned int ii = 0; ii < neighborList.size(); ii++ ){
 
         OpenMM::AtomPair pair       = neighborList[ii];

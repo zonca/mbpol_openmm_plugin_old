@@ -45,30 +45,6 @@ void AmoebaVdwForceProxy::serialize(const void* object, SerializationNode& node)
     node.setIntProperty("version", 1);
     const AmoebaVdwForce& force = *reinterpret_cast<const AmoebaVdwForce*>(object);
 
-    node.setStringProperty("SigmaCombiningRule", force.getSigmaCombiningRule());
-    node.setStringProperty("EpsilonCombiningRule", force.getEpsilonCombiningRule());
-    node.setDoubleProperty("VdwCutoff", force.getCutoff());
-
-    node.setIntProperty("method", (int) force.getNonbondedMethod());
-
-    SerializationNode& particles = node.createChildNode("VdwParticles");
-    for (unsigned int ii = 0; ii < static_cast<unsigned int>(force.getNumParticles()); ii++) {
-
-        int ivIndex;
-        double sigma, epsilon, reductionFactor;
-        // force.getParticleParameters( ii, ivIndex, sigma, epsilon, reductionFactor );
-
-        SerializationNode& particle = particles.createChildNode("Particle");
-        particle.setIntProperty("ivIndex", ivIndex).setDoubleProperty("sigma", sigma).setDoubleProperty("epsilon", epsilon).setDoubleProperty("reductionFactor", reductionFactor);
-
-        std::vector< int > exclusions;
-        force.getParticleExclusions( ii,  exclusions );
-
-        SerializationNode& particleExclusions = particle.createChildNode("ParticleExclusions");
-        for (unsigned int jj = 0; jj < exclusions.size(); jj++) {
-            particleExclusions.createChildNode( "excl" ).setIntProperty( "index", exclusions[jj] );
-        }
-    }
 }
 
 void* AmoebaVdwForceProxy::deserialize(const SerializationNode& node) const {
@@ -76,26 +52,6 @@ void* AmoebaVdwForceProxy::deserialize(const SerializationNode& node) const {
         throw OpenMMException("Unsupported version number");
     AmoebaVdwForce* force = new AmoebaVdwForce();
     try {
-
-        force->setSigmaCombiningRule(node.getStringProperty( "SigmaCombiningRule" ) );
-        force->setEpsilonCombiningRule(node.getStringProperty( "EpsilonCombiningRule" ) );
-        force->setCutoff(node.getDoubleProperty( "VdwCutoff" ) );
-        force->setNonbondedMethod((AmoebaVdwForce::NonbondedMethod) node.getIntProperty("method"));
-
-        const SerializationNode& particles = node.getChildNode("VdwParticles");
-        for (unsigned int ii = 0; ii < particles.getChildren().size(); ii++) {
-            const SerializationNode& particle = particles.getChildren()[ii];
-            // force->addParticle(particle.getIntProperty("ivIndex"), particle.getDoubleProperty("sigma"), particle.getDoubleProperty("epsilon"), particle.getDoubleProperty("reductionFactor"));
-
-            // exclusions
-
-            const SerializationNode& particleExclusions = particle.getChildNode("ParticleExclusions");
-            std::vector< int > exclusions;
-            for (unsigned int jj = 0; jj < particleExclusions.getChildren().size(); jj++) {
-                exclusions.push_back( particleExclusions.getChildren()[jj].getIntProperty("index") );
-            }
-            force->setParticleExclusions( ii, exclusions );
-        }
 
     }
     catch (...) {

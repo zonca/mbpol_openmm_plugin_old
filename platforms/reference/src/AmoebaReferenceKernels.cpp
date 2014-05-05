@@ -755,7 +755,6 @@ void ReferenceCalcAmoebaVdwForceKernel::initialize(const System& system, const A
 
     numParticles = force.getNumMolecules();
     allParticleIndices.resize(numParticles);
-    allExclusions.resize(numParticles);
     for( int ii = 0; ii < numParticles; ii++ ){
 
         std::vector<int> particleIndices;
@@ -776,12 +775,14 @@ double ReferenceCalcAmoebaVdwForceKernel::execute(ContextImpl& context, bool inc
     vector<RealVec>& allPosData   = extractPositions(context);
     vector<RealVec> posData;
     posData.resize(numParticles);
+    vector<set<int> > allExclusions;
+    allExclusions.resize(numParticles);
     // posData has only oxygens
     for( int ii = 0; ii < numParticles; ii++ ){
         posData[ii] = allPosData[allParticleIndices[ii][0]];
     }
     vector<RealVec>& forceData = extractForces(context);
-    AmoebaReferenceVdwForce vdwForce("SSS", "ASASS");
+    AmoebaReferenceVdwForce vdwForce;
     RealOpenMM energy;
     vdwForce.setCutoff( cutoff );
     // neighborList created only with oxygens, then allParticleIndices is used to get reference to the hydrogens

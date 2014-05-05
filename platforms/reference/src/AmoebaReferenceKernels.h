@@ -461,7 +461,6 @@ private:
     int usePBC;
     double cutoff;
     std::vector< std::vector<int> > allParticleIndices;
-    std::vector< std::set<int> > allExclusions;
     const System& system;
     NeighborList* neighborList;
 };

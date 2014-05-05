@@ -122,70 +122,6 @@ public:
 
     int getNumMolecules(void) const;
     /**
-     * Set sigma combining rule
-     * 
-     * @param sigmaCombiningRule   sigma combining rule:  'ARITHMETIC', 'GEOMETRIC'. 'CUBIC-MEAN'
-     */
-    void setSigmaCombiningRule(const std::string& sigmaCombiningRule);
-
-    /**
-     * Get sigma combining rule
-     * 
-     * @return sigmaCombiningRule   sigma combining rule:  'ARITHMETIC', 'GEOMETRIC'. 'CUBIC-MEAN'
-     */
-    const std::string& getSigmaCombiningRule(void) const;
-
-    /**
-     * Set epsilon combining rule
-     * 
-     * @param epsilonCombiningRule   epsilon combining rule:   'ARITHMETIC', 'GEOMETRIC'. 'HARMONIC', 'HHG'
-     */
-    void setEpsilonCombiningRule(const std::string& epsilonCombiningRule);
-
-    /**
-     * Get epsilon combining rule
-     * 
-     * @return epsilonCombiningRule   epsilon combining rule:  'ARITHMETIC', 'GEOMETRIC'. 'HARMONIC', 'HHG'
-     */
-    const std::string& getEpsilonCombiningRule(void) const;
-
-    /**
-     * Get whether to add a contribution to the energy that approximately represents the effect of VdW
-     * interactions beyond the cutoff distance.  The energy depends on the volume of the periodic box, and is only
-     * applicable when periodic boundary conditions are used.  When running simulations at constant pressure, adding
-     * this contribution can improve the quality of results.
-     */
-    bool getUseDispersionCorrection() const {
-        return useDispersionCorrection;
-    }
-
-    /**
-     * Set whether to add a contribution to the energy that approximately represents the effect of VdW
-     * interactions beyond the cutoff distance.  The energy depends on the volume of the periodic box, and is only
-     * applicable when periodic boundary conditions are used.  When running simulations at constant pressure, adding
-     * this contribution can improve the quality of results.
-     */
-    void setUseDispersionCorrection(bool useCorrection) {
-        useDispersionCorrection = useCorrection;
-    }
-
-    /**
-     * Set exclusions for specified particle
-     * 
-     * @param particleIndex particle index
-     * @param exclusions vector of exclusions
-     */
-    void setParticleExclusions(int particleIndex, const std::vector<int>& exclusions);
-
-    /**
-     * Get exclusions for specified particle
-     * 
-     * @param particleIndex particle index
-     * @param exclusions vector of exclusions
-     */
-    void getParticleExclusions(int particleIndex, std::vector<int>& exclusions) const;
-
-    /**
      * Set the cutoff distance.
      */
     void setCutoff(double cutoff);
@@ -222,12 +158,7 @@ private:
     class VdwInfo;
     NonbondedMethod nonbondedMethod;
     double cutoff;
-    bool useDispersionCorrection;
 
-    std::string sigmaCombiningRule;
-    std::string epsilonCombiningRule;
-
-    std::vector< std::vector<int> > exclusions;
     std::vector<VdwInfo> parameters;
     std::vector< std::vector< std::vector<double> > > sigEpsTable;
 };

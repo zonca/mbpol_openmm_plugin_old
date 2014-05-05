@@ -38,7 +38,7 @@ using namespace OpenMM;
 using std::string;
 using std::vector;
 
-AmoebaVdwForce::AmoebaVdwForce() : nonbondedMethod(NoCutoff), sigmaCombiningRule("CUBIC-MEAN"), epsilonCombiningRule("HHG"), cutoff(1.0e+10), useDispersionCorrection(true) {
+AmoebaVdwForce::AmoebaVdwForce() : nonbondedMethod(NoCutoff), cutoff(1.0e+10) {
 }
 
 int AmoebaVdwForce::addParticle(const std::vector<int> & particleIndices ) {
@@ -56,46 +56,6 @@ void AmoebaVdwForce::getParticleParameters(int particleIndex, std::vector<int>& 
 
 void AmoebaVdwForce::setParticleParameters(int particleIndex, std::vector<int>& particleIndices  ) {
       parameters[particleIndex].particleIndices =particleIndices;
-}
-
-void AmoebaVdwForce::setSigmaCombiningRule( const std::string& inputSigmaCombiningRule ) {
-    sigmaCombiningRule = inputSigmaCombiningRule;
-}
-
-const std::string& AmoebaVdwForce::getSigmaCombiningRule( void ) const {
-    return sigmaCombiningRule;
-}
-
-void AmoebaVdwForce::setEpsilonCombiningRule( const std::string& inputEpsilonCombiningRule ) {
-    epsilonCombiningRule = inputEpsilonCombiningRule;
-}
-
-const std::string& AmoebaVdwForce::getEpsilonCombiningRule( void ) const {
-    return epsilonCombiningRule;
-}
-
-void AmoebaVdwForce::setParticleExclusions( int particleIndex, const std::vector< int >& inputExclusions ) {
-
-   if( exclusions.size() < parameters.size() ){
-       exclusions.resize( parameters.size() );
-   }
-   if(  static_cast<int>(exclusions.size()) < particleIndex ){
-       exclusions.resize( particleIndex + 10 );
-   }
-   for( unsigned int ii = 0; ii < inputExclusions.size(); ii++ ){
-       exclusions[particleIndex].push_back( inputExclusions[ii] );
-   }
-}
-
-void AmoebaVdwForce::getParticleExclusions( int particleIndex, std::vector< int >& outputExclusions ) const {
-
-   if( particleIndex < static_cast<int>(exclusions.size()) ){
-       outputExclusions.resize( exclusions[particleIndex].size() );
-       for( unsigned int ii = 0; ii < exclusions[particleIndex].size(); ii++ ){
-           outputExclusions[ii] = exclusions[particleIndex][ii];
-       }
-   }
-
 }
 
 void AmoebaVdwForce::setCutoff( double inputCutoff ){
