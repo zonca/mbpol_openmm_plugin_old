@@ -109,12 +109,7 @@ void testVdw( FILE* log ) {
     system.addForce(amoebaVdwForce);
     std::string platformName;
     #define AngstromToNm 0.1    
-    #define CalToJoule   4.184    
-    for( int ii = 0; ii < numberOfParticles; ii++ ){
-        positions[ii][0] *= AngstromToNm;
-        positions[ii][1] *= AngstromToNm;
-        positions[ii][2] *= AngstromToNm;
-    }
+    #define CalToJoule   4.184
 
     platformName = "Reference";
     Context context(system, integrator, Platform::getPlatformByName( platformName ) );
