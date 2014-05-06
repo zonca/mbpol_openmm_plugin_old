@@ -33,6 +33,7 @@
 #include "AmoebaReferenceOutOfPlaneBendForce.h"
 #include "AmoebaReferenceTorsionTorsionForce.h"
 #include "AmoebaReferenceVdwForce.h"
+#include "MBPolReferenceThreeBodyForce.h"
 #include "AmoebaReferenceWcaDispersionForce.h"
 #include "AmoebaReferenceGeneralizedKirkwoodForce.h"
 #include "openmm/internal/AmoebaTorsionTorsionForceImpl.h"
@@ -42,6 +43,7 @@
 #include "openmm/AmoebaMultipoleForce.h"
 #include "openmm/internal/AmoebaMultipoleForceImpl.h"
 #include "openmm/internal/AmoebaVdwForceImpl.h"
+#include "openmm/internal/MBPolThreeBodyForceImpl.h"
 #include "openmm/internal/AmoebaGeneralizedKirkwoodForceImpl.h"
 #include "openmm/NonbondedForce.h"
 #include "openmm/internal/NonbondedForceImpl.h"
@@ -805,6 +807,90 @@ double ReferenceCalcAmoebaVdwForceKernel::execute(ContextImpl& context, bool inc
 }
 
 void ReferenceCalcAmoebaVdwForceKernel::copyParametersToContext(ContextImpl& context, const AmoebaVdwForce& force) {
+    if (numParticles != force.getNumParticles())
+        throw OpenMMException("updateParametersInContext: The number of particles has changed");
+
+    // Record the values.
+
+    for (int i = 0; i < numParticles; ++i) {
+
+        std::vector<int> particleIndices;
+        force.getParticleParameters(i, particleIndices);
+        allParticleIndices[i] = particleIndices;
+
+    }
+}
+
+ReferenceCalcMBPolThreeBodyForceKernel::ReferenceCalcMBPolThreeBodyForceKernel(std::string name, const Platform& platform, const System& system) :
+       CalcMBPolThreeBodyForceKernel(name, platform), system(system) {
+    useCutoff = 0;
+    usePBC = 0;
+    cutoff = 1.0e+10;
+    neighborList = NULL;
+}
+
+ReferenceCalcMBPolThreeBodyForceKernel::~ReferenceCalcMBPolThreeBodyForceKernel() {
+    if( neighborList ){
+        delete neighborList;
+    }
+}
+
+void ReferenceCalcMBPolThreeBodyForceKernel::initialize(const System& system, const MBPolThreeBodyForce& force) {
+
+    // per-particle parameters
+
+    numParticles = force.getNumMolecules();
+    allParticleIndices.resize(numParticles);
+    for( int ii = 0; ii < numParticles; ii++ ){
+
+        std::vector<int> particleIndices;
+        force.getParticleParameters(ii, particleIndices );
+        allParticleIndices[ii] = particleIndices;
+
+    }
+
+    useCutoff              = (force.getNonbondedMethod() != MBPolThreeBodyForce::NoCutoff);
+    usePBC                 = (force.getNonbondedMethod() == MBPolThreeBodyForce::CutoffPeriodic);
+    cutoff                 = force.getCutoff();
+    neighborList           = useCutoff ? new NeighborList() : NULL;
+
+}
+
+double ReferenceCalcMBPolThreeBodyForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
+
+    vector<RealVec>& allPosData   = extractPositions(context);
+    vector<RealVec> posData;
+    posData.resize(numParticles);
+    vector<set<int> > allExclusions;
+    allExclusions.resize(numParticles);
+    // posData has only oxygens
+    for( int ii = 0; ii < numParticles; ii++ ){
+        posData[ii] = allPosData[allParticleIndices[ii][0]];
+    }
+    vector<RealVec>& forceData = extractForces(context);
+    MBPolReferenceThreeBodyForce vdwForce;
+    RealOpenMM energy;
+    vdwForce.setCutoff( cutoff );
+    // neighborList created only with oxygens, then allParticleIndices is used to get reference to the hydrogens
+    computeNeighborListVoxelHash( *neighborList, numParticles, posData, allExclusions, extractBoxSize(context), usePBC, cutoff, 0.0, false);
+    if( usePBC ){
+        vdwForce.setNonbondedMethod( MBPolReferenceThreeBodyForce::CutoffPeriodic);
+        RealVec& box = extractBoxSize(context);
+        double minAllowedSize = 1.999999*cutoff;
+        if (box[0] < minAllowedSize || box[1] < minAllowedSize || box[2] < minAllowedSize){
+            throw OpenMMException("The periodic box size has decreased to less than twice the cutoff.");
+        }
+        vdwForce.setPeriodicBox(box);
+    } else {
+        vdwForce.setNonbondedMethod( MBPolReferenceThreeBodyForce::CutoffNonPeriodic);
+    }
+    // here we need allPosData, every atom!
+    energy  = vdwForce.calculateForceAndEnergy( numParticles, allPosData, allParticleIndices, *neighborList, forceData);
+
+    return static_cast<double>(energy);
+}
+
+void ReferenceCalcMBPolThreeBodyForceKernel::copyParametersToContext(ContextImpl& context, const MBPolThreeBodyForce& force) {
     if (numParticles != force.getNumParticles())
         throw OpenMMException("updateParametersInContext: The number of particles has changed");
 
