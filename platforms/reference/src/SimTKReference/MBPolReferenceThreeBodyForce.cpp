@@ -27,8 +27,8 @@
 #include "MBPolReferenceThreeBodyForce.h"
 #include <algorithm>
 #include <cctype>
-#include "mbpol_2body_constants.h"
-#include "poly-2b-v6x.h"
+#include "mbpol_3body_constants.h"
+#include "poly-3b-v2x.h"
 
 using std::vector;
 using OpenMM::RealVec;
@@ -62,7 +62,66 @@ RealVec MBPolReferenceThreeBodyForce::getPeriodicBox( void ) const {
     return _periodicBoxDimensions;
 }
 
-RealOpenMM MBPolReferenceThreeBodyForce::calculatePairIxn( int siteI, int siteJ,
+double var(const double& k,
+           const double& r0,
+           const OpenMM::RealVec& a1, const OpenMM::RealVec& a2)
+{
+    const double nm_to_A = 10.;
+
+    const double dx[3] = {(a1[0] - a2[0])*nm_to_A,
+                          (a1[1] - a2[1])*nm_to_A,
+                          (a1[2] - a2[2])*nm_to_A};
+
+    const double dsq = dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2];
+    const double d = std::sqrt(dsq);
+
+    return std::exp(-k*(d - r0));
+}
+
+void g_var(const double& g,
+           const double& k,
+           const double& r0,
+           const OpenMM::RealVec& a1, const OpenMM::RealVec& a2,
+           OpenMM::RealVec& g1,       OpenMM::RealVec& g2)
+{
+    const double nm_to_A = 10.;
+
+    const double dx[3] = {(a1[0] - a2[0])*nm_to_A,
+                          (a1[1] - a2[1])*nm_to_A,
+                          (a1[2] - a2[2])*nm_to_A};
+
+    const double dsq = dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2];
+    const double d = std::sqrt(dsq);
+
+    double gg = - k*g*std::exp(-k*(d - r0))/d;
+
+    const double cal2joule = 4.184;
+
+    gg *= cal2joule * 10.;
+
+    for (int i = 0; i < 3; ++i) {
+        g1[i] += gg*dx[i];
+        g2[i] -= gg*dx[i];
+    }
+}
+
+double threebody_f_switch(const double& r, double& g)
+{
+    if (r > r3f) {
+        g = 0.0;
+        return 0.0;
+    } else if (r > r3i) {
+        const double t1 = M_PI/(r3f - r3i);
+        const double x = (r - r3i)*t1;
+        g = - std::sin(x)*t1/2.0;
+        return (1.0 + std::cos(x))/2.0;
+    } else {
+        g = 0.0;
+        return 1.0;
+    }
+}
+
+RealOpenMM MBPolReferenceThreeBodyForce::calculateTripletIxn( int siteI, int siteJ, int siteQ,
                                                       const std::vector<RealVec>& particlePositions,
                                                       const std::vector<std::vector<int> >& allParticleIndices,
                                                       vector<RealVec>& forces ) const {
@@ -72,188 +131,160 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculatePairIxn( int siteI, int siteJ,
         // first hydrogen: allParticleIndices[siteI][1]
         // second hydrogen: allParticleIndices[siteI][2]
         // same for the second water molecule
-        const double nm_to_A = 10.;
-        const double dOO[3] = {particlePositions[allParticleIndices[siteI][0]][0]*nm_to_A - particlePositions[allParticleIndices[siteJ][0]][0]*nm_to_A,
-                               particlePositions[allParticleIndices[siteI][0]][1]*nm_to_A - particlePositions[allParticleIndices[siteJ][0]][1]*nm_to_A,
-                               particlePositions[allParticleIndices[siteI][0]][2]*nm_to_A - particlePositions[allParticleIndices[siteJ][0]][2]*nm_to_A};
 
-        const double rOOsq = dOO[0]*dOO[0] + dOO[1]*dOO[1] + dOO[2]*dOO[2];
-        const double rOO = std::sqrt(rOOsq);
 
-        if (rOO > r2f)
-            return 0.0;
 
-        // offsets
+        const OpenMM::RealVec& Oa  = particlePositions[allParticleIndices[siteI][0]];
+        const OpenMM::RealVec& Ha1 = particlePositions[allParticleIndices[siteI][1]];
+        const OpenMM::RealVec& Ha2 = particlePositions[allParticleIndices[siteI][2]];
 
-        const int Oa  = 0;
-        const int Ha1 = 3;
-        const int Ha2 = 6;
+        const OpenMM::RealVec& Ob  = particlePositions[allParticleIndices[siteJ][0]];
+        const OpenMM::RealVec& Hb1 = particlePositions[allParticleIndices[siteJ][1]];
+        const OpenMM::RealVec& Hb2 = particlePositions[allParticleIndices[siteJ][2]];
 
-        const int Ob  = 9;
-        const int Hb1 = 12;
-        const int Hb2 = 15;
+        const OpenMM::RealVec& Oc  = particlePositions[allParticleIndices[siteQ][0]];
+        const OpenMM::RealVec& Hc1 = particlePositions[allParticleIndices[siteQ][1]];
+        const OpenMM::RealVec& Hc2 = particlePositions[allParticleIndices[siteQ][2]];
 
-        const int Xa1 = 18;
-        const int Xa2 = 21;
+          double x[36];
 
-        const int Xb1 = 24;
-        const int Xb2 = 27;
+          x[0] = var(kHH_intra, dHH_intra, Ha1, Ha2);
+          x[1] = var(kHH_intra, dHH_intra, Hb1, Hb2);
+          x[2] = var(kHH_intra, dHH_intra, Hc1, Hc2);
+          x[3] = var(kOH_intra, dOH_intra,  Oa, Ha1);
+          x[4] = var(kOH_intra, dOH_intra,  Oa, Ha2);
+          x[5] = var(kOH_intra, dOH_intra,  Ob, Hb1);
+          x[6] = var(kOH_intra, dOH_intra,  Ob, Hb2);
+          x[7] = var(kOH_intra, dOH_intra,  Oc, Hc1);
+          x[8] = var(kOH_intra, dOH_intra,  Oc, Hc2);
 
-        double xcrd[30]; // coordinates including extra-points
+          x[9] =  var(kHH, dHH, Ha1, Hb1);
+          x[10] = var(kHH, dHH, Ha1, Hb2);
+          x[11] = var(kHH, dHH, Ha1, Hc1);
+          x[12] = var(kHH, dHH, Ha1, Hc2);
+          x[13] = var(kHH, dHH, Ha2, Hb1);
+          x[14] = var(kHH, dHH, Ha2, Hb2);
+          x[15] = var(kHH, dHH, Ha2, Hc1);
+          x[16] = var(kHH, dHH, Ha2, Hc2);
+          x[17] = var(kHH, dHH, Hb1, Hc1);
+          x[18] = var(kHH, dHH, Hb1, Hc2);
+          x[19] = var(kHH, dHH, Hb2, Hc1);
+          x[20] = var(kHH, dHH, Hb2, Hc2);
+          x[21] = var(kOH, dOH,  Oa, Hb1);
+          x[22] = var(kOH, dOH,  Oa, Hb2);
+          x[23] = var(kOH, dOH,  Oa, Hc1);
+          x[24] = var(kOH, dOH,  Oa, Hc2);
+          x[25] = var(kOH, dOH,  Ob, Ha1);
+          x[26] = var(kOH, dOH,  Ob, Ha2);
+          x[27] = var(kOH, dOH,  Ob, Hc1);
+          x[28] = var(kOH, dOH,  Ob, Hc2);
+          x[29] = var(kOH, dOH,  Oc, Ha1);
+          x[30] = var(kOH, dOH,  Oc, Ha2);
+          x[31] = var(kOH, dOH,  Oc, Hb1);
+          x[32] = var(kOH, dOH,  Oc, Hb2);
+          x[33] = var(kOO, dOO,  Oa,  Ob);
+          x[34] = var(kOO, dOO,  Oa,  Oc);
+          x[35] = var(kOO, dOO,  Ob,  Oc);
 
-        for (unsigned int i=0; i < 3; i++) {
-            // first water molecule
-            xcrd[Oa + i] =  particlePositions[allParticleIndices[siteI][0]][i]*nm_to_A;
-            xcrd[Ha1 + i] = particlePositions[allParticleIndices[siteI][1]][i]*nm_to_A;
-            xcrd[Ha2 + i] = particlePositions[allParticleIndices[siteI][2]][i]*nm_to_A;
-            // second water molecule
-            xcrd[Ob + i] =  particlePositions[allParticleIndices[siteJ][0]][i]*nm_to_A;
-            xcrd[Hb1 + i] = particlePositions[allParticleIndices[siteJ][1]][i]*nm_to_A;
-            xcrd[Hb2 + i] = particlePositions[allParticleIndices[siteJ][2]][i]*nm_to_A;
-        }
+          double g[36];
+          double retval = poly_3b_v2x::eval(thefit, x, g);
 
-        // the extra-points
+          double rab[3], rac[3], rbc[3];
+          double drab(0), drac(0), drbc(0);
 
-        monomer ma, mb;
+          for (int n = 0; n < 3; ++n) {
+              rab[n] = Oa[n] - Ob[n];
+              drab += rab[n]*rab[n];
 
-        ma.setup(xcrd + Oa,
-                 in_plane_gamma, out_of_plane_gamma,
-                 xcrd + Xa1, xcrd + Xa2);
+              rac[n] = Oa[n] - Oc[n];
+              drac += rac[n]*rac[n];
 
-        mb.setup(xcrd + Ob,
-                 in_plane_gamma, out_of_plane_gamma,
-                 xcrd + Xb1, xcrd + Xb2);
+              rbc[n] = Ob[n] - Oc[n];
+              drbc += rbc[n]*rbc[n];
+          }
 
-        // variables
+          drab = std::sqrt(drab);
+          drac = std::sqrt(drac);
+          drbc = std::sqrt(drbc);
 
-        const double d0_intra = 1.0;
-        const double d0_inter = 4.0;
+          double gab, gac, gbc;
 
-        double v[31]; // stored separately (gets passed to poly::eval)
+          const double sab = threebody_f_switch(drab, gab);
+          const double sac = threebody_f_switch(drac, gac);
+          const double sbc = threebody_f_switch(drbc, gbc);
 
-        variable ctxt[31];
+          const double s = sab*sac + sab*sbc + sac*sbc;
 
-        v[0] = ctxt[0].v_exp(d0_intra, k_HH_intra, xcrd, Ha1, Ha2);
-        v[1] = ctxt[1].v_exp(d0_intra, k_HH_intra, xcrd, Hb1, Hb2);
+          for (int n = 0; n < 36; ++n)
+              g[n] *= s;
 
-        v[2] = ctxt[2].v_exp(d0_intra, k_OH_intra, xcrd, Oa, Ha1);
-        v[3] = ctxt[3].v_exp(d0_intra, k_OH_intra, xcrd, Oa, Ha2);
-        v[4] = ctxt[4].v_exp(d0_intra, k_OH_intra, xcrd, Ob, Hb1);
-        v[5] = ctxt[5].v_exp(d0_intra, k_OH_intra, xcrd, Ob, Hb2);
+          OpenMM::RealVec& gOa  = forces[allParticleIndices[siteI][0]];
+          OpenMM::RealVec& gHa1 = forces[allParticleIndices[siteI][1]];
+          OpenMM::RealVec& gHa2 = forces[allParticleIndices[siteI][2]];
 
-        v[6] = ctxt[6].v_coul(d0_inter, k_HH_coul, xcrd, Ha1, Hb1);
-        v[7] = ctxt[7].v_coul(d0_inter, k_HH_coul, xcrd, Ha1, Hb2);
-        v[8] = ctxt[8].v_coul(d0_inter, k_HH_coul, xcrd, Ha2, Hb1);
-        v[9] = ctxt[9].v_coul(d0_inter, k_HH_coul, xcrd, Ha2, Hb2);
+          OpenMM::RealVec& gOb  = forces[allParticleIndices[siteJ][0]];
+          OpenMM::RealVec& gHb1 = forces[allParticleIndices[siteJ][1]];
+          OpenMM::RealVec& gHb2 = forces[allParticleIndices[siteJ][2]];
 
-        v[10] = ctxt[10].v_coul(d0_inter, k_OH_coul, xcrd, Oa, Hb1);
-        v[11] = ctxt[11].v_coul(d0_inter, k_OH_coul, xcrd, Oa, Hb2);
-        v[12] = ctxt[12].v_coul(d0_inter, k_OH_coul, xcrd, Ob, Ha1);
-        v[13] = ctxt[13].v_coul(d0_inter, k_OH_coul, xcrd, Ob, Ha2);
+          OpenMM::RealVec& gOc  = forces[allParticleIndices[siteQ][0]];
+          OpenMM::RealVec& gHc1 = forces[allParticleIndices[siteQ][1]];
+          OpenMM::RealVec& gHc2 = forces[allParticleIndices[siteQ][2]];
 
-        v[14] = ctxt[14].v_coul(d0_inter, k_OO_coul, xcrd, Oa, Ob);
+          g_var(g[0], kHH_intra, dHH_intra, Ha1, Ha2, gHa1, gHa2);
+          g_var(g[1], kHH_intra, dHH_intra, Hb1, Hb2, gHb1, gHb2);
+          g_var(g[2], kHH_intra, dHH_intra, Hc1, Hc2, gHc1, gHc2);
+          g_var(g[3], kOH_intra, dOH_intra,  Oa, Ha1,  gOa, gHa1);
+          g_var(g[4], kOH_intra, dOH_intra,  Oa, Ha2,  gOa, gHa2);
+          g_var(g[5], kOH_intra, dOH_intra,  Ob, Hb1,  gOb, gHb1);
+          g_var(g[6], kOH_intra, dOH_intra,  Ob, Hb2,  gOb, gHb2);
+          g_var(g[7], kOH_intra, dOH_intra,  Oc, Hc1,  gOc, gHc1);
+          g_var(g[8], kOH_intra, dOH_intra,  Oc, Hc2,  gOc, gHc2);
 
-        v[15] = ctxt[15].v_exp(d0_inter, k_XH_main, xcrd, Xa1, Hb1);
-        v[16] = ctxt[16].v_exp(d0_inter, k_XH_main, xcrd, Xa1, Hb2);
-        v[17] = ctxt[17].v_exp(d0_inter, k_XH_main, xcrd, Xa2, Hb1);
-        v[18] = ctxt[18].v_exp(d0_inter, k_XH_main, xcrd, Xa2, Hb2);
-        v[19] = ctxt[19].v_exp(d0_inter, k_XH_main, xcrd, Xb1, Ha1);
-        v[20] = ctxt[20].v_exp(d0_inter, k_XH_main, xcrd, Xb1, Ha2);
-        v[21] = ctxt[21].v_exp(d0_inter, k_XH_main, xcrd, Xb2, Ha1);
-        v[22] = ctxt[22].v_exp(d0_inter, k_XH_main, xcrd, Xb2, Ha2);
+          g_var(g[9],  kHH, dHH, Ha1, Hb1, gHa1, gHb1);
+          g_var(g[10], kHH, dHH, Ha1, Hb2, gHa1, gHb2);
+          g_var(g[11], kHH, dHH, Ha1, Hc1, gHa1, gHc1);
+          g_var(g[12], kHH, dHH, Ha1, Hc2, gHa1, gHc2);
+          g_var(g[13], kHH, dHH, Ha2, Hb1, gHa2, gHb1);
+          g_var(g[14], kHH, dHH, Ha2, Hb2, gHa2, gHb2);
+          g_var(g[15], kHH, dHH, Ha2, Hc1, gHa2, gHc1);
+          g_var(g[16], kHH, dHH, Ha2, Hc2, gHa2, gHc2);
+          g_var(g[17], kHH, dHH, Hb1, Hc1, gHb1, gHc1);
+          g_var(g[18], kHH, dHH, Hb1, Hc2, gHb1, gHc2);
+          g_var(g[19], kHH, dHH, Hb2, Hc1, gHb2, gHc1);
+          g_var(g[20], kHH, dHH, Hb2, Hc2, gHb2, gHc2);
+          g_var(g[21], kOH, dOH,  Oa, Hb1,  gOa, gHb1);
+          g_var(g[22], kOH, dOH,  Oa, Hb2,  gOa, gHb2);
+          g_var(g[23], kOH, dOH,  Oa, Hc1,  gOa, gHc1);
+          g_var(g[24], kOH, dOH,  Oa, Hc2,  gOa, gHc2);
+          g_var(g[25], kOH, dOH,  Ob, Ha1,  gOb, gHa1);
+          g_var(g[26], kOH, dOH,  Ob, Ha2,  gOb, gHa2);
+          g_var(g[27], kOH, dOH,  Ob, Hc1,  gOb, gHc1);
+          g_var(g[28], kOH, dOH,  Ob, Hc2,  gOb, gHc2);
+          g_var(g[29], kOH, dOH,  Oc, Ha1,  gOc, gHa1);
+          g_var(g[30], kOH, dOH,  Oc, Ha2,  gOc, gHa2);
+          g_var(g[31], kOH, dOH,  Oc, Hb1,  gOc, gHb1);
+          g_var(g[32], kOH, dOH,  Oc, Hb2,  gOc, gHb2);
+          g_var(g[33], kOO, dOO,  Oa,  Ob,  gOa,  gOb);
+          g_var(g[34], kOO, dOO,  Oa,  Oc,  gOa,  gOc);
+          g_var(g[35], kOO, dOO,  Ob,  Oc,  gOb,  gOc);
 
-        v[23] = ctxt[23].v_exp(d0_inter, k_XO_main, xcrd, Oa, Xb1);
-        v[24] = ctxt[24].v_exp(d0_inter, k_XO_main, xcrd, Oa, Xb2);
-        v[25] = ctxt[25].v_exp(d0_inter, k_XO_main, xcrd, Ob, Xa1);
-        v[26] = ctxt[26].v_exp(d0_inter, k_XO_main, xcrd, Ob, Xa2);
+          // gradients of the switching function
 
-        v[27] = ctxt[27].v_exp(d0_inter, k_XX_main, xcrd, Xa1, Xb1);
-        v[28] = ctxt[28].v_exp(d0_inter, k_XX_main, xcrd, Xa1, Xb2);
-        v[29] = ctxt[29].v_exp(d0_inter, k_XX_main, xcrd, Xa2, Xb1);
-        v[30] = ctxt[30].v_exp(d0_inter, k_XX_main, xcrd, Xa2, Xb2);
+          gab *= (sac + sbc)*retval/drab;
+          gac *= (sab + sbc)*retval/drac;
+          gbc *= (sab + sac)*retval/drbc;
 
-        double g[31];
-        const double E_poly = poly_2b_v6x_eval(thefit, v, g);
+          retval *= s;
 
-        double xgrd[30];
-        std::fill(xgrd, xgrd + 30, 0.0);
+          const double cal2joule = 4.184;
 
-        ctxt[0].grads(g[0], xgrd, Ha1, Ha2);
-        ctxt[1].grads(g[1], xgrd, Hb1, Hb2);
+          for (int n = 0; n < 3; ++n) {
+              gOa[n] += (gab*rab[n] + gac*rac[n]) * cal2joule * 10.;
+              gOb[n] += (gbc*rbc[n] - gab*rab[n]) * cal2joule * 10.;
+              gOc[n] -= (gac*rac[n] + gbc*rbc[n]) * cal2joule * 10.;
+          }
 
-        ctxt[2].grads(g[2], xgrd, Oa, Ha1);
-        ctxt[3].grads(g[3], xgrd, Oa, Ha2);
-        ctxt[4].grads(g[4], xgrd, Ob, Hb1);
-        ctxt[5].grads(g[5], xgrd, Ob, Hb2);
-
-        ctxt[6].grads(g[6], xgrd, Ha1, Hb1);
-        ctxt[7].grads(g[7], xgrd, Ha1, Hb2);
-        ctxt[8].grads(g[8], xgrd, Ha2, Hb1);
-        ctxt[9].grads(g[9], xgrd, Ha2, Hb2);
-
-        ctxt[10].grads(g[10], xgrd, Oa, Hb1);
-        ctxt[11].grads(g[11], xgrd, Oa, Hb2);
-        ctxt[12].grads(g[12], xgrd, Ob, Ha1);
-        ctxt[13].grads(g[13], xgrd, Ob, Ha2);
-
-        ctxt[14].grads(g[14], xgrd, Oa, Ob);
-
-        ctxt[15].grads(g[15], xgrd, Xa1, Hb1);
-        ctxt[16].grads(g[16], xgrd, Xa1, Hb2);
-        ctxt[17].grads(g[17], xgrd, Xa2, Hb1);
-        ctxt[18].grads(g[18], xgrd, Xa2, Hb2);
-        ctxt[19].grads(g[19], xgrd, Xb1, Ha1);
-        ctxt[20].grads(g[20], xgrd, Xb1, Ha2);
-        ctxt[21].grads(g[21], xgrd, Xb2, Ha1);
-        ctxt[22].grads(g[22], xgrd, Xb2, Ha2);
-
-        ctxt[23].grads(g[23], xgrd, Oa, Xb1);
-        ctxt[24].grads(g[24], xgrd, Oa, Xb2);
-        ctxt[25].grads(g[25], xgrd, Ob, Xa1);
-        ctxt[26].grads(g[26], xgrd, Ob, Xa2);
-
-        ctxt[27].grads(g[27], xgrd, Xa1, Xb1);
-        ctxt[28].grads(g[28], xgrd, Xa1, Xb2);
-        ctxt[29].grads(g[29], xgrd, Xa2, Xb1);
-        ctxt[30].grads(g[30], xgrd, Xa2, Xb2);
-
-        // distribute gradients w.r.t. the X-points
-
-        ma.grads(xgrd + Xa1, xgrd + Xa2,
-                 in_plane_gamma, out_of_plane_gamma,
-                 xgrd + Oa);
-
-        mb.grads(xgrd + Xb1, xgrd + Xb2,
-                 in_plane_gamma, out_of_plane_gamma,
-                 xgrd + Ob);
-
-        // the switch
-
-        double gsw;
-        const double sw = f_switch(rOO, gsw);
-
-        double cal2joule = 4.184;
-
-        for (int i = 0; i < 3; ++i) {
-            // first water molecule
-            forces[allParticleIndices[siteI][0]][i] += sw*xgrd[Oa + i]  * cal2joule * 10.;
-            forces[allParticleIndices[siteI][1]][i] += sw*xgrd[Ha1 + i] * cal2joule * 10.;
-            forces[allParticleIndices[siteI][2]][i] += sw*xgrd[Ha2 + i] * cal2joule * 10.;
-            // second water molecule
-            forces[allParticleIndices[siteJ][0]][i] += sw*xgrd[Ob + i]  * cal2joule * 10.;
-            forces[allParticleIndices[siteJ][1]][i] += sw*xgrd[Hb1 + i] * cal2joule * 10.;
-            forces[allParticleIndices[siteJ][2]][i] += sw*xgrd[Hb2 + i] * cal2joule * 10.;
-        }
-
-        // gradient of the switch
-        gsw *= E_poly/rOO;
-        for (int i = 0; i < 3; ++i) {
-            const double d = gsw*dOO[i];
-            forces[allParticleIndices[siteI][0]][i] += d * cal2joule * 10.;
-            forces[allParticleIndices[siteJ][0]][i] -= d * cal2joule * 10.;
-        }
-
-    RealOpenMM energy=sw*E_poly * cal2joule;
+    RealOpenMM energy=retval * cal2joule;
 
     return energy;
 

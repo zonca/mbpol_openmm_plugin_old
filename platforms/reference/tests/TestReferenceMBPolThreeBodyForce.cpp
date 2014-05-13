@@ -92,20 +92,19 @@ void testThreeBody( FILE* log ) {
     positions[4]             = Vec3( -1.903851736e+00, -4.935677617e-01, -3.457810126e-01  );
     positions[5]             = Vec3( -2.527904158e+00, -7.613550077e-01, -1.733803676e+00  );
 
+    positions[6]             = Vec3( -5.588472140e-01,  2.006699172e+00, -1.392786582e-01  );
+    positions[7]             = Vec3( -9.411558180e-01,  1.541226676e+00,  6.163293071e-01  );
+    positions[8]             = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
+
     for (int i=0; i<numberOfParticles; i++) {
         for (int j=0; j<3; j++) {
             positions[i][j] *= 1e-1;
         }
     }
 
-    expectedForces[0]     = Vec3( -4.85337479, -4.47836379 ,-20.08989563);
-    expectedForces[1]     = Vec3( -0.31239868,  0.52518586 , -1.88893830);
-    expectedForces[2]     = Vec3(  0.00886712,  0.73323536 , -1.81715325);
-    expectedForces[3]     = Vec3( -0.65181727, -0.72947395 ,  5.88973293);
-    expectedForces[4]     = Vec3(  4.82340981,  3.20090213 , 16.49522051);
-    expectedForces[5]     = Vec3(  0.98531382,  0.74851439 ,  1.41103374);
+    // expectedForces[0]     = Vec3( 0,0,0);
 
-    expectedEnergy        = 6.14207815;
+    expectedEnergy        = 0;
 
     system.addForce(amoebaThreeBodyForce);
     std::string platformName;
