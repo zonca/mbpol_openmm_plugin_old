@@ -33,7 +33,7 @@ static double compPairDistanceSquared(const RealVec& pos1, const RealVec& pos2, 
     return dx*dx + dy*dy + dz*dz;
 }
 
-class VoxelIndex 
+class VoxelIndex
 {
 public:
     VoxelIndex(int xx, int yy, int zz) : x(xx), y(yy), z(zz) {}
@@ -57,10 +57,10 @@ public:
 typedef std::pair<const RealVec*, AtomIndex> VoxelItem;
 typedef std::vector< VoxelItem > Voxel;
 
-class VoxelHash
+class ThreeVoxelHash
 {
 public:
-    VoxelHash(double vsx, double vsy, double vsz, const RealVec& periodicBoxSize, bool usePeriodic) :
+    ThreeVoxelHash(double vsx, double vsy, double vsz, const RealVec& periodicBoxSize, bool usePeriodic) :
             voxelSizeX(vsx), voxelSizeY(vsy), voxelSizeZ(vsz), periodicBoxSize(periodicBoxSize), usePeriodic(usePeriodic) {
         if (usePeriodic) {
             nx = (int) floor(periodicBoxSize[0]/voxelSizeX+0.5);
@@ -199,7 +199,7 @@ private:
 
 
 // O(n) neighbor list method using voxel hash data structure
-void OPENMM_EXPORT computeNeighborListVoxelHash(
+void OPENMM_EXPORT computeThreeNeighborListVoxelHash(
                               ThreeNeighborList& neighborList,
                               int nAtoms,
                               const AtomLocationList& atomLocations, 
@@ -218,7 +218,7 @@ void OPENMM_EXPORT computeNeighborListVoxelHash(
         edgeSizeY = periodicBoxSize[1]/floor(periodicBoxSize[1]/maxDistance);
         edgeSizeZ = periodicBoxSize[2]/floor(periodicBoxSize[2]/maxDistance);
     }
-    VoxelHash voxelHash(edgeSizeX, edgeSizeY, edgeSizeZ, periodicBoxSize, usePeriodic);
+    ThreeVoxelHash voxelHash(edgeSizeX, edgeSizeY, edgeSizeZ, periodicBoxSize, usePeriodic);
     for (AtomIndex atomJ = 0; atomJ < (AtomIndex) nAtoms; ++atomJ) // use "j", because j > i for pairs
     {
         // 1) Find other atoms that are close to this one

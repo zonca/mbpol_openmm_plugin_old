@@ -2,14 +2,12 @@
 #define OPENMM_REFERENCE_THREE_NEIGHBORLIST_H_
 
 #include "RealVec.h"
+#include "ReferenceNeighborList.h"
 #include "openmm/internal/windowsExport.h"
 #include <set>
 #include <vector>
 
 namespace OpenMM {
-
-typedef std::vector<RealVec> AtomLocationList;
-typedef unsigned int AtomIndex;
 
 struct AtomTriplet
 {
@@ -21,7 +19,7 @@ typedef std::vector<AtomTriplet>  ThreeNeighborList;
 // O(n) neighbor list method using voxel hash data structure
 // parameter neighborList is automatically clear()ed before 
 // neighbors are added
-void OPENMM_EXPORT computeNeighborListVoxelHash(
+void OPENMM_EXPORT computeThreeNeighborListVoxelHash(
                               ThreeNeighborList& neighborList,
                               int nAtoms,
                               const AtomLocationList& atomLocations, 

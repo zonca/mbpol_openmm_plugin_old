@@ -852,7 +852,7 @@ void ReferenceCalcMBPolThreeBodyForceKernel::initialize(const System& system, co
     useCutoff              = (force.getNonbondedMethod() != MBPolThreeBodyForce::NoCutoff);
     usePBC                 = (force.getNonbondedMethod() == MBPolThreeBodyForce::CutoffPeriodic);
     cutoff                 = force.getCutoff();
-    neighborList           = useCutoff ? new NeighborList() : NULL;
+    neighborList           = useCutoff ? new ThreeNeighborList() : NULL;
 
 }
 
@@ -872,7 +872,7 @@ double ReferenceCalcMBPolThreeBodyForceKernel::execute(ContextImpl& context, boo
     RealOpenMM energy;
     vdwForce.setCutoff( cutoff );
     // neighborList created only with oxygens, then allParticleIndices is used to get reference to the hydrogens
-    computeNeighborListVoxelHash( *neighborList, numParticles, posData, allExclusions, extractBoxSize(context), usePBC, cutoff, 0.0, false);
+    computeThreeNeighborListVoxelHash( *neighborList, numParticles, posData, extractBoxSize(context), usePBC, cutoff, 0.0);
     if( usePBC ){
         vdwForce.setNonbondedMethod( MBPolReferenceThreeBodyForce::CutoffPeriodic);
         RealVec& box = extractBoxSize(context);

@@ -32,6 +32,7 @@
 #include "openmm/AmoebaMultipoleForce.h"
 #include "AmoebaReferenceMultipoleForce.h"
 #include "ReferenceNeighborList.h"
+#include "ReferenceThreeNeighborList.h"
 #include "SimTKOpenMMRealType.h"
 
 namespace OpenMM {
@@ -502,7 +503,7 @@ private:
     double cutoff;
     std::vector< std::vector<int> > allParticleIndices;
     const System& system;
-    NeighborList* neighborList;
+    ThreeNeighborList* neighborList;
 };
 
 

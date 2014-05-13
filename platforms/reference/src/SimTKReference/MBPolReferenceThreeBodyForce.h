@@ -27,7 +27,7 @@
 
 #include "RealVec.h"
 #include "openmm/Vec3.h"
-#include "ReferenceNeighborList.h"
+#include "ReferenceThreeNeighborList.h"
 #include <string>
 #include <vector>
 
@@ -153,7 +153,7 @@ public:
     
     RealOpenMM calculateForceAndEnergy( int numParticles, const std::vector<OpenMM::RealVec>& particlePositions, 
                                         const std::vector<std::vector<int> >& allParticleIndices,
-                                        const NeighborList& neighborList,
+                                        const ThreeNeighborList& neighborList,
                                         std::vector<OpenMM::RealVec>& forces ) const;
          
 private:
@@ -177,7 +177,7 @@ private:
 
        --------------------------------------------------------------------------------------- */
 
-    RealOpenMM calculatePairIxn( int siteI, int siteJ,
+    RealOpenMM calculateTripletIxn( int siteI, int siteJ, int siteQ,
                                                           const std::vector<RealVec> & particlePositions,
                                                           const std::vector<std::vector<int> >& allParticleIndices,
                                                           std::vector<RealVec>& forces ) const;

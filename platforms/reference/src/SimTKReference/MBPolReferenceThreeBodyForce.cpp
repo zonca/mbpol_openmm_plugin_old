@@ -262,7 +262,7 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculatePairIxn( int siteI, int siteJ,
 RealOpenMM MBPolReferenceThreeBodyForce::calculateForceAndEnergy( int numParticles,
                                                              const vector<RealVec>& particlePositions,
                                                              const std::vector<std::vector<int> >& allParticleIndices,
-                                                             const NeighborList& neighborList,
+                                                             const ThreeNeighborList& neighborList,
                                                              vector<RealVec>& forces ) const {
 
     // loop over neighbor list
@@ -274,11 +274,12 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculateForceAndEnergy( int numParticl
     RealOpenMM energy = 0.;
     for( unsigned int ii = 0; ii < neighborList.size(); ii++ ){
 
-        OpenMM::AtomPair pair       = neighborList[ii];
-        int siteI                   = pair.first;
-        int siteJ                   = pair.second;
+        OpenMM::AtomTriplet triplet       = neighborList[ii];
+        int siteI                   = triplet.first;
+        int siteJ                   = triplet.second;
+        int siteQ                   = triplet.third;
 
-        energy                     += calculatePairIxn( siteI, siteJ,
+        energy                     += calculateTripletIxn( siteI, siteJ, siteQ,
                 particlePositions, allParticleIndices, forces );
 
     }

@@ -55,10 +55,10 @@ const double TOL = 1e-4;
 
 void testThreeBody( FILE* log ) {
 
-    std::string testName      = "testMBPol2BodyInteraction";
+    std::string testName      = "testMBPolThreeBodyInteraction";
 
     System system;
-    int numberOfParticles          = 6;
+    int numberOfParticles          = 9;
     MBPolThreeBodyForce* amoebaThreeBodyForce = new MBPolThreeBodyForce();
     double cutoff = 1e10;
     amoebaThreeBodyForce->setCutoff( cutoff );
