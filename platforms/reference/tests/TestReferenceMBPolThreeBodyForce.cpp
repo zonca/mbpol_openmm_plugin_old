@@ -102,9 +102,17 @@ void testThreeBody( FILE* log ) {
         }
     }
 
-    // expectedForces[0]     = Vec3( 0,0,0);
+    expectedForces[0]     = Vec3(  0.29919011, -0.34960381, -0.16238472 );
+    expectedForces[1]     = Vec3(  0.34138467, -0.01255068, -0.00998383 );
+    expectedForces[2]     = Vec3( -0.44376649,  0.03687577,  0.54604510 );
+    expectedForces[3]     = Vec3( -0.01094164, -0.36171476, -0.05130395 );
+    expectedForces[4]     = Vec3(  0.24939202,  1.29382952,  0.22930712 );
+    expectedForces[5]     = Vec3( -0.13250943, -0.19313418, -0.34123592 );
+    expectedForces[6]     = Vec3(  0.56722869,  0.46036139, -0.39999973 );
+    expectedForces[7]     = Vec3( -0.75669111, -0.76132457, -0.29799486 );
+    expectedForces[8]     = Vec3( -0.11328682, -0.11273867,  0.48755080 );
 
-    expectedEnergy        = 0;
+    expectedEnergy        = 0.15586446;
 
     system.addForce(amoebaThreeBodyForce);
     std::string platformName;
@@ -143,12 +151,12 @@ void testThreeBody( FILE* log ) {
 
 
 
-//    ASSERT_EQUAL_TOL( expectedEnergy, energy, tolerance );
-//
-//    for( unsigned int ii = 0; ii < forces.size(); ii++ ){
-//        ASSERT_EQUAL_VEC( expectedForces[ii], forces[ii], tolerance );
-//    }
-       std::cout << "Test Successful: " << testName << std::endl << std::endl;
+   ASSERT_EQUAL_TOL( expectedEnergy, energy, tolerance );
+
+   for( unsigned int ii = 0; ii < forces.size(); ii++ ){
+       ASSERT_EQUAL_VEC( expectedForces[ii], forces[ii], tolerance );
+   }
+   std::cout << "Test Successful: " << testName << std::endl << std::endl;
 
 }
 
