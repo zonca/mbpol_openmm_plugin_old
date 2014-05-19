@@ -1,8 +1,8 @@
-#ifndef OPENMM_AMOEBA_VDW_FORCE_H_
-#define OPENMM_AMOEBA_VDW_FORCE_H_
+#ifndef OPENMM_MBPOL_THREEBODY_FORCE_H_
+#define OPENMM_MBPOL_THREEBODY_FORCE_H_
 
 /* -------------------------------------------------------------------------- *
- *                              OpenMMAmoeba                                  *
+ *                              OpenMMMBPol                                  *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -41,7 +41,7 @@ namespace OpenMM {
 /**
  * This class implements a buffered 14-7 potential used to model van der Waals forces.
  * 
- * To use it, create an AmoebaVdwForce object then call addParticle() once for each particle.  After
+ * To use it, create an MBPolThreeBodyForce object then call addParticle() once for each particle.  After
  * a particle has been added, you can modify its force field parameters by calling setParticleParameters().
  * This will have no effect on Contexts that already exist unless you call updateParametersInContext().
  * 
@@ -52,7 +52,7 @@ namespace OpenMM {
  * from the parent atom to the interaction site.
  */
 
-class OPENMM_EXPORT_AMOEBA AmoebaVdwForce : public Force {
+class OPENMM_EXPORT_AMOEBA MBPolThreeBodyForce : public Force {
 public:
     /**
      * This is an enumeration of the different methods that may be used for handling long range nonbonded forces.
@@ -72,9 +72,9 @@ public:
     };
 
     /**
-     * Create an Amoeba VdwForce.
+     * Create an MBPol ThreeBodyForce.
      */
-    AmoebaVdwForce();
+    MBPolThreeBodyForce();
 
     /**
      * Get the number of particles
@@ -155,22 +155,22 @@ protected:
     ForceImpl* createImpl() const;
 private:
 
-    class VdwInfo;
+    class ThreeBodyInfo;
     NonbondedMethod nonbondedMethod;
     double cutoff;
 
-    std::vector<VdwInfo> parameters;
+    std::vector<ThreeBodyInfo> parameters;
     std::vector< std::vector< std::vector<double> > > sigEpsTable;
 };
 
-class AmoebaVdwForce::VdwInfo {
+class MBPolThreeBodyForce::ThreeBodyInfo {
 public:
     std::vector<int> particleIndices;
 
-    VdwInfo() {
+    ThreeBodyInfo() {
 
     }
-    VdwInfo( std::vector<int> particleIndices) :
+    ThreeBodyInfo( std::vector<int> particleIndices) :
         particleIndices(particleIndices)  {
     }
 };

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                   OpenMMAmoeba                             *
+ *                                   OpenMMMBPol                             *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -30,14 +30,15 @@
  * -------------------------------------------------------------------------- */
 
 /**
- * This tests the Reference implementation of ReferenceAmoebaVdwForce.
+ * This tests the Reference implementation of ReferenceMBPolThreeBodyForce.
  */
 
 #include "openmm/internal/AssertionUtilities.h"
 #include "openmm/Context.h"
 #include "OpenMMAmoeba.h"
 #include "openmm/System.h"
-#include "openmm/AmoebaVdwForce.h"
+#include "openmm/MBPolThreeBodyForce.h"
+
 #include "openmm/LangevinIntegrator.h"
 #include <iostream>
 #include <vector>
@@ -52,16 +53,16 @@ using namespace OpenMM;
 
 const double TOL = 1e-4;
 
-void testVdw( FILE* log ) {
+void testThreeBody( FILE* log ) {
 
-    std::string testName      = "testMBPol2BodyInteraction";
+    std::string testName      = "testMBPolThreeBodyInteraction";
 
     System system;
-    int numberOfParticles          = 6;
-    AmoebaVdwForce* amoebaVdwForce = new AmoebaVdwForce();
+    int numberOfParticles          = 9;
+    MBPolThreeBodyForce* amoebaThreeBodyForce = new MBPolThreeBodyForce();
     double cutoff = 1e10;
-    amoebaVdwForce->setCutoff( cutoff );
-    amoebaVdwForce->setNonbondedMethod(AmoebaVdwForce::CutoffNonPeriodic);
+    amoebaThreeBodyForce->setCutoff( cutoff );
+    amoebaThreeBodyForce->setNonbondedMethod(MBPolThreeBodyForce::CutoffNonPeriodic);
 
     unsigned int particlesPerMolecule = 3;
 
@@ -73,7 +74,7 @@ void testVdw( FILE* log ) {
         particleIndices[0] = jj;
         particleIndices[1] = jj+1;
         particleIndices[2] = jj+2;
-        amoebaVdwForce->addParticle( particleIndices);
+        amoebaThreeBodyForce->addParticle( particleIndices);
     }
 
 
@@ -91,22 +92,29 @@ void testVdw( FILE* log ) {
     positions[4]             = Vec3( -1.903851736e+00, -4.935677617e-01, -3.457810126e-01  );
     positions[5]             = Vec3( -2.527904158e+00, -7.613550077e-01, -1.733803676e+00  );
 
+    positions[6]             = Vec3( -5.588472140e-01,  2.006699172e+00, -1.392786582e-01  );
+    positions[7]             = Vec3( -9.411558180e-01,  1.541226676e+00,  6.163293071e-01  );
+    positions[8]             = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
+
     for (int i=0; i<numberOfParticles; i++) {
         for (int j=0; j<3; j++) {
             positions[i][j] *= 1e-1;
         }
     }
 
-    expectedForces[0]     = Vec3( -4.85337479, -4.47836379 ,-20.08989563);
-    expectedForces[1]     = Vec3( -0.31239868,  0.52518586 , -1.88893830);
-    expectedForces[2]     = Vec3(  0.00886712,  0.73323536 , -1.81715325);
-    expectedForces[3]     = Vec3( -0.65181727, -0.72947395 ,  5.88973293);
-    expectedForces[4]     = Vec3(  4.82340981,  3.20090213 , 16.49522051);
-    expectedForces[5]     = Vec3(  0.98531382,  0.74851439 ,  1.41103374);
+    expectedForces[0]     = Vec3(  0.29919011, -0.34960381, -0.16238472 );
+    expectedForces[1]     = Vec3(  0.34138467, -0.01255068, -0.00998383 );
+    expectedForces[2]     = Vec3( -0.44376649,  0.03687577,  0.54604510 );
+    expectedForces[3]     = Vec3( -0.01094164, -0.36171476, -0.05130395 );
+    expectedForces[4]     = Vec3(  0.24939202,  1.29382952,  0.22930712 );
+    expectedForces[5]     = Vec3( -0.13250943, -0.19313418, -0.34123592 );
+    expectedForces[6]     = Vec3(  0.56722869,  0.46036139, -0.39999973 );
+    expectedForces[7]     = Vec3( -0.75669111, -0.76132457, -0.29799486 );
+    expectedForces[8]     = Vec3( -0.11328682, -0.11273867,  0.48755080 );
 
-    expectedEnergy        = 6.14207815;
+    expectedEnergy        = 0.15586446;
 
-    system.addForce(amoebaVdwForce);
+    system.addForce(amoebaThreeBodyForce);
     std::string platformName;
     #define AngstromToNm 0.1    
     #define CalToJoule   4.184
@@ -143,23 +151,23 @@ void testVdw( FILE* log ) {
 
 
 
-//    ASSERT_EQUAL_TOL( expectedEnergy, energy, tolerance );
-//
-//    for( unsigned int ii = 0; ii < forces.size(); ii++ ){
-//        ASSERT_EQUAL_VEC( expectedForces[ii], forces[ii], tolerance );
-//    }
-       std::cout << "Test Successful: " << testName << std::endl << std::endl;
+   ASSERT_EQUAL_TOL( expectedEnergy, energy, tolerance );
+
+   for( unsigned int ii = 0; ii < forces.size(); ii++ ){
+       ASSERT_EQUAL_VEC( expectedForces[ii], forces[ii], tolerance );
+   }
+   std::cout << "Test Successful: " << testName << std::endl << std::endl;
 
 }
 
 int main( int numberOfArguments, char* argv[] ) {
 
     try {
-        std::cout << "TestReferenceAmoebaVdwForce running test..." << std::endl;
+        std::cout << "TestReferenceMBPolThreeBodyForce running test..." << std::endl;
 
         FILE* log = NULL;
 
-        testVdw( log );
+        testThreeBody( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;

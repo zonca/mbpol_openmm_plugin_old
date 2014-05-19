@@ -1,12 +1,12 @@
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                               OpenMMMBPol                                 *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2008-2009 Stanford University and the Authors.      *
+ * Portions copyright (c) 2008 Stanford University and the Authors.           *
  * Authors:                                                                   *
  * Contributors:                                                              *
  *                                                                            *
@@ -29,55 +29,57 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/Force.h"
-#include "openmm/OpenMMException.h"
-#include "openmm/AmoebaVdwForce.h"
-#include "openmm/internal/AmoebaVdwForceImpl.h"
+#ifdef WIN32
+  #define _USE_MATH_DEFINES // Needed to get M_PI
+#endif
+#include "openmm/internal/ContextImpl.h"
+#include "openmm/internal/MBPolThreeBodyForceImpl.h"
+#include "openmm/amoebaKernels.h"
+#include <map>
+#include <cmath>
 
 using namespace OpenMM;
-using std::string;
+using namespace std;
+
+using std::pair;
 using std::vector;
+using std::set;
 
-AmoebaVdwForce::AmoebaVdwForce() : nonbondedMethod(NoCutoff), cutoff(1.0e+10) {
+MBPolThreeBodyForceImpl::MBPolThreeBodyForceImpl(const MBPolThreeBodyForce& owner) : owner(owner) {
 }
 
-int AmoebaVdwForce::addParticle(const std::vector<int> & particleIndices ) {
-    parameters.push_back(VdwInfo(particleIndices));
-    return parameters.size()-1;
+MBPolThreeBodyForceImpl::~MBPolThreeBodyForceImpl() {
 }
 
-int AmoebaVdwForce::getNumMolecules() const {
-    return parameters.size();
+void MBPolThreeBodyForceImpl::initialize(ContextImpl& context) {
+    const System& system = context.getSystem();
+
+    // check that cutoff < 0.5*boxSize
+
+    if (owner.getNonbondedMethod() == MBPolThreeBodyForce::CutoffPeriodic) {
+        Vec3 boxVectors[3];
+        system.getDefaultPeriodicBoxVectors(boxVectors[0], boxVectors[1], boxVectors[2]);
+        double cutoff = owner.getCutoff();
+        if (cutoff > 0.5*boxVectors[0][0] || cutoff > 0.5*boxVectors[1][1] || cutoff > 0.5*boxVectors[2][2])
+            throw OpenMMException("MBPolThreeBodyForce: The cutoff distance cannot be greater than half the periodic box size.");
+    }   
+
+    kernel = context.getPlatform().createKernel(CalcMBPolThreeBodyForceKernel::Name(), context);
+    kernel.getAs<CalcMBPolThreeBodyForceKernel>().initialize(context.getSystem(), owner);
 }
 
-void AmoebaVdwForce::getParticleParameters(int particleIndex, std::vector<int>& particleIndices ) const {
-    particleIndices     = parameters[particleIndex].particleIndices;
+double MBPolThreeBodyForceImpl::calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups) {
+    if ((groups&(1<<owner.getForceGroup())) != 0)
+        return kernel.getAs<CalcMBPolThreeBodyForceKernel>().execute(context, includeForces, includeEnergy);
+    return 0.0;
 }
 
-void AmoebaVdwForce::setParticleParameters(int particleIndex, std::vector<int>& particleIndices  ) {
-      parameters[particleIndex].particleIndices =particleIndices;
+std::vector<std::string> MBPolThreeBodyForceImpl::getKernelNames() {
+    std::vector<std::string> names;
+    names.push_back(CalcMBPolThreeBodyForceKernel::Name());
+    return names;
 }
 
-void AmoebaVdwForce::setCutoff( double inputCutoff ){
-    cutoff = inputCutoff;
-}
-
-double AmoebaVdwForce::getCutoff( void ) const {
-    return cutoff;
-}
-
-AmoebaVdwForce::NonbondedMethod AmoebaVdwForce::getNonbondedMethod() const {
-    return nonbondedMethod;
-}
-
-void AmoebaVdwForce::setNonbondedMethod(NonbondedMethod method) {
-    nonbondedMethod = method;
-}
-
-ForceImpl* AmoebaVdwForce::createImpl() const {
-    return new AmoebaVdwForceImpl(*this);
-}
-
-void AmoebaVdwForce::updateParametersInContext(Context& context) {
-    dynamic_cast<AmoebaVdwForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
+void MBPolThreeBodyForceImpl::updateParametersInContext(ContextImpl& context) {
+    kernel.getAs<CalcMBPolThreeBodyForceKernel>().copyParametersToContext(context, owner);
 }

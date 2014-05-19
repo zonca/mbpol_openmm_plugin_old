@@ -63,11 +63,8 @@ public:
         return std::map<std::string, double>(); // This force field doesn't define any parameters.
     }
     std::vector<std::string> getKernelNames();
-    /**
-     * Compute the coefficient which, when divided by the periodic box volume, gives the
-     * long range dispersion correction to the energy.
-     */
-    static double calcDispersionCorrection(const System& system, const AmoebaVdwForce& force);
+
+
     void updateParametersInContext(ContextImpl& context);
 private:
     const AmoebaVdwForce& owner;

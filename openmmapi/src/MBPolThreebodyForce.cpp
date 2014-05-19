@@ -31,53 +31,53 @@
 
 #include "openmm/Force.h"
 #include "openmm/OpenMMException.h"
-#include "openmm/AmoebaVdwForce.h"
-#include "openmm/internal/AmoebaVdwForceImpl.h"
+#include "openmm/MBPolThreeBodyForce.h"
+#include "openmm/internal/MBPolThreeBodyForceImpl.h"
 
 using namespace OpenMM;
 using std::string;
 using std::vector;
 
-AmoebaVdwForce::AmoebaVdwForce() : nonbondedMethod(NoCutoff), cutoff(1.0e+10) {
+MBPolThreeBodyForce::MBPolThreeBodyForce() : nonbondedMethod(NoCutoff), cutoff(1.0e+10) {
 }
 
-int AmoebaVdwForce::addParticle(const std::vector<int> & particleIndices ) {
-    parameters.push_back(VdwInfo(particleIndices));
+int MBPolThreeBodyForce::addParticle(const std::vector<int> & particleIndices ) {
+    parameters.push_back(ThreeBodyInfo(particleIndices));
     return parameters.size()-1;
 }
 
-int AmoebaVdwForce::getNumMolecules() const {
+int MBPolThreeBodyForce::getNumMolecules() const {
     return parameters.size();
 }
 
-void AmoebaVdwForce::getParticleParameters(int particleIndex, std::vector<int>& particleIndices ) const {
+void MBPolThreeBodyForce::getParticleParameters(int particleIndex, std::vector<int>& particleIndices ) const {
     particleIndices     = parameters[particleIndex].particleIndices;
 }
 
-void AmoebaVdwForce::setParticleParameters(int particleIndex, std::vector<int>& particleIndices  ) {
+void MBPolThreeBodyForce::setParticleParameters(int particleIndex, std::vector<int>& particleIndices  ) {
       parameters[particleIndex].particleIndices =particleIndices;
 }
 
-void AmoebaVdwForce::setCutoff( double inputCutoff ){
+void MBPolThreeBodyForce::setCutoff( double inputCutoff ){
     cutoff = inputCutoff;
 }
 
-double AmoebaVdwForce::getCutoff( void ) const {
+double MBPolThreeBodyForce::getCutoff( void ) const {
     return cutoff;
 }
 
-AmoebaVdwForce::NonbondedMethod AmoebaVdwForce::getNonbondedMethod() const {
+MBPolThreeBodyForce::NonbondedMethod MBPolThreeBodyForce::getNonbondedMethod() const {
     return nonbondedMethod;
 }
 
-void AmoebaVdwForce::setNonbondedMethod(NonbondedMethod method) {
+void MBPolThreeBodyForce::setNonbondedMethod(NonbondedMethod method) {
     nonbondedMethod = method;
 }
 
-ForceImpl* AmoebaVdwForce::createImpl() const {
-    return new AmoebaVdwForceImpl(*this);
+ForceImpl* MBPolThreeBodyForce::createImpl() const {
+    return new MBPolThreeBodyForceImpl(*this);
 }
 
-void AmoebaVdwForce::updateParametersInContext(Context& context) {
-    dynamic_cast<AmoebaVdwForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
+void MBPolThreeBodyForce::updateParametersInContext(Context& context) {
+    dynamic_cast<MBPolThreeBodyForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
 }

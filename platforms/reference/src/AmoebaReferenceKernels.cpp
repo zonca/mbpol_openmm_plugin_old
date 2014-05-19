@@ -33,6 +33,7 @@
 #include "AmoebaReferenceOutOfPlaneBendForce.h"
 #include "AmoebaReferenceTorsionTorsionForce.h"
 #include "AmoebaReferenceVdwForce.h"
+#include "MBPolReferenceThreeBodyForce.h"
 #include "AmoebaReferenceWcaDispersionForce.h"
 #include "AmoebaReferenceGeneralizedKirkwoodForce.h"
 #include "openmm/internal/AmoebaTorsionTorsionForceImpl.h"
@@ -42,6 +43,7 @@
 #include "openmm/AmoebaMultipoleForce.h"
 #include "openmm/internal/AmoebaMultipoleForceImpl.h"
 #include "openmm/internal/AmoebaVdwForceImpl.h"
+#include "openmm/internal/MBPolThreeBodyForceImpl.h"
 #include "openmm/internal/AmoebaGeneralizedKirkwoodForceImpl.h"
 #include "openmm/NonbondedForce.h"
 #include "openmm/internal/NonbondedForceImpl.h"
@@ -753,67 +755,54 @@ void ReferenceCalcAmoebaVdwForceKernel::initialize(const System& system, const A
 
     // per-particle parameters
 
-    numParticles = system.getNumParticles();
-
-    indexIVs.resize( numParticles );
-    allExclusions.resize( numParticles );
-    sigmas.resize( numParticles );
-    epsilons.resize( numParticles );
-    reductions.resize( numParticles );
-
+    numParticles = force.getNumMolecules();
+    allParticleIndices.resize(numParticles);
     for( int ii = 0; ii < numParticles; ii++ ){
 
-        int indexIV;
-        double sigma, epsilon, reduction;
-        std::vector<int> exclusions;
+        std::vector<int> particleIndices;
+        force.getParticleParameters(ii, particleIndices );
+        allParticleIndices[ii] = particleIndices;
 
-        force.getParticleParameters( ii, indexIV, sigma, epsilon, reduction );
-        force.getParticleExclusions( ii, exclusions );
-        for( unsigned int jj = 0; jj < exclusions.size(); jj++ ){
-           allExclusions[ii].insert( exclusions[jj] );
-        }
+    }
 
-        indexIVs[ii]      = indexIV;
-        sigmas[ii]        = static_cast<RealOpenMM>( sigma );
-        epsilons[ii]      = static_cast<RealOpenMM>( epsilon );
-        reductions[ii]    = static_cast<RealOpenMM>( reduction );
-    }   
-    sigmaCombiningRule     = force.getSigmaCombiningRule();
-    epsilonCombiningRule   = force.getEpsilonCombiningRule();
     useCutoff              = (force.getNonbondedMethod() != AmoebaVdwForce::NoCutoff);
     usePBC                 = (force.getNonbondedMethod() == AmoebaVdwForce::CutoffPeriodic);
     cutoff                 = force.getCutoff();
     neighborList           = useCutoff ? new NeighborList() : NULL;
-    dispersionCoefficient  = force.getUseDispersionCorrection() ?  AmoebaVdwForceImpl::calcDispersionCorrection(system, force) : 0.0;
 
 }
 
 double ReferenceCalcAmoebaVdwForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
 
-    vector<RealVec>& posData   = extractPositions(context);
-    vector<RealVec>& forceData = extractForces(context);
-    AmoebaReferenceVdwForce vdwForce( sigmaCombiningRule, epsilonCombiningRule );
-    RealOpenMM energy;
-    if( useCutoff ){
-        vdwForce.setCutoff( cutoff );
-        computeNeighborListVoxelHash( *neighborList, numParticles, posData, allExclusions, extractBoxSize(context), usePBC, cutoff, 0.0);
-        if( usePBC ){
-            vdwForce.setNonbondedMethod( AmoebaReferenceVdwForce::CutoffPeriodic);
-            RealVec& box = extractBoxSize(context);
-            double minAllowedSize = 1.999999*cutoff;
-            if (box[0] < minAllowedSize || box[1] < minAllowedSize || box[2] < minAllowedSize){
-                throw OpenMMException("The periodic box size has decreased to less than twice the cutoff.");
-            }
-            vdwForce.setPeriodicBox(box);
-            energy  = vdwForce.calculateForceAndEnergy( numParticles, posData, indexIVs, sigmas, epsilons, reductions, *neighborList, forceData);
-            energy += dispersionCoefficient/(box[0]*box[1]*box[2]);
-        } else {
-            vdwForce.setNonbondedMethod( AmoebaReferenceVdwForce::CutoffNonPeriodic);
-        }
-    } else {
-        vdwForce.setNonbondedMethod( AmoebaReferenceVdwForce::NoCutoff );
-        energy = vdwForce.calculateForceAndEnergy( numParticles, posData, indexIVs, sigmas, epsilons, reductions, allExclusions, forceData);
+    vector<RealVec>& allPosData   = extractPositions(context);
+    vector<RealVec> posData;
+    posData.resize(numParticles);
+    vector<set<int> > allExclusions;
+    allExclusions.resize(numParticles);
+    // posData has only oxygens
+    for( int ii = 0; ii < numParticles; ii++ ){
+        posData[ii] = allPosData[allParticleIndices[ii][0]];
     }
+    vector<RealVec>& forceData = extractForces(context);
+    AmoebaReferenceVdwForce vdwForce;
+    RealOpenMM energy;
+    vdwForce.setCutoff( cutoff );
+    // neighborList created only with oxygens, then allParticleIndices is used to get reference to the hydrogens
+    computeNeighborListVoxelHash( *neighborList, numParticles, posData, allExclusions, extractBoxSize(context), usePBC, cutoff, 0.0, false);
+    if( usePBC ){
+        vdwForce.setNonbondedMethod( AmoebaReferenceVdwForce::CutoffPeriodic);
+        RealVec& box = extractBoxSize(context);
+        double minAllowedSize = 1.999999*cutoff;
+        if (box[0] < minAllowedSize || box[1] < minAllowedSize || box[2] < minAllowedSize){
+            throw OpenMMException("The periodic box size has decreased to less than twice the cutoff.");
+        }
+        vdwForce.setPeriodicBox(box);
+    } else {
+        vdwForce.setNonbondedMethod( AmoebaReferenceVdwForce::CutoffNonPeriodic);
+    }
+    // here we need allPosData, every atom!
+    energy  = vdwForce.calculateForceAndEnergy( numParticles, allPosData, allParticleIndices, *neighborList, forceData);
+
     return static_cast<double>(energy);
 }
 
@@ -824,13 +813,95 @@ void ReferenceCalcAmoebaVdwForceKernel::copyParametersToContext(ContextImpl& con
     // Record the values.
 
     for (int i = 0; i < numParticles; ++i) {
-        int indexIV;
-        double sigma, epsilon, reduction;
-        force.getParticleParameters(i, indexIV, sigma, epsilon, reduction);
-        indexIVs[i] = indexIV;
-        sigmas[i] = (RealOpenMM) sigma;
-        epsilons[i] = (RealOpenMM) epsilon;
-        reductions[i]= (RealOpenMM) reduction;
+
+        std::vector<int> particleIndices;
+        force.getParticleParameters(i, particleIndices);
+        allParticleIndices[i] = particleIndices;
+
+    }
+}
+
+ReferenceCalcMBPolThreeBodyForceKernel::ReferenceCalcMBPolThreeBodyForceKernel(std::string name, const Platform& platform, const System& system) :
+       CalcMBPolThreeBodyForceKernel(name, platform), system(system) {
+    useCutoff = 0;
+    usePBC = 0;
+    cutoff = 1.0e+10;
+    neighborList = NULL;
+}
+
+ReferenceCalcMBPolThreeBodyForceKernel::~ReferenceCalcMBPolThreeBodyForceKernel() {
+    if( neighborList ){
+        delete neighborList;
+    }
+}
+
+void ReferenceCalcMBPolThreeBodyForceKernel::initialize(const System& system, const MBPolThreeBodyForce& force) {
+
+    // per-particle parameters
+
+    numParticles = force.getNumMolecules();
+    allParticleIndices.resize(numParticles);
+    for( int ii = 0; ii < numParticles; ii++ ){
+
+        std::vector<int> particleIndices;
+        force.getParticleParameters(ii, particleIndices );
+        allParticleIndices[ii] = particleIndices;
+
+    }
+
+    useCutoff              = (force.getNonbondedMethod() != MBPolThreeBodyForce::NoCutoff);
+    usePBC                 = (force.getNonbondedMethod() == MBPolThreeBodyForce::CutoffPeriodic);
+    cutoff                 = force.getCutoff();
+    neighborList           = useCutoff ? new ThreeNeighborList() : NULL;
+
+}
+
+double ReferenceCalcMBPolThreeBodyForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
+
+    vector<RealVec>& allPosData   = extractPositions(context);
+    vector<RealVec> posData;
+    posData.resize(numParticles);
+    vector<set<int> > allExclusions;
+    allExclusions.resize(numParticles);
+    // posData has only oxygens
+    for( int ii = 0; ii < numParticles; ii++ ){
+        posData[ii] = allPosData[allParticleIndices[ii][0]];
+    }
+    vector<RealVec>& forceData = extractForces(context);
+    MBPolReferenceThreeBodyForce vdwForce;
+    RealOpenMM energy;
+    vdwForce.setCutoff( cutoff );
+    // neighborList created only with oxygens, then allParticleIndices is used to get reference to the hydrogens
+    computeThreeNeighborListVoxelHash( *neighborList, numParticles, posData, extractBoxSize(context), usePBC, cutoff, 0.0);
+    if( usePBC ){
+        vdwForce.setNonbondedMethod( MBPolReferenceThreeBodyForce::CutoffPeriodic);
+        RealVec& box = extractBoxSize(context);
+        double minAllowedSize = 1.999999*cutoff;
+        if (box[0] < minAllowedSize || box[1] < minAllowedSize || box[2] < minAllowedSize){
+            throw OpenMMException("The periodic box size has decreased to less than twice the cutoff.");
+        }
+        vdwForce.setPeriodicBox(box);
+    } else {
+        vdwForce.setNonbondedMethod( MBPolReferenceThreeBodyForce::CutoffNonPeriodic);
+    }
+    // here we need allPosData, every atom!
+    energy  = vdwForce.calculateForceAndEnergy( numParticles, allPosData, allParticleIndices, *neighborList, forceData);
+
+    return static_cast<double>(energy);
+}
+
+void ReferenceCalcMBPolThreeBodyForceKernel::copyParametersToContext(ContextImpl& context, const MBPolThreeBodyForce& force) {
+    if (numParticles != force.getNumParticles())
+        throw OpenMMException("updateParametersInContext: The number of particles has changed");
+
+    // Record the values.
+
+    for (int i = 0; i < numParticles; ++i) {
+
+        std::vector<int> particleIndices;
+        force.getParticleParameters(i, particleIndices);
+        allParticleIndices[i] = particleIndices;
+
     }
 }
 

@@ -22,28 +22,30 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __AmoebaReferenceVdwForce_H__
-#define __AmoebaReferenceVdwForce_H__
+#ifndef __MBPolReferenceThreeBodyForce_H__
+#define __MBPolReferenceThreeBodyForce_H__
 
 #include "RealVec.h"
 #include "openmm/Vec3.h"
-#include "ReferenceNeighborList.h"
+#include "ReferenceThreeNeighborList.h"
 #include <string>
 #include <vector>
 
 using namespace OpenMM;
 
-class AmoebaReferenceVdwForce;
-typedef  RealOpenMM (AmoebaReferenceVdwForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;
+const double nm_to_A = 10.;
+
+class MBPolReferenceThreeBodyForce;
+// typedef  RealOpenMM (MBPolReferenceThreeBodyForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;
 
 // ---------------------------------------------------------------------------------------
 
-class AmoebaReferenceVdwForce {
+class MBPolReferenceThreeBodyForce {
 
 public:
 
     /** 
-     * This is an enumeration of the different methods that may be used for handling long range Vdw forces.
+     * This is an enumeration of the different methods that may be used for handling long range ThreeBody forces.
      */
     enum NonbondedMethod {
 
@@ -71,7 +73,7 @@ public:
        
        --------------------------------------------------------------------------------------- */
  
-    AmoebaReferenceVdwForce( void );
+    MBPolReferenceThreeBodyForce( void );
  
     /**---------------------------------------------------------------------------------------
        
@@ -79,7 +81,7 @@ public:
        
        --------------------------------------------------------------------------------------- */
  
-    ~AmoebaReferenceVdwForce( ){};
+    ~MBPolReferenceThreeBodyForce( ){};
  
     /**---------------------------------------------------------------------------------------
     
@@ -136,7 +138,7 @@ public:
 
     /**---------------------------------------------------------------------------------------
     
-       Calculate Vdw ixn using neighbor list
+       Calculate ThreeBody ixn using neighbor list
     
        @param numParticles            number of particles
        @param particlePositions       Cartesian coordinates of particles
@@ -153,7 +155,7 @@ public:
     
     RealOpenMM calculateForceAndEnergy( int numParticles, const std::vector<OpenMM::RealVec>& particlePositions, 
                                         const std::vector<std::vector<int> >& allParticleIndices,
-                                        const NeighborList& neighborList,
+                                        const ThreeNeighborList& neighborList,
                                         std::vector<OpenMM::RealVec>& forces ) const;
          
 private:
@@ -177,7 +179,7 @@ private:
 
        --------------------------------------------------------------------------------------- */
 
-    RealOpenMM calculatePairIxn( int siteI, int siteJ,
+    RealOpenMM calculateTripletIxn( int siteI, int siteJ, int siteQ,
                                                           const std::vector<RealVec> & particlePositions,
                                                           const std::vector<std::vector<int> >& allParticleIndices,
                                                           std::vector<RealVec>& forces ) const;
@@ -185,4 +187,4 @@ private:
 
 // ---------------------------------------------------------------------------------------
 
-#endif // _AmoebaReferenceVdwForce___
+#endif // _MBPolReferenceThreeBodyForce___
