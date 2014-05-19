@@ -33,6 +33,8 @@
 
 using namespace OpenMM;
 
+const double nm_to_A = 10.;
+
 class MBPolReferenceThreeBodyForce;
 // typedef  RealOpenMM (MBPolReferenceThreeBodyForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;
 

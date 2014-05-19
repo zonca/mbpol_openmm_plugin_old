@@ -66,8 +66,6 @@ double var(const double& k,
            const double& r0,
            const OpenMM::RealVec& a1, const OpenMM::RealVec& a2)
 {
-    const double nm_to_A = 10.;
-
     const double dx[3] = {(a1[0] - a2[0])*nm_to_A,
                           (a1[1] - a2[1])*nm_to_A,
                           (a1[2] - a2[2])*nm_to_A};
@@ -84,8 +82,6 @@ void g_var(const double& g,
            const OpenMM::RealVec& a1, const OpenMM::RealVec& a2,
            OpenMM::RealVec& g1,       OpenMM::RealVec& g2)
 {
-    const double nm_to_A = 10.;
-
     const double dx[3] = {(a1[0] - a2[0])*nm_to_A,
                           (a1[1] - a2[1])*nm_to_A,
                           (a1[2] - a2[2])*nm_to_A};
@@ -193,13 +189,13 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculateTripletIxn( int siteI, int sit
           double drab(0), drac(0), drbc(0);
 
           for (int n = 0; n < 3; ++n) {
-              rab[n] = Oa[n] - Ob[n];
+              rab[n] = (Oa[n] - Ob[n])*nm_to_A;
               drab += rab[n]*rab[n];
 
-              rac[n] = Oa[n] - Oc[n];
+              rac[n] = (Oa[n] - Oc[n])*nm_to_A;
               drac += rac[n]*rac[n];
 
-              rbc[n] = Ob[n] - Oc[n];
+              rbc[n] = (Ob[n] - Oc[n])*nm_to_A;
               drbc += rbc[n]*rbc[n];
           }
 
@@ -279,9 +275,9 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculateTripletIxn( int siteI, int sit
           const double cal2joule = 4.184;
 
           for (int n = 0; n < 3; ++n) {
-              gOa[n] += (gab*rab[n] + gac*rac[n]) * cal2joule * 10.;
-              gOb[n] += (gbc*rbc[n] - gab*rab[n]) * cal2joule * 10.;
-              gOc[n] -= (gac*rac[n] + gbc*rbc[n]) * cal2joule * 10.;
+              gOa[n] += (gab*rab[n] + gac*rac[n]) * cal2joule * nm_to_A;
+              gOb[n] += (gbc*rbc[n] - gab*rab[n]) * cal2joule * nm_to_A;
+              gOc[n] -= (gac*rac[n] + gbc*rbc[n]) * cal2joule * nm_to_A;
           }
 
     RealOpenMM energy=retval * cal2joule;
