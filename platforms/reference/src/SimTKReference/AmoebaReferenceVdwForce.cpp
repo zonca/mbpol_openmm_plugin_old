@@ -236,21 +236,21 @@ RealOpenMM AmoebaReferenceVdwForce::calculatePairIxn( int siteI, int siteJ,
 
         for (int i = 0; i < 3; ++i) {
             // first water molecule
-            forces[allParticleIndices[siteI][0]][i] += sw*xgrd[Oa + i]  * cal2joule * 10.;
-            forces[allParticleIndices[siteI][1]][i] += sw*xgrd[Ha1 + i] * cal2joule * 10.;
-            forces[allParticleIndices[siteI][2]][i] += sw*xgrd[Ha2 + i] * cal2joule * 10.;
+            forces[allParticleIndices[siteI][0]][i] += sw*xgrd[Oa + i]  * cal2joule * -10.;
+            forces[allParticleIndices[siteI][1]][i] += sw*xgrd[Ha1 + i] * cal2joule * -10.;
+            forces[allParticleIndices[siteI][2]][i] += sw*xgrd[Ha2 + i] * cal2joule * -10.;
             // second water molecule
-            forces[allParticleIndices[siteJ][0]][i] += sw*xgrd[Ob + i]  * cal2joule * 10.;
-            forces[allParticleIndices[siteJ][1]][i] += sw*xgrd[Hb1 + i] * cal2joule * 10.;
-            forces[allParticleIndices[siteJ][2]][i] += sw*xgrd[Hb2 + i] * cal2joule * 10.;
+            forces[allParticleIndices[siteJ][0]][i] += sw*xgrd[Ob + i]  * cal2joule * -10.;
+            forces[allParticleIndices[siteJ][1]][i] += sw*xgrd[Hb1 + i] * cal2joule * -10.;
+            forces[allParticleIndices[siteJ][2]][i] += sw*xgrd[Hb2 + i] * cal2joule * -10.;
         }
 
         // gradient of the switch
         gsw *= E_poly/rOO;
         for (int i = 0; i < 3; ++i) {
             const double d = gsw*dOO[i];
-            forces[allParticleIndices[siteI][0]][i] += d * cal2joule * 10.;
-            forces[allParticleIndices[siteJ][0]][i] -= d * cal2joule * 10.;
+            forces[allParticleIndices[siteI][0]][i] += d * cal2joule * -10.;
+            forces[allParticleIndices[siteJ][0]][i] -= d * cal2joule * -10.;
         }
 
     RealOpenMM energy=sw*E_poly * cal2joule;

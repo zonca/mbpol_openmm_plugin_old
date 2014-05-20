@@ -119,9 +119,8 @@ void testVdw( FILE* log ) {
     std::vector<Vec3> forces         = state.getForces();
 
     for( unsigned int ii = 0; ii < forces.size(); ii++ ){
-        forces[ii][0] /= CalToJoule*10;
-        forces[ii][1] /= CalToJoule*10;
-        forces[ii][2] /= CalToJoule*10;
+        forces[ii] /= CalToJoule*10;
+        expectedForces[ii] *= -1; // gradient -> forces
     }    
 
     double tolerance = 1.0e-03;

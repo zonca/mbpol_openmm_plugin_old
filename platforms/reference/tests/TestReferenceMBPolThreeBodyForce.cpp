@@ -112,6 +112,12 @@ void testThreeBody( FILE* log ) {
     expectedForces[7]     = Vec3( -0.75669111, -0.76132457, -0.29799486 );
     expectedForces[8]     = Vec3( -0.11328682, -0.11273867,  0.48755080 );
 
+
+    // gradients => forces
+    for( unsigned int ii = 0; ii < expectedForces.size(); ii++ ){
+        expectedForces[ii] *= -1;
+    }
+
     expectedEnergy        = 0.15586446;
 
     system.addForce(amoebaThreeBodyForce);
