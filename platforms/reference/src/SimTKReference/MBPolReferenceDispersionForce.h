@@ -27,13 +27,12 @@
 
 #include "RealVec.h"
 #include "openmm/Vec3.h"
-#include "ReferenceThreeNeighborList.h"
+#include "ReferenceNeighborList.h"
+#include "MBPolConstants.h"
 #include <string>
 #include <vector>
 
 using namespace OpenMM;
-
-const double nm_to_A = 10.;
 
 class MBPolReferenceDispersionForce;
 // typedef  RealOpenMM (MBPolReferenceDispersionForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;
@@ -155,7 +154,7 @@ public:
     
     RealOpenMM calculateForceAndEnergy( int numParticles, const std::vector<OpenMM::RealVec>& particlePositions, 
                                         const std::vector<std::vector<int> >& allParticleIndices,
-                                        const ThreeNeighborList& neighborList,
+                                        const NeighborList& neighborList,
                                         std::vector<OpenMM::RealVec>& forces ) const;
          
 private:

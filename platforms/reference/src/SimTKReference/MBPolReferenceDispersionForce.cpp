@@ -27,8 +27,6 @@
 #include "MBPolReferenceDispersionForce.h"
 #include <algorithm>
 #include <cctype>
-#include "mbpol_3body_constants.h"
-#include "poly-3b-v2x.h"
 #include <cmath>
 
 using std::vector;
@@ -63,13 +61,13 @@ RealVec MBPolReferenceDispersionForce::getPeriodicBox( void ) const {
     return _periodicBoxDimensions;
 }
 
-const double C6_HH = 2.009358600184719e+01*cal2joule*pow(nm_to_A, 6); // kcal/mol * A^(-6)
-const double C6_OH = 8.349556669872743e+01*cal2joule*pow(nm_to_A, 6); // kcal/mol * A^(-6)
-const double C6_OO = 2.373212214147944e+02*cal2joule*pow(nm_to_A, 6); // kcal/mol * A^(-6)
+const double C6_HH = 2.009358600184719e+01; // kcal/mol * A^(-6)
+const double C6_OH = 8.349556669872743e+01; // kcal/mol * A^(-6)
+const double C6_OO = 2.373212214147944e+02; // kcal/mol * A^(-6)
 
-const double d6_HH =  9.406475169954112e+00*nm_to_A; // A^(-1)
-const double d6_OH =  9.775202425217957e+00*nm_to_A; // A^(-1)
-const double d6_OO =  9.295485815062264e+00*nm_to_A; // A^(-1)
+const double d6_HH =  9.406475169954112e+00; // A^(-1)
+const double d6_OH =  9.775202425217957e+00; // A^(-1)
+const double d6_OO =  9.295485815062264e+00; // A^(-1)
 
 template <int N>
 struct Factorial
@@ -120,9 +118,9 @@ inline double x6(const double& C6, const double& d6,
                  const OpenMM::RealVec& p1, const OpenMM::RealVec& p2,
                  OpenMM::RealVec& g1,       OpenMM::RealVec& g2)
 {
-    const double dx = p1[0] - p2[0];
-    const double dy = p1[1] - p2[1];
-    const double dz = p1[2] - p2[2];
+    const double dx = (p1[0] - p2[0])*nm_to_A;
+    const double dy = (p1[1] - p2[1])*nm_to_A;
+    const double dz = (p1[2] - p2[2])*nm_to_A;
 
     const double rsq = dx*dx + dy*dy + dz*dz;
     const double r = std::sqrt(rsq);
@@ -139,16 +137,16 @@ inline double x6(const double& C6, const double& d6,
 
     const double grd = 6*e6*inv_rsq - C6*std::pow(d6, 7)*if6*std::exp(-d6r)/r;
 
-    g1[0] += dx*grd;
-    g2[0] -= dx*grd;
+    g1[0] += dx*grd * cal2joule * -nm_to_A;
+    g2[0] -= dx*grd * cal2joule * -nm_to_A;
 
-    g1[1] += dy*grd;
-    g2[1] -= dy*grd;
+    g1[1] += dy*grd * cal2joule * -nm_to_A;
+    g2[1] -= dy*grd * cal2joule * -nm_to_A;
 
-    g1[2] += dz*grd;
-    g2[2] -= dz*grd;
+    g1[2] += dz*grd * cal2joule * -nm_to_A;
+    g2[2] -= dz*grd * cal2joule * -nm_to_A;
 
-    return - e6;
+    return - e6 * cal2joule;
 }
 
 RealOpenMM MBPolReferenceDispersionForce::calculatePairIxn( int siteI, int siteJ,
@@ -204,14 +202,9 @@ RealOpenMM MBPolReferenceDispersionForce::calculatePairIxn( int siteI, int siteJ
 RealOpenMM MBPolReferenceDispersionForce::calculateForceAndEnergy( int numParticles,
                                                              const vector<RealVec>& particlePositions,
                                                              const std::vector<std::vector<int> >& allParticleIndices,
-                                                             const ThreeNeighborList& neighborList,
+                                                             const NeighborList& neighborList,
                                                              vector<RealVec>& forces ) const {
 
-    // loop over neighbor list
-    //    (1) calculate pair vdw ixn
-    //    (2) accumulate forces: if particle is a site where interaction position != particle position,
-    //        then call addReducedForce() to apportion force to particle and its covalent partner
-    //        based on reduction factor
 
     RealOpenMM energy = 0.;
     for( unsigned int ii = 0; ii < neighborList.size(); ii++ ){

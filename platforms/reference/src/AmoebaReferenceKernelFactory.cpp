@@ -60,6 +60,7 @@ extern "C" void initAmoebaReferenceKernels() {
              platform.registerKernelFactory(CalcAmoebaTorsionTorsionForceKernel::Name(),        factory);
              platform.registerKernelFactory(CalcAmoebaVdwForceKernel::Name(),                   factory);
              platform.registerKernelFactory(CalcMBPolThreeBodyForceKernel::Name(),                   factory);
+             platform.registerKernelFactory(CalcMBPolDispersionForceKernel::Name(),                   factory);
              platform.registerKernelFactory(CalcAmoebaMultipoleForceKernel::Name(),             factory);
              platform.registerKernelFactory(CalcAmoebaWcaDispersionForceKernel::Name(), factory);
         }
@@ -97,6 +98,9 @@ KernelImpl* AmoebaReferenceKernelFactory::createKernelImpl(std::string name, con
 
     if (name == CalcMBPolThreeBodyForceKernel::Name())
             return new ReferenceCalcMBPolThreeBodyForceKernel(name, platform, context.getSystem());
+
+    if (name == CalcMBPolDispersionForceKernel::Name())
+            return new ReferenceCalcMBPolDispersionForceKernel(name, platform, context.getSystem());
 
     if (name == CalcAmoebaMultipoleForceKernel::Name())
         return new ReferenceCalcAmoebaMultipoleForceKernel(name, platform, context.getSystem());

@@ -42,6 +42,7 @@
 #include "openmm/VirtualSite.h"
 
 #include "openmm/MBPolThreeBodyForce.h"
+#include "openmm/MBPolDispersionForce.h"
 
 #include "openmm/LangevinIntegrator.h"
 #include <iostream>
@@ -96,6 +97,11 @@ void testThreeBody( FILE* log ) {
     amoebaThreeBodyForce->setCutoff( cutoff );
     amoebaThreeBodyForce->setNonbondedMethod(MBPolThreeBodyForce::CutoffNonPeriodic);
 
+    // Dispersion Force
+    MBPolDispersionForce* dispersionForce = new MBPolDispersionForce();
+    dispersionForce->setCutoff( cutoff );
+    dispersionForce->setNonbondedMethod(MBPolDispersionForce::CutoffNonPeriodic);
+
     int numberOfWaterMolecules = 3;
     unsigned int particlesPerMolecule = 4;
     int numberOfParticles          = numberOfWaterMolecules * particlesPerMolecule;
@@ -126,6 +132,7 @@ void testThreeBody( FILE* log ) {
         amoebaStretchBendForce->addStretchBend(jj, jj+1, jj+2);
         amoebaVdwForce->addParticle( particleIndices);
         amoebaThreeBodyForce->addParticle( particleIndices);
+        dispersionForce->addParticle( particleIndices);
 
     }
 
@@ -133,6 +140,7 @@ void testThreeBody( FILE* log ) {
     system.addForce(amoebaStretchBendForce);
     system.addForce(amoebaVdwForce);
     system.addForce(amoebaThreeBodyForce);
+    system.addForce(dispersionForce);
 
     LangevinIntegrator integrator(0.0, 0.1, 0.01);
 
@@ -171,7 +179,10 @@ void testThreeBody( FILE* log ) {
     expectedForces[9]     = Vec3(  -3.35396424,  -5.45992971,   6.41676701);
     expectedForces[10]    = Vec3(  -2.97592932,   0.48400940,  -1.07815786);
 
-
+    // gradients => forces
+    for( unsigned int ii = 0; ii < expectedForces.size(); ii++ ){
+        expectedForces[ii] *= -1;
+    }
     expectedEnergy        = -8.78893485;
 
     std::string platformName;
@@ -188,9 +199,10 @@ void testThreeBody( FILE* log ) {
     std::vector<Vec3> forces         = state.getForces();
 
     for( unsigned int ii = 0; ii < forces.size(); ii++ ){
-        forces[ii][0] /= CalToJoule*10;
-        forces[ii][1] /= CalToJoule*10;
-        forces[ii][2] /= CalToJoule*10;
+        forces[ii] /= CalToJoule*10;
+        if ((ii+1) % 4 == 0) { // Set virtual site force to 0
+            forces[ii] *= 0;
+        }
     }    
 
     double tolerance = 1.0e-03;
