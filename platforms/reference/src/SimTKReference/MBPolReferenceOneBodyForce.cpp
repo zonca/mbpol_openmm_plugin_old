@@ -23,7 +23,7 @@
  */
 
 #include "AmoebaReferenceForce.h"
-#include "AmoebaReferenceStretchBendForce.h"
+#include "MBPolReferenceOneBodyForce.h"
 #include <vector>
 #include "mbpol_interaction_constants.h"
 
@@ -34,7 +34,7 @@ using OpenMM::RealVec;
 
 /**---------------------------------------------------------------------------------------
 
-   Calculate Amoeba stretch bend angle ixn (force and energy)
+   Calculate MBPol stretch bend angle ixn (force and energy)
 
    pot_nasa in mbpol
 
@@ -43,7 +43,7 @@ using OpenMM::RealVec;
    --------------------------------------------------------------------------------------- */
 
 
-double AmoebaReferenceStretchBendForce::calculateStretchBendIxn(const RealVec& positionO, const RealVec& positionH1, const RealVec& positionH2,
+double MBPolReferenceOneBodyForce::calculateOneBodyIxn(const RealVec& positionO, const RealVec& positionH1, const RealVec& positionH2,
         RealVec& forceO, RealVec& forceH1, RealVec& forceH2) const
 {
     double ROH1[3], ROH2[3], RHH[3], dROH1(0), dROH2(0), dRHH(0);
@@ -175,7 +175,7 @@ double AmoebaReferenceStretchBendForce::calculateStretchBendIxn(const RealVec& p
 }
 
 
-RealOpenMM AmoebaReferenceStretchBendForce::calculateForceAndEnergy( int numStretchBends, vector<RealVec>& posData,
+RealOpenMM MBPolReferenceOneBodyForce::calculateForceAndEnergy( int numOneBodys, vector<RealVec>& posData,
                                                                        const std::vector<int>&  particleO,
                                                                        const std::vector<int>&  particleH1,
                                                                        const std::vector<int>&  particleH2,
@@ -185,12 +185,12 @@ RealOpenMM AmoebaReferenceStretchBendForce::calculateForceAndEnergy( int numStre
                                                                        const std::vector<RealOpenMM>&  kQuadratic,
                                                                        vector<RealVec>& forceData) const {
     RealOpenMM energy      = 0.0; 
-    for (unsigned int ii = 0; ii < static_cast<unsigned int>(numStretchBends); ii++) {
+    for (unsigned int ii = 0; ii < static_cast<unsigned int>(numOneBodys); ii++) {
         int particleOIndex      = particleO[ii];
         int particleH1Index      = particleH1[ii];
         int particleH2Index      = particleH2[ii];
         RealVec forceO, forceH1, forceH2;
-        energy                 +=  calculateStretchBendIxn(posData[particleOIndex], posData[particleH1Index], posData[particleH2Index], forceO, forceH1, forceH2);
+        energy                 +=  calculateOneBodyIxn(posData[particleOIndex], posData[particleH1Index], posData[particleH2Index], forceO, forceH1, forceH2);
 
         // accumulate forces
     

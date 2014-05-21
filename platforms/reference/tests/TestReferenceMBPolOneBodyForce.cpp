@@ -30,11 +30,11 @@
  * -------------------------------------------------------------------------- */
 
 /**
- * This tests the Reference implementation of ReferenceAmoebaStretchBendForce.
+ * This tests the Reference implementation of ReferenceMBPolOneBodyForce.
  */
 
 #include "openmm/internal/AssertionUtilities.h"
-//#include "AmoebaTinkerParameterFile.h"
+//#include "MBPolTinkerParameterFile.h"
 const double DegreesToRadians = 3.14159265/180.0;
 #include "openmm/Context.h"
 #include "OpenMMAmoeba.h"
@@ -49,7 +49,7 @@ const double TOL = 1e-4;
 #define PI_M               3.141592653589
 #define RADIAN            57.29577951308
 
-void testOneStretchBend( FILE* log ) {
+void testOneOneBody( FILE* log ) {
 
     System system;
     int numberOfParticles = 3;
@@ -59,17 +59,17 @@ void testOneStretchBend( FILE* log ) {
 
     LangevinIntegrator integrator(0.0, 0.1, 0.01);
 
-    AmoebaStretchBendForce* amoebaStretchBendForce = new AmoebaStretchBendForce();
+    MBPolOneBodyForce* amoebaOneBodyForce = new MBPolOneBodyForce();
 
     double abLength         = 0.144800000E+01;
     double cbLength         = 0.101500000E+01;
-    double angleStretchBend = 0.108500000E+03*DegreesToRadians;
-    //double kStretchBend     = 0.750491578E-01;
-    double kStretchBend     = 1.0;
+    double angleOneBody = 0.108500000E+03*DegreesToRadians;
+    //double kOneBody     = 0.750491578E-01;
+    double kOneBody     = 1.0;
 
-    amoebaStretchBendForce->addStretchBend(0, 1, 2);
+    amoebaOneBodyForce->addOneBody(0, 1, 2);
 
-    system.addForce(amoebaStretchBendForce);
+    system.addForce(amoebaOneBodyForce);
     Context context(system, integrator, Platform::getPlatformByName( "Reference"));
 
     std::vector<Vec3> positions(numberOfParticles);
@@ -139,12 +139,12 @@ void testOneStretchBend( FILE* log ) {
 int main( int numberOfArguments, char* argv[] ) {
 
     try {
-        std::cout << "TestReferenceAmoebaStretchBendForce running test..." << std::endl;
+        std::cout << "TestReferenceMBPolOneBodyForce running test..." << std::endl;
 
         FILE* log = NULL;
         //FILE* log = stderr;
-        //FILE* log = fopen( "AmoebaStretchBendForce1.log", "w" );;
-        testOneStretchBend( log );
+        //FILE* log = fopen( "MBPolOneBodyForce1.log", "w" );;
+        testOneOneBody( log );
 #ifdef AMOEBA_DEBUG
         if( log && log != stderr )
             (void) fclose( log );

@@ -83,7 +83,7 @@ void testThreeBody( FILE* log ) {
     thole[TDDHH] = 0.055;
 
     // One body interaction
-    AmoebaStretchBendForce* amoebaStretchBendForce = new AmoebaStretchBendForce();
+    MBPolOneBodyForce* mbpolOneBodyForce = new MBPolOneBodyForce();
 
 
     // Two body interaction
@@ -129,7 +129,7 @@ void testThreeBody( FILE* log ) {
         amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
                                                     thole,  0.001310,  0.);
 
-        amoebaStretchBendForce->addStretchBend(jj, jj+1, jj+2);
+        mbpolOneBodyForce->addOneBody(jj, jj+1, jj+2);
         mbpolTwoBodyForce->addParticle( particleIndices);
         amoebaThreeBodyForce->addParticle( particleIndices);
         dispersionForce->addParticle( particleIndices);
@@ -137,7 +137,7 @@ void testThreeBody( FILE* log ) {
     }
 
     system.addForce(amoebaMultipoleForce);
-    system.addForce(amoebaStretchBendForce);
+    system.addForce(mbpolOneBodyForce);
     system.addForce(mbpolTwoBodyForce);
     system.addForce(amoebaThreeBodyForce);
     system.addForce(dispersionForce);

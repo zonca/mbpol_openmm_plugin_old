@@ -1,5 +1,8 @@
+#ifndef OPENMM_AMOEBA_STRETCH_BEND_FORCE_PROXY_H_
+#define OPENMM_AMOEBA_STRETCH_BEND_FORCE_PROXY_H_
+
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -29,58 +32,22 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/Platform.h"
-#include "openmm/internal/AssertionUtilities.h"
-#include "openmm/AmoebaStretchBendForce.h"
-#include "openmm/serialization/XmlSerializer.h"
-#include <iostream>
-#include <sstream>
+#include "openmm/serialization/internal/windowsExportAmoebaSerialization.h"
+#include "openmm/serialization/SerializationProxy.h"
 
-using namespace OpenMM;
-using namespace std;
+namespace OpenMM {
 
-extern "C" void registerAmoebaSerializationProxies();
+/**
+ * This is a proxy for serializing MBPolOneBodyForce objects.
+ */
 
-void testSerialization() {
-    // Create a Force.
+class OPENMM_EXPORT_AMOEBA_SERIALIZATION MBPolOneBodyForceProxy : public SerializationProxy {
+public:
+    MBPolOneBodyForceProxy();
+    void serialize(const void* object, SerializationNode& node) const;
+    void* deserialize(const SerializationNode& node) const;
+};
 
-    AmoebaStretchBendForce force1;
-    force1.addStretchBend(0, 1, 3);
-    force1.addStretchBend(2, 4, 4);
-    force1.addStretchBend(5, 0, 1);
+} // namespace OpenMM
 
-    // Serialize and then deserialize it.
-
-    stringstream buffer;
-    XmlSerializer::serialize<AmoebaStretchBendForce>(&force1, "Force", buffer);
-    AmoebaStretchBendForce* copy = XmlSerializer::deserialize<AmoebaStretchBendForce>(buffer);
-
-    // Compare the two forces to see if they are identical.  
-    AmoebaStretchBendForce& force2 = *copy;
-    ASSERT_EQUAL(force1.getNumStretchBends(), force2.getNumStretchBends());
-    for (unsigned int ii = 0; ii < static_cast<unsigned int>(force1.getNumStretchBends()); ii++) {
-        int p11, p12, p13;
-        int p21, p22, p23;
-
-        force1.getStretchBendParameters(ii, p11, p12, p13);
-        force2.getStretchBendParameters(ii, p21, p22, p23);
-
-        ASSERT_EQUAL(p11, p21);
-        ASSERT_EQUAL(p12, p22);
-        ASSERT_EQUAL(p13, p23);
-    }
-}
-
-int main() {
-    try {
-        registerAmoebaSerializationProxies();
-        testSerialization();
-    }
-    catch(const exception& e) {
-        cout << "exception: " << e.what() << endl;
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-
+#endif /*OPENMM_AMOEBA_STRETCH_BEND_FORCE_PROXY_H_*/

@@ -206,24 +206,24 @@ public:
 /**
  * This kernel is invoked by AmoebaTorsionForce to calculate the forces acting on the system and the energy of the system.
  */
-class CalcAmoebaStretchBendForceKernel : public KernelImpl {
+class CalcMBPolOneBodyForceKernel : public KernelImpl {
 
 public:
 
     static std::string Name() {
-        return "CalcAmoebaStretchBendForce";
+        return "CalcMBPolOneBodyForce";
     }
 
-    CalcAmoebaStretchBendForceKernel(std::string name, const Platform& platform) : KernelImpl(name, platform) {
+    CalcMBPolOneBodyForceKernel(std::string name, const Platform& platform) : KernelImpl(name, platform) {
     }
 
     /**
      * Initialize the kernel.
      * 
      * @param system     the System this kernel will be applied to
-     * @param force      the StretchBendForce this kernel will be used for
+     * @param force      the OneBodyForce this kernel will be used for
      */
-    virtual void initialize(const System& system, const AmoebaStretchBendForce& force) = 0;
+    virtual void initialize(const System& system, const MBPolOneBodyForce& force) = 0;
 
     /**
      * Execute the kernel to calculate the forces and/or energy.
@@ -238,9 +238,9 @@ public:
      * Copy changed parameters over to a context.
      *
      * @param context    the context to copy parameters to
-     * @param force      the AmoebaStretchBendForce to copy the parameters from
+     * @param force      the MBPolOneBodyForce to copy the parameters from
      */
-    virtual void copyParametersToContext(ContextImpl& context, const AmoebaStretchBendForce& force) = 0;
+    virtual void copyParametersToContext(ContextImpl& context, const MBPolOneBodyForce& force) = 0;
 };
 
 /**

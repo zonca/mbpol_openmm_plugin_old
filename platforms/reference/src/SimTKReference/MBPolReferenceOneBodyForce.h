@@ -22,15 +22,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __AmoebaReferenceStretchBendForce_H__
-#define __AmoebaReferenceStretchBendForce_H__
+#ifndef __MBPolReferenceOneBodyForce_H__
+#define __MBPolReferenceOneBodyForce_H__
 
 #include "RealVec.h"
 #include <vector>
 
 // ---------------------------------------------------------------------------------------
 
-class AmoebaReferenceStretchBendForce {
+class MBPolReferenceOneBodyForce {
 
 public:
  
@@ -40,7 +40,7 @@ public:
        
        --------------------------------------------------------------------------------------- */
  
-    AmoebaReferenceStretchBendForce( ){};
+    MBPolReferenceOneBodyForce( ){};
  
     /**---------------------------------------------------------------------------------------
        
@@ -48,11 +48,11 @@ public:
        
           --------------------------------------------------------------------------------------- */
  
-    ~AmoebaReferenceStretchBendForce( ){};
+    ~MBPolReferenceOneBodyForce( ){};
 
      /**---------------------------------------------------------------------------------------
      
-        Calculate Amoeba stretch bend ixns (force and energy)
+        Calculate MBPol stretch bend ixns (force and energy)
      
         @param numBonds                number of angles
         @param posData                 particle positions
@@ -85,18 +85,18 @@ private:
 
     /**---------------------------------------------------------------------------------------
     
-       Calculate Amoeba stretch bend angle ixn (force and energy)
+       Calculate MBPol stretch bend angle ixn (force and energy)
     
     
        @return energy
     
        --------------------------------------------------------------------------------------- */
 
-    double calculateStretchBendIxn(const OpenMM::RealVec& positionO, const OpenMM::RealVec& positionH1, const OpenMM::RealVec& positionH2,
+    double calculateOneBodyIxn(const OpenMM::RealVec& positionO, const OpenMM::RealVec& positionH1, const OpenMM::RealVec& positionH2,
             OpenMM::RealVec& forceO, OpenMM::RealVec& forceH1, OpenMM::RealVec& forceH2) const;
  
 };
 
 // ---------------------------------------------------------------------------------------
 
-#endif // _AmoebaReferenceStretchBendForce___
+#endif // _MBPolReferenceOneBodyForce___

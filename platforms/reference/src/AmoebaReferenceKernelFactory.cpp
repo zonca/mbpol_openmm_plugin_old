@@ -55,7 +55,7 @@ extern "C" void initAmoebaReferenceKernels() {
              platform.registerKernelFactory(CalcAmoebaAngleForceKernel::Name(),         factory);
              platform.registerKernelFactory(CalcAmoebaInPlaneAngleForceKernel::Name(),  factory);
              platform.registerKernelFactory(CalcAmoebaPiTorsionForceKernel::Name(),             factory);
-             platform.registerKernelFactory(CalcAmoebaStretchBendForceKernel::Name(),           factory);
+             platform.registerKernelFactory(CalcMBPolOneBodyForceKernel::Name(),           factory);
              platform.registerKernelFactory(CalcAmoebaOutOfPlaneBendForceKernel::Name(),        factory);
              platform.registerKernelFactory(CalcAmoebaTorsionTorsionForceKernel::Name(),        factory);
              platform.registerKernelFactory(CalcMBPolTwoBodyForceKernel::Name(),                   factory);
@@ -84,8 +84,8 @@ KernelImpl* AmoebaReferenceKernelFactory::createKernelImpl(std::string name, con
     if (name == CalcAmoebaPiTorsionForceKernel::Name())
         return new ReferenceCalcAmoebaPiTorsionForceKernel(name, platform, context.getSystem());
 
-    if (name == CalcAmoebaStretchBendForceKernel::Name())
-        return new ReferenceCalcAmoebaStretchBendForceKernel(name, platform, context.getSystem());
+    if (name == CalcMBPolOneBodyForceKernel::Name())
+        return new ReferenceCalcMBPolOneBodyForceKernel(name, platform, context.getSystem());
 
     if (name == CalcAmoebaOutOfPlaneBendForceKernel::Name())
         return new ReferenceCalcAmoebaOutOfPlaneBendForceKernel(name, platform, context.getSystem());

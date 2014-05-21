@@ -212,19 +212,19 @@ private:
 };
 
 /**
- * This kernel is invoked by AmoebaStretchBendForce to calculate the forces acting on the system and the energy of the system.
+ * This kernel is invoked by MBPolOneBodyForce to calculate the forces acting on the system and the energy of the system.
  */
-class ReferenceCalcAmoebaStretchBendForceKernel : public CalcAmoebaStretchBendForceKernel {
+class ReferenceCalcMBPolOneBodyForceKernel : public CalcMBPolOneBodyForceKernel {
 public:
-    ReferenceCalcAmoebaStretchBendForceKernel(std::string name, const Platform& platform, const System& system);
-    ~ReferenceCalcAmoebaStretchBendForceKernel();
+    ReferenceCalcMBPolOneBodyForceKernel(std::string name, const Platform& platform, const System& system);
+    ~ReferenceCalcMBPolOneBodyForceKernel();
     /**
      * Initialize the kernel.
      * 
      * @param system     the System this kernel will be applied to
-     * @param force      the AmoebaStretchBendForce this kernel will be used for
+     * @param force      the MBPolOneBodyForce this kernel will be used for
      */
-    void initialize(const System& system, const AmoebaStretchBendForce& force);
+    void initialize(const System& system, const MBPolOneBodyForce& force);
     /**
      * Execute the kernel to calculate the forces and/or energy.
      *
@@ -238,11 +238,11 @@ public:
      * Copy changed parameters over to a context.
      *
      * @param context    the context to copy parameters to
-     * @param force      the AmoebaStretchBendForce to copy the parameters from
+     * @param force      the MBPolOneBodyForce to copy the parameters from
      */
-    void copyParametersToContext(ContextImpl& context, const AmoebaStretchBendForce& force);
+    void copyParametersToContext(ContextImpl& context, const MBPolOneBodyForce& force);
 private:
-    int numStretchBends;
+    int numOneBodys;
     std::vector<int>   particle1;
     std::vector<int>   particle2;
     std::vector<int>   particle3;

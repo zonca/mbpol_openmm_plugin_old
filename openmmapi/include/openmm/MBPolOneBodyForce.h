@@ -2,7 +2,7 @@
 #define OPENMM_AMOEBA_STRETCH_BEND_FORCE_H_
 
 /* -------------------------------------------------------------------------- *
- *                              OpenMMAmoeba                                  *
+ *                              OpenMMMBPol                                  *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -33,32 +33,32 @@
  * -------------------------------------------------------------------------- */
 
 #include "openmm/Force.h"
-#include "internal/windowsExportAmoeba.h"
+#include "internal/windowsExportMBPol.h"
 #include <vector>
 
 namespace OpenMM {
 
 /**
- * This class implements the Amoeba stretch-bend interaction.
+ * This class implements the MBPol stretch-bend interaction.
  * 
- * To use it, create a StretchBendForce object then call addStretchBend() once for each stretch-bend.  After
- * a stretch-bend has been added, you can modify its force field parameters by calling setStretchBendParameters().
+ * To use it, create a OneBodyForce object then call addOneBody() once for each stretch-bend.  After
+ * a stretch-bend has been added, you can modify its force field parameters by calling setOneBodyParameters().
  * This will have no effect on Contexts that already exist unless you call updateParametersInContext().
  */
 
-class OPENMM_EXPORT_AMOEBA AmoebaStretchBendForce : public Force {
+class OPENMM_EXPORT_MBPOL MBPolOneBodyForce : public Force {
 
 public:
 
     /**
-     * Create an AmoebaStretchBendForce.
+     * Create an MBPolOneBodyForce.
      */
-    AmoebaStretchBendForce();
+    MBPolOneBodyForce();
 
     /**
      * Get the number of stretch-bend terms in the potential function
      */
-    int getNumStretchBends() const {
+    int getNumOneBodys() const {
         return stretchBends.size();
     }
 
@@ -74,7 +74,7 @@ public:
      * @param k             the force constant for the stretch-bend
      * @return the index of the stretch-bend that was added
      */
-    int addStretchBend(int particle1, int particle2, int particle3);
+    int addOneBody(int particle1, int particle2, int particle3);
 
     /**
      * Get the force field parameters for a stretch-bend term.
@@ -88,7 +88,7 @@ public:
      * @param angle         the equilibrium angle in radians
      * @param k             the force constant for the stretch-bend
      */
-    void getStretchBendParameters(int index, int& particle1, int& particle2, int& particle3 ) const;
+    void getOneBodyParameters(int index, int& particle1, int& particle2, int& particle3 ) const;
 
     /**
      * Set the force field parameters for a stretch-bend term.
@@ -102,11 +102,11 @@ public:
      * @param angle         the equilibrium angle in radians
      * @param k             the force constant for the stretch-bend
      */
-    void setStretchBendParameters(int index, int particle1, int particle2, int particle3 );
+    void setOneBodyParameters(int index, int particle1, int particle2, int particle3 );
     /**
      * Update the per-stretch-bend term parameters in a Context to match those stored in this Force object.  This method provides
      * an efficient method to update certain parameters in an existing Context without needing to reinitialize it.
-     * Simply call setStretchBendParameters() to modify this object's parameters, then call updateParametersInState()
+     * Simply call setOneBodyParameters() to modify this object's parameters, then call updateParametersInState()
      * to copy them over to the Context.
      * 
      * The only information this method updates is the values of per-stretch-bend term parameters.  The set of particles involved
@@ -117,19 +117,19 @@ public:
 protected:
     ForceImpl* createImpl() const;
 private:
-    class StretchBendInfo;
-    std::vector<StretchBendInfo> stretchBends;
+    class OneBodyInfo;
+    std::vector<OneBodyInfo> stretchBends;
 };
 
-class AmoebaStretchBendForce::StretchBendInfo {
+class MBPolOneBodyForce::OneBodyInfo {
 public:
     int particle1, particle2, particle3;
 
-    StretchBendInfo() {
+    OneBodyInfo() {
         particle1 = particle2  = particle3 = -1;
 
     }
-    StretchBendInfo(int particle1, int particle2, int particle3 ) :
+    OneBodyInfo(int particle1, int particle2, int particle3 ) :
                     particle1(particle1), particle2(particle2), particle3(particle3) {
      
     }

@@ -1,16 +1,16 @@
-#ifndef OPENMM_AMOEBA_STRETCH_BEND_FORCE_PROXY_H_
-#define OPENMM_AMOEBA_STRETCH_BEND_FORCE_PROXY_H_
+#ifndef OPENMM_AMOEBA_STRETCH_BEND_FORCE_IMPL_H_
+#define OPENMM_AMOEBA_STRETCH_BEND_FORCE_IMPL_H_
 
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2010 Stanford University and the Authors.           *
- * Authors: Peter Eastman                                                     *
+ * Portions copyright (c) 2008 Stanford University and the Authors.           *
+ * Authors:                                                                   *
  * Contributors:                                                              *
  *                                                                            *
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -32,22 +32,41 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/serialization/internal/windowsExportAmoebaSerialization.h"
-#include "openmm/serialization/SerializationProxy.h"
+#include "openmm/internal/ForceImpl.h"
+#include "openmm/MBPolOneBodyForce.h"
+#include "openmm/Kernel.h"
+#include <utility>
+#include <set>
+#include <string>
 
 namespace OpenMM {
 
 /**
- * This is a proxy for serializing AmoebaStretchBendForce objects.
+ * This is the internal implementation of MBPolOneBodyForce.
  */
 
-class OPENMM_EXPORT_AMOEBA_SERIALIZATION AmoebaStretchBendForceProxy : public SerializationProxy {
+class MBPolOneBodyForceImpl : public ForceImpl {
 public:
-    AmoebaStretchBendForceProxy();
-    void serialize(const void* object, SerializationNode& node) const;
-    void* deserialize(const SerializationNode& node) const;
+    MBPolOneBodyForceImpl(const MBPolOneBodyForce& owner);
+    ~MBPolOneBodyForceImpl();
+    void initialize(ContextImpl& context);
+    const MBPolOneBodyForce& getOwner() const {
+        return owner;
+    }
+    void updateContextState(ContextImpl& context) {
+        // This force field doesn't update the state directly.
+    }
+    double calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups);
+    std::map<std::string, double> getDefaultParameters() {
+        return std::map<std::string, double>(); // This force field doesn't define any parameters.
+    }
+    std::vector<std::string> getKernelNames();
+    void updateParametersInContext(ContextImpl& context);
+private:
+    const MBPolOneBodyForce& owner;
+    Kernel kernel;
 };
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_STRETCH_BEND_FORCE_PROXY_H_*/
+#endif /*OPENMM_AMOEBA_STRETCH_BEND_FORCE_IMPL_H_*/

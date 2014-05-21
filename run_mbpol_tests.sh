@@ -4,7 +4,7 @@
 
 make -j 8 
 ./TestReferenceAmoebaMultipoleForce
-./TestReferenceAmoebaStretchBendForce
+./TestReferenceMBPolOneBodyForce
 ./TestReferenceMBPolTwoBodyForce
 ./TestReferenceMBPolThreeBodyForce
 ./TestReferenceMBPolDispersionForce

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -29,40 +29,40 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/serialization/AmoebaStretchBendForceProxy.h"
+#include "openmm/serialization/MBPolOneBodyForceProxy.h"
 #include "openmm/serialization/SerializationNode.h"
 #include "openmm/Force.h"
-#include "openmm/AmoebaStretchBendForce.h"
+#include "openmm/MBPolOneBodyForce.h"
 #include <sstream>
 
 using namespace OpenMM;
 using namespace std;
 
-AmoebaStretchBendForceProxy::AmoebaStretchBendForceProxy() : SerializationProxy("AmoebaStretchBendForce") {
+MBPolOneBodyForceProxy::MBPolOneBodyForceProxy() : SerializationProxy("MBPolOneBodyForce") {
 }
 
-void AmoebaStretchBendForceProxy::serialize(const void* object, SerializationNode& node) const {
+void MBPolOneBodyForceProxy::serialize(const void* object, SerializationNode& node) const {
     node.setIntProperty("version", 1);
-    const AmoebaStretchBendForce& force = *reinterpret_cast<const AmoebaStretchBendForce*>(object);
-    SerializationNode& bonds = node.createChildNode("StretchBendAngles");
-    for (unsigned int ii = 0; ii < static_cast<unsigned int>(force.getNumStretchBends()); ii++) {
+    const MBPolOneBodyForce& force = *reinterpret_cast<const MBPolOneBodyForce*>(object);
+    SerializationNode& bonds = node.createChildNode("OneBodyAngles");
+    for (unsigned int ii = 0; ii < static_cast<unsigned int>(force.getNumOneBodys()); ii++) {
         int particle1, particle2, particle3;
         double distanceAB, distanceCB, angle, k;
-        force.getStretchBendParameters(ii, particle1, particle2, particle3);
-        bonds.createChildNode("StretchBendAngle").setIntProperty("p1", particle1).setIntProperty("p2", particle2).setIntProperty("p3", particle3);
+        force.getOneBodyParameters(ii, particle1, particle2, particle3);
+        bonds.createChildNode("OneBodyAngle").setIntProperty("p1", particle1).setIntProperty("p2", particle2).setIntProperty("p3", particle3);
     }
 
 }
 
-void* AmoebaStretchBendForceProxy::deserialize(const SerializationNode& node) const {
+void* MBPolOneBodyForceProxy::deserialize(const SerializationNode& node) const {
     if (node.getIntProperty("version") != 1)
         throw OpenMMException("Unsupported version number");
-    AmoebaStretchBendForce* force = new AmoebaStretchBendForce();
+    MBPolOneBodyForce* force = new MBPolOneBodyForce();
     try {
-        const SerializationNode& bonds = node.getChildNode("StretchBendAngles");
+        const SerializationNode& bonds = node.getChildNode("OneBodyAngles");
         for ( unsigned int ii = 0; ii < (int) bonds.getChildren().size(); ii++) {
             const SerializationNode& bond = bonds.getChildren()[ii];
-            force->addStretchBend(bond.getIntProperty("p1"), bond.getIntProperty("p2"), bond.getIntProperty("p3"));
+            force->addOneBody(bond.getIntProperty("p1"), bond.getIntProperty("p2"), bond.getIntProperty("p3"));
 
         }
     }

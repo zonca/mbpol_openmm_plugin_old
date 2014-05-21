@@ -1,12 +1,12 @@
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                               OpenMMMBPol                                 *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2008-2009 Stanford University and the Authors.      *
+ * Portions copyright (c) 2008 Stanford University and the Authors.           *
  * Authors:                                                                   *
  * Contributors:                                                              *
  *                                                                            *
@@ -29,37 +29,39 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/Force.h"
-#include "openmm/OpenMMException.h"
-#include "openmm/AmoebaStretchBendForce.h"
-#include "openmm/internal/AmoebaStretchBendForceImpl.h"
+#include "openmm/internal/ContextImpl.h"
+#include "openmm/internal/MBPolOneBodyForceImpl.h"
+#include "openmm/amoebaKernels.h"
 
 using namespace OpenMM;
 
-AmoebaStretchBendForce::AmoebaStretchBendForce() {
+using std::pair;
+using std::vector;
+using std::set;
+
+MBPolOneBodyForceImpl::MBPolOneBodyForceImpl(const MBPolOneBodyForce& owner) : owner(owner) {
 }
 
-int AmoebaStretchBendForce::addStretchBend(int particle1, int particle2, int particle3   ) {
-    stretchBends.push_back(StretchBendInfo(particle1, particle2, particle3));
-    return stretchBends.size()-1;
+MBPolOneBodyForceImpl::~MBPolOneBodyForceImpl() {
 }
 
-void AmoebaStretchBendForce::getStretchBendParameters(int index, int& particle1, int& particle2, int& particle3) const {
-    particle1       = stretchBends[index].particle1;
-    particle2       = stretchBends[index].particle2;
-    particle3       = stretchBends[index].particle3;
+void MBPolOneBodyForceImpl::initialize(ContextImpl& context) {
+    kernel = context.getPlatform().createKernel(CalcMBPolOneBodyForceKernel::Name(), context);
+    kernel.getAs<CalcMBPolOneBodyForceKernel>().initialize(context.getSystem(), owner);
 }
 
-void AmoebaStretchBendForce::setStretchBendParameters(int index, int particle1, int particle2, int particle3) {
-    stretchBends[index].particle1  = particle1;
-    stretchBends[index].particle2  = particle2;
-    stretchBends[index].particle3  = particle3;
+double MBPolOneBodyForceImpl::calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups) {
+    if ((groups&(1<<owner.getForceGroup())) != 0)
+        return kernel.getAs<CalcMBPolOneBodyForceKernel>().execute(context, includeForces, includeEnergy);
+    return 0.0;
 }
 
-ForceImpl* AmoebaStretchBendForce::createImpl() const {
-    return new AmoebaStretchBendForceImpl(*this);
+std::vector<std::string> MBPolOneBodyForceImpl::getKernelNames() {
+    std::vector<std::string> names;
+    names.push_back(CalcMBPolOneBodyForceKernel::Name());
+    return names;
 }
 
-void AmoebaStretchBendForce::updateParametersInContext(Context& context) {
-    dynamic_cast<AmoebaStretchBendForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
+void MBPolOneBodyForceImpl::updateParametersInContext(ContextImpl& context) {
+    kernel.getAs<CalcMBPolOneBodyForceKernel>().copyParametersToContext(context, owner);
 }

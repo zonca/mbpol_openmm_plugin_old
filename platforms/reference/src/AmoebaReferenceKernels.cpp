@@ -29,7 +29,7 @@
 #include "AmoebaReferenceAngleForce.h"
 #include "AmoebaReferenceInPlaneAngleForce.h"
 #include "AmoebaReferencePiTorsionForce.h"
-#include "AmoebaReferenceStretchBendForce.h"
+#include "MBPolReferenceOneBodyForce.h"
 #include "AmoebaReferenceOutOfPlaneBendForce.h"
 #include "AmoebaReferenceTorsionTorsionForce.h"
 #include "MBPolReferenceTwoBodyForce.h"
@@ -294,44 +294,44 @@ void ReferenceCalcAmoebaPiTorsionForceKernel::copyParametersToContext(ContextImp
     }
 }
 
-ReferenceCalcAmoebaStretchBendForceKernel::ReferenceCalcAmoebaStretchBendForceKernel(std::string name, const Platform& platform, const System& system) :
-                   CalcAmoebaStretchBendForceKernel(name, platform), system(system) {
+ReferenceCalcMBPolOneBodyForceKernel::ReferenceCalcMBPolOneBodyForceKernel(std::string name, const Platform& platform, const System& system) :
+                   CalcMBPolOneBodyForceKernel(name, platform), system(system) {
 }
 
-ReferenceCalcAmoebaStretchBendForceKernel::~ReferenceCalcAmoebaStretchBendForceKernel() {
+ReferenceCalcMBPolOneBodyForceKernel::~ReferenceCalcMBPolOneBodyForceKernel() {
 }
 
-void ReferenceCalcAmoebaStretchBendForceKernel::initialize(const System& system, const AmoebaStretchBendForce& force) {
+void ReferenceCalcMBPolOneBodyForceKernel::initialize(const System& system, const MBPolOneBodyForce& force) {
 
-    numStretchBends = force.getNumStretchBends();
-    for ( int ii = 0; ii < numStretchBends; ii++) {
+    numOneBodys = force.getNumOneBodys();
+    for ( int ii = 0; ii < numOneBodys; ii++) {
         int particle1Index, particle2Index, particle3Index;
         double lengthAB, lengthCB, angle, k;
-        force.getStretchBendParameters(ii, particle1Index, particle2Index, particle3Index);
+        force.getOneBodyParameters(ii, particle1Index, particle2Index, particle3Index);
         particle1.push_back( particle1Index ); 
         particle2.push_back( particle2Index ); 
         particle3.push_back( particle3Index ); 
     }
 }
 
-double ReferenceCalcAmoebaStretchBendForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
+double ReferenceCalcMBPolOneBodyForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
     vector<RealVec>& posData   = extractPositions(context);
     vector<RealVec>& forceData = extractForces(context);
-    AmoebaReferenceStretchBendForce amoebaReferenceStretchBendForce;
-    RealOpenMM energy      = amoebaReferenceStretchBendForce.calculateForceAndEnergy( numStretchBends, posData, particle1, particle2, particle3,
+    MBPolReferenceOneBodyForce MBPolReferenceOneBodyForce;
+    RealOpenMM energy      = MBPolReferenceOneBodyForce.calculateForceAndEnergy( numOneBodys, posData, particle1, particle2, particle3,
                                                                                       lengthABParameters, lengthCBParameters, angleParameters, kParameters, forceData );
     return static_cast<double>(energy);
 }
 
-void ReferenceCalcAmoebaStretchBendForceKernel::copyParametersToContext(ContextImpl& context, const AmoebaStretchBendForce& force) {
-    if (numStretchBends != force.getNumStretchBends())
+void ReferenceCalcMBPolOneBodyForceKernel::copyParametersToContext(ContextImpl& context, const MBPolOneBodyForce& force) {
+    if (numOneBodys != force.getNumOneBodys())
         throw OpenMMException("updateParametersInContext: The number of stretch-bends has changed");
 
     // Record the values.
 
-    for (int i = 0; i < numStretchBends; ++i) {
+    for (int i = 0; i < numOneBodys; ++i) {
         int particle1Index, particle2Index, particle3Index;
-        force.getStretchBendParameters(i, particle1Index, particle2Index, particle3Index);
+        force.getOneBodyParameters(i, particle1Index, particle2Index, particle3Index);
         if (particle1Index != particle1[i] || particle2Index != particle2[i] || particle3Index != particle3[i])
             throw OpenMMException("updateParametersInContext: The set of particles in a stretch-bend has changed");
     }
