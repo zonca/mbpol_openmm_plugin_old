@@ -1,8 +1,5 @@
-#ifndef OPENMM_AMOEBA_VDW_FORCE_PROXY_H_
-#define OPENMM_AMOEBA_VDW_FORCE_PROXY_H_
-
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -32,22 +29,34 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/serialization/internal/windowsExportAmoebaSerialization.h"
-#include "openmm/serialization/SerializationProxy.h"
+#include "openmm/serialization/MBPolTwoBodyForceProxy.h"
+#include "openmm/serialization/SerializationNode.h"
+#include "openmm/Force.h"
+#include "openmm/MBPolTwoBodyForce.h"
+#include <sstream>
 
-namespace OpenMM {
+using namespace OpenMM;
+using namespace std;
 
-/**
- * This is a proxy for serializing AmoebaVdwForce objects.
- */
+MBPolTwoBodyForceProxy::MBPolTwoBodyForceProxy() : SerializationProxy("MBPolTwoBodyForce") {
+}
 
-class OPENMM_EXPORT_AMOEBA_SERIALIZATION AmoebaVdwForceProxy : public SerializationProxy {
-public:
-    AmoebaVdwForceProxy();
-    void serialize(const void* object, SerializationNode& node) const;
-    void* deserialize(const SerializationNode& node) const;
-};
+void MBPolTwoBodyForceProxy::serialize(const void* object, SerializationNode& node) const {
+    node.setIntProperty("version", 1);
+    const MBPolTwoBodyForce& force = *reinterpret_cast<const MBPolTwoBodyForce*>(object);
 
-} // namespace OpenMM
+}
 
-#endif /*OPENMM_AMOEBA_VDW_FORCE_PROXY_H_*/
+void* MBPolTwoBodyForceProxy::deserialize(const SerializationNode& node) const {
+    if (node.getIntProperty("version") != 1)
+        throw OpenMMException("Unsupported version number");
+    MBPolTwoBodyForce* force = new MBPolTwoBodyForce();
+    try {
+
+    }
+    catch (...) {
+        delete force;
+        throw;
+    }
+    return force;
+}

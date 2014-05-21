@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                   OpenMMAmoeba                             *
+ *                                   OpenMMMBPol                             *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -30,14 +30,14 @@
  * -------------------------------------------------------------------------- */
 
 /**
- * This tests the Reference implementation of ReferenceAmoebaVdwForce.
+ * This tests the Reference implementation of ReferenceMBPolTwoBodyForce.
  */
 
 #include "openmm/internal/AssertionUtilities.h"
 #include "openmm/Context.h"
 #include "OpenMMAmoeba.h"
 #include "openmm/System.h"
-#include "openmm/AmoebaVdwForce.h"
+#include "openmm/MBPolTwoBodyForce.h"
 #include "openmm/LangevinIntegrator.h"
 #include <iostream>
 #include <vector>
@@ -52,16 +52,16 @@ using namespace OpenMM;
 
 const double TOL = 1e-4;
 
-void testVdw( FILE* log ) {
+void testTwoBody( FILE* log ) {
 
     std::string testName      = "testMBPol2BodyInteraction";
 
     System system;
     int numberOfParticles          = 6;
-    AmoebaVdwForce* amoebaVdwForce = new AmoebaVdwForce();
+    MBPolTwoBodyForce* mbpolTwoBodyForce = new MBPolTwoBodyForce();
     double cutoff = 1e10;
-    amoebaVdwForce->setCutoff( cutoff );
-    amoebaVdwForce->setNonbondedMethod(AmoebaVdwForce::CutoffNonPeriodic);
+    mbpolTwoBodyForce->setCutoff( cutoff );
+    mbpolTwoBodyForce->setNonbondedMethod(MBPolTwoBodyForce::CutoffNonPeriodic);
 
     unsigned int particlesPerMolecule = 3;
 
@@ -73,7 +73,7 @@ void testVdw( FILE* log ) {
         particleIndices[0] = jj;
         particleIndices[1] = jj+1;
         particleIndices[2] = jj+2;
-        amoebaVdwForce->addParticle( particleIndices);
+        mbpolTwoBodyForce->addParticle( particleIndices);
     }
 
 
@@ -106,7 +106,7 @@ void testVdw( FILE* log ) {
 
     expectedEnergy        = 6.14207815;
 
-    system.addForce(amoebaVdwForce);
+    system.addForce(mbpolTwoBodyForce);
     std::string platformName;
     #define AngstromToNm 0.1    
     #define CalToJoule   4.184
@@ -154,11 +154,11 @@ void testVdw( FILE* log ) {
 int main( int numberOfArguments, char* argv[] ) {
 
     try {
-        std::cout << "TestReferenceAmoebaVdwForce running test..." << std::endl;
+        std::cout << "TestReferenceMBPolTwoBodyForce running test..." << std::endl;
 
         FILE* log = NULL;
 
-        testVdw( log );
+        testTwoBody( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;

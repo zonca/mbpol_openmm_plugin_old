@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -31,7 +31,7 @@
 
 #include "openmm/Platform.h"
 #include "openmm/internal/AssertionUtilities.h"
-#include "openmm/AmoebaVdwForce.h"
+#include "openmm/MBPolTwoBodyForce.h"
 #include "openmm/serialization/XmlSerializer.h"
 #include <iostream>
 #include <sstream>
@@ -44,9 +44,9 @@ extern "C" void registerAmoebaSerializationProxies();
 void testSerialization() {
     // Create a Force.
 
-    AmoebaVdwForce force1;
+    MBPolTwoBodyForce force1;
     force1.setCutoff( 0.9 );
-    force1.setNonbondedMethod(AmoebaVdwForce::CutoffPeriodic);
+    force1.setNonbondedMethod(MBPolTwoBodyForce::CutoffPeriodic);
 
     //force1.addParticle(0, 1.0, 2.0, 0.9);
     //force1.addParticle(1, 1.1, 2.1, 0.9);
@@ -61,19 +61,19 @@ void testSerialization() {
     // Serialize and then deserialize it.
 
     stringstream buffer;
-    XmlSerializer::serialize<AmoebaVdwForce>(&force1, "Force", buffer);
-#ifdef AMOEBA_DEBUG
+    XmlSerializer::serialize<MBPolTwoBodyForce>(&force1, "Force", buffer);
+#ifdef MBPol_DEBUG
     if( 0 ){
-        FILE* filePtr = fopen("Vdw.xml", "w" );
+        FILE* filePtr = fopen("TwoBody.xml", "w" );
         (void) fprintf( filePtr, "%s", buffer.str().c_str() );
         (void) fclose( filePtr );
     }
 #endif
 
-    AmoebaVdwForce* copy = XmlSerializer::deserialize<AmoebaVdwForce>(buffer);
+    MBPolTwoBodyForce* copy = XmlSerializer::deserialize<MBPolTwoBodyForce>(buffer);
 
     // Compare the two forces to see if they are identical.  
-    AmoebaVdwForce& force2 = *copy;
+    MBPolTwoBodyForce& force2 = *copy;
 
     ASSERT_EQUAL(force1.getCutoff(),                force2.getCutoff());
     ASSERT_EQUAL(force1.getNonbondedMethod(),       force2.getNonbondedMethod());

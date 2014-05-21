@@ -362,16 +362,16 @@ public:
 };
 
 /**
- * This kernel is invoked by AmoebaVdwForce to calculate the vdw forces acting on the system and the vdw energy of the system.
+ * This kernel is invoked by MBPolTwoBodyForce to calculate the TwoBody forces acting on the system and the TwoBody energy of the system.
  */
-class CalcAmoebaVdwForceKernel : public KernelImpl {
+class CalcMBPolTwoBodyForceKernel : public KernelImpl {
 public:
 
     static std::string Name() {
-        return "CalcAmoebaVdwForce";
+        return "CalcMBPolTwoBodyForce";
     }
 
-    CalcAmoebaVdwForceKernel(std::string name, const Platform& platform) : KernelImpl(name, platform) {
+    CalcMBPolTwoBodyForceKernel(std::string name, const Platform& platform) : KernelImpl(name, platform) {
     }
 
     /**
@@ -380,7 +380,7 @@ public:
      * @param system     the System this kernel will be applied to
      * @param force      the GBSAOBCForce this kernel will be used for
      */
-    virtual void initialize(const System& system, const AmoebaVdwForce& force) = 0;
+    virtual void initialize(const System& system, const MBPolTwoBodyForce& force) = 0;
 
     /**
      * Execute the kernel to calculate the forces and/or energy.
@@ -395,13 +395,13 @@ public:
      * Copy changed parameters over to a context.
      *
      * @param context    the context to copy parameters to
-     * @param force      the AmoebaVdwForce to copy the parameters from
+     * @param force      the MBPolTwoBodyForce to copy the parameters from
      */
-    virtual void copyParametersToContext(ContextImpl& context, const AmoebaVdwForce& force) = 0;
+    virtual void copyParametersToContext(ContextImpl& context, const MBPolTwoBodyForce& force) = 0;
 };
 
 /**
- * This kernel is invoked by AmoebaVdwForce to calculate the vdw forces acting on the system and the vdw energy of the system.
+ * This kernel is invoked by MBPolTwoBodyForce to calculate the TwoBody forces acting on the system and the TwoBody energy of the system.
  */
 class CalcMBPolThreeBodyForceKernel : public KernelImpl {
 public:

@@ -22,8 +22,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __AmoebaReferenceVdwForce_H__
-#define __AmoebaReferenceVdwForce_H__
+#ifndef __MBPolReferenceTwoBodyForce_H__
+#define __MBPolReferenceTwoBodyForce_H__
 
 #include "RealVec.h"
 #include "openmm/Vec3.h"
@@ -33,17 +33,17 @@
 
 using namespace OpenMM;
 
-class AmoebaReferenceVdwForce;
-typedef  RealOpenMM (AmoebaReferenceVdwForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;
+class MBPolReferenceTwoBodyForce;
+typedef  RealOpenMM (MBPolReferenceTwoBodyForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;
 
 // ---------------------------------------------------------------------------------------
 
-class AmoebaReferenceVdwForce {
+class MBPolReferenceTwoBodyForce {
 
 public:
 
     /** 
-     * This is an enumeration of the different methods that may be used for handling long range Vdw forces.
+     * This is an enumeration of the different methods that may be used for handling long range TwoBody forces.
      */
     enum NonbondedMethod {
 
@@ -71,7 +71,7 @@ public:
        
        --------------------------------------------------------------------------------------- */
  
-    AmoebaReferenceVdwForce( void );
+    MBPolReferenceTwoBodyForce( void );
  
     /**---------------------------------------------------------------------------------------
        
@@ -79,7 +79,7 @@ public:
        
        --------------------------------------------------------------------------------------- */
  
-    ~AmoebaReferenceVdwForce( ){};
+    ~MBPolReferenceTwoBodyForce( ){};
  
     /**---------------------------------------------------------------------------------------
     
@@ -136,7 +136,7 @@ public:
 
     /**---------------------------------------------------------------------------------------
     
-       Calculate Vdw ixn using neighbor list
+       Calculate TwoBody ixn using neighbor list
     
        @param numParticles            number of particles
        @param particlePositions       Cartesian coordinates of particles
@@ -185,4 +185,4 @@ private:
 
 // ---------------------------------------------------------------------------------------
 
-#endif // _AmoebaReferenceVdwForce___
+#endif // _MBPolReferenceTwoBodyForce___

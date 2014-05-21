@@ -37,7 +37,7 @@
 #include "openmm/Context.h"
 #include "OpenMMAmoeba.h"
 #include "openmm/System.h"
-#include "openmm/AmoebaVdwForce.h"
+#include "openmm/MBPolTwoBodyForce.h"
 #include "AmoebaReferenceMultipoleForce.h"
 #include "openmm/VirtualSite.h"
 
@@ -87,10 +87,10 @@ void testThreeBody( FILE* log ) {
 
 
     // Two body interaction
-    AmoebaVdwForce* amoebaVdwForce = new AmoebaVdwForce();
+    MBPolTwoBodyForce* mbpolTwoBodyForce = new MBPolTwoBodyForce();
     double cutoff = 1e10;
-    amoebaVdwForce->setCutoff( cutoff );
-    amoebaVdwForce->setNonbondedMethod(AmoebaVdwForce::CutoffNonPeriodic);
+    mbpolTwoBodyForce->setCutoff( cutoff );
+    mbpolTwoBodyForce->setNonbondedMethod(MBPolTwoBodyForce::CutoffNonPeriodic);
 
     // Three body interaction
     MBPolThreeBodyForce* amoebaThreeBodyForce = new MBPolThreeBodyForce();
@@ -130,7 +130,7 @@ void testThreeBody( FILE* log ) {
                                                     thole,  0.001310,  0.);
 
         amoebaStretchBendForce->addStretchBend(jj, jj+1, jj+2);
-        amoebaVdwForce->addParticle( particleIndices);
+        mbpolTwoBodyForce->addParticle( particleIndices);
         amoebaThreeBodyForce->addParticle( particleIndices);
         dispersionForce->addParticle( particleIndices);
 
@@ -138,7 +138,7 @@ void testThreeBody( FILE* log ) {
 
     system.addForce(amoebaMultipoleForce);
     system.addForce(amoebaStretchBendForce);
-    system.addForce(amoebaVdwForce);
+    system.addForce(mbpolTwoBodyForce);
     system.addForce(amoebaThreeBodyForce);
     system.addForce(dispersionForce);
 

@@ -1,8 +1,8 @@
-#ifndef OPENMM_AMOEBA_VDW_FORCE_H_
-#define OPENMM_AMOEBA_VDW_FORCE_H_
+#ifndef OPENMM_MBPOL_TWOBODY_FORCE_H_
+#define OPENMM_MBPOL_TWOBODY_FORCE_H_
 
 /* -------------------------------------------------------------------------- *
- *                              OpenMMAmoeba                                  *
+ *                              OpenMMMBPol                                  *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -33,7 +33,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "openmm/Force.h"
-#include "internal/windowsExportAmoeba.h"
+#include "internal/windowsExportMBPol.h"
 #include <vector>
 
 namespace OpenMM {
@@ -41,7 +41,7 @@ namespace OpenMM {
 /**
  * This class implements a buffered 14-7 potential used to model van der Waals forces.
  * 
- * To use it, create an AmoebaVdwForce object then call addParticle() once for each particle.  After
+ * To use it, create an MBPolTwoBodyForce object then call addParticle() once for each particle.  After
  * a particle has been added, you can modify its force field parameters by calling setParticleParameters().
  * This will have no effect on Contexts that already exist unless you call updateParametersInContext().
  * 
@@ -52,7 +52,7 @@ namespace OpenMM {
  * from the parent atom to the interaction site.
  */
 
-class OPENMM_EXPORT_AMOEBA AmoebaVdwForce : public Force {
+class OPENMM_EXPORT_MBPOL MBPolTwoBodyForce : public Force {
 public:
     /**
      * This is an enumeration of the different methods that may be used for handling long range nonbonded forces.
@@ -72,9 +72,9 @@ public:
     };
 
     /**
-     * Create an Amoeba VdwForce.
+     * Create an MBPol TwoBodyForce.
      */
-    AmoebaVdwForce();
+    MBPolTwoBodyForce();
 
     /**
      * Get the number of particles
@@ -84,24 +84,24 @@ public:
     }
 
     /**
-     * Set the force field parameters for a vdw particle.
+     * Set the force field parameters for a TwoBody particle.
      * 
      * @param particleIndex   the particle index
      * @param parentIndex     the index of the parent particle
-     * @param sigma           vdw sigma
-     * @param epsilon         vdw epsilon
+     * @param sigma           TwoBody sigma
+     * @param epsilon         TwoBody epsilon
      * @param reductionFactor the fraction of the distance along the line from the parent particle to this particle
      *                        at which the interaction site should be placed
      */
     void setParticleParameters(int particleIndex, std::vector<int>& particleIndices);
 
     /**
-     * Get the force field parameters for a vdw particle.
+     * Get the force field parameters for a TwoBody particle.
      * 
      * @param particleIndex   the particle index
      * @param parentIndex     the index of the parent particle
-     * @param sigma           vdw sigma
-     * @param epsilon         vdw epsilon
+     * @param sigma           TwoBody sigma
+     * @param epsilon         TwoBody epsilon
      * @param reductionFactor the fraction of the distance along the line from the parent particle to this particle
      *                        at which the interaction site should be placed
      */
@@ -109,11 +109,11 @@ public:
 
 
     /**
-     * Add the force field parameters for a vdw particle.
+     * Add the force field parameters for a TwoBody particle.
      * 
      * @param parentIndex     the index of the parent particle
-     * @param sigma           vdw sigma
-     * @param epsilon         vdw epsilon
+     * @param sigma           TwoBody sigma
+     * @param epsilon         TwoBody epsilon
      * @param reductionFactor the fraction of the distance along the line from the parent particle to this particle
      *                        at which the interaction site should be placed
      * @return index of added particle
@@ -155,27 +155,27 @@ protected:
     ForceImpl* createImpl() const;
 private:
 
-    class VdwInfo;
+    class TwoBodyInfo;
     NonbondedMethod nonbondedMethod;
     double cutoff;
 
-    std::vector<VdwInfo> parameters;
+    std::vector<TwoBodyInfo> parameters;
     std::vector< std::vector< std::vector<double> > > sigEpsTable;
 };
 
-class AmoebaVdwForce::VdwInfo {
+class MBPolTwoBodyForce::TwoBodyInfo {
 public:
     std::vector<int> particleIndices;
 
-    VdwInfo() {
+    TwoBodyInfo() {
 
     }
-    VdwInfo( std::vector<int> particleIndices) :
+    TwoBodyInfo( std::vector<int> particleIndices) :
         particleIndices(particleIndices)  {
     }
 };
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_VDW_FORCE_H_*/
+#endif /*OPENMM_MBPol_TwoBody_FORCE_H_*/
 

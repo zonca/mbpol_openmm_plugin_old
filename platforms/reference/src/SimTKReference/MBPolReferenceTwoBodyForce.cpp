@@ -24,7 +24,7 @@
 
 
 #include "AmoebaReferenceForce.h"
-#include "AmoebaReferenceVdwForce.h"
+#include "MBPolReferenceTwoBodyForce.h"
 #include <algorithm>
 #include <cctype>
 #include "mbpol_2body_constants.h"
@@ -33,36 +33,36 @@
 using std::vector;
 using OpenMM::RealVec;
 
-AmoebaReferenceVdwForce::AmoebaReferenceVdwForce( ) : _nonbondedMethod(NoCutoff), _cutoff(1.0e+10) {
+MBPolReferenceTwoBodyForce::MBPolReferenceTwoBodyForce( ) : _nonbondedMethod(NoCutoff), _cutoff(1.0e+10) {
 
     _periodicBoxDimensions = RealVec( 0.0, 0.0, 0.0 );
 }
 
-AmoebaReferenceVdwForce::NonbondedMethod AmoebaReferenceVdwForce::getNonbondedMethod( void ) const {
+MBPolReferenceTwoBodyForce::NonbondedMethod MBPolReferenceTwoBodyForce::getNonbondedMethod( void ) const {
     return _nonbondedMethod;
 }
 
-void AmoebaReferenceVdwForce::setNonbondedMethod( AmoebaReferenceVdwForce::NonbondedMethod nonbondedMethod ){
+void MBPolReferenceTwoBodyForce::setNonbondedMethod( MBPolReferenceTwoBodyForce::NonbondedMethod nonbondedMethod ){
     _nonbondedMethod = nonbondedMethod;
 }
 
-void AmoebaReferenceVdwForce::setCutoff( double cutoff ){
+void MBPolReferenceTwoBodyForce::setCutoff( double cutoff ){
     _cutoff  = cutoff;
 }
 
-double AmoebaReferenceVdwForce::getCutoff( void ) const {
+double MBPolReferenceTwoBodyForce::getCutoff( void ) const {
     return _cutoff;
 }
 
-void AmoebaReferenceVdwForce::setPeriodicBox( const RealVec& box ){
+void MBPolReferenceTwoBodyForce::setPeriodicBox( const RealVec& box ){
     _periodicBoxDimensions = box;
 }
 
-RealVec AmoebaReferenceVdwForce::getPeriodicBox( void ) const {
+RealVec MBPolReferenceTwoBodyForce::getPeriodicBox( void ) const {
     return _periodicBoxDimensions;
 }
 
-RealOpenMM AmoebaReferenceVdwForce::calculatePairIxn( int siteI, int siteJ,
+RealOpenMM MBPolReferenceTwoBodyForce::calculatePairIxn( int siteI, int siteJ,
                                                       const std::vector<RealVec>& particlePositions,
                                                       const std::vector<std::vector<int> >& allParticleIndices,
                                                       vector<RealVec>& forces ) const {
@@ -259,14 +259,14 @@ RealOpenMM AmoebaReferenceVdwForce::calculatePairIxn( int siteI, int siteJ,
 
 }
 
-RealOpenMM AmoebaReferenceVdwForce::calculateForceAndEnergy( int numParticles,
+RealOpenMM MBPolReferenceTwoBodyForce::calculateForceAndEnergy( int numParticles,
                                                              const vector<RealVec>& particlePositions,
                                                              const std::vector<std::vector<int> >& allParticleIndices,
                                                              const NeighborList& neighborList,
                                                              vector<RealVec>& forces ) const {
 
     // loop over neighbor list
-    //    (1) calculate pair vdw ixn
+    //    (1) calculate pair TwoBody ixn
     //    (2) accumulate forces: if particle is a site where interaction position != particle position,
     //        then call addReducedForce() to apportion force to particle and its covalent partner
     //        based on reduction factor

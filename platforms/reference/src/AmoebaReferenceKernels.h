@@ -427,19 +427,19 @@ private:
 };
 
 /**
- * This kernel is invoked to calculate the vdw forces acting on the system and the energy of the system.
+ * This kernel is invoked to calculate the TwoBody forces acting on the system and the energy of the system.
  */
-class ReferenceCalcAmoebaVdwForceKernel : public CalcAmoebaVdwForceKernel {
+class ReferenceCalcMBPolTwoBodyForceKernel : public CalcMBPolTwoBodyForceKernel {
 public:
-    ReferenceCalcAmoebaVdwForceKernel(std::string name, const Platform& platform, const System& system);
-    ~ReferenceCalcAmoebaVdwForceKernel();
+    ReferenceCalcMBPolTwoBodyForceKernel(std::string name, const Platform& platform, const System& system);
+    ~ReferenceCalcMBPolTwoBodyForceKernel();
     /**
      * Initialize the kernel.
      * 
      * @param system     the System this kernel will be applied to
-     * @param force      the AmoebaVdwForce this kernel will be used for
+     * @param force      the MBPolTwoBodyForce this kernel will be used for
      */
-    void initialize(const System& system, const AmoebaVdwForce& force);
+    void initialize(const System& system, const MBPolTwoBodyForce& force);
     /**
      * Execute the kernel to calculate the forces and/or energy.
      *
@@ -453,9 +453,9 @@ public:
      * Copy changed parameters over to a context.
      *
      * @param context    the context to copy parameters to
-     * @param force      the AmoebaVdwForce to copy the parameters from
+     * @param force      the MBPolTwoBodyForce to copy the parameters from
      */
-    void copyParametersToContext(ContextImpl& context, const AmoebaVdwForce& force);
+    void copyParametersToContext(ContextImpl& context, const MBPolTwoBodyForce& force);
 private:
     int numParticles;
     int useCutoff;
@@ -467,7 +467,7 @@ private:
 };
 
 /**
- * This kernel is invoked to calculate the vdw forces acting on the system and the energy of the system.
+ * This kernel is invoked to calculate the TwoBody forces acting on the system and the energy of the system.
  */
 class ReferenceCalcMBPolThreeBodyForceKernel : public CalcMBPolThreeBodyForceKernel {
 public:

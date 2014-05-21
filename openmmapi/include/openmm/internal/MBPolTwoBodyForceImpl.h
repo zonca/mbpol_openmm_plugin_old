@@ -1,5 +1,8 @@
+#ifndef OPENMM_MBPol_TwoBody_FORCE_IMPL_H_
+#define OPENMM_MBPol_TwoBody_FORCE_IMPL_H_
+
 /* -------------------------------------------------------------------------- *
- *                               OpenMMAmoeba                                 *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -29,57 +32,46 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#ifdef WIN32
-  #define _USE_MATH_DEFINES // Needed to get M_PI
-#endif
-#include "openmm/internal/ContextImpl.h"
-#include "openmm/internal/AmoebaVdwForceImpl.h"
-#include "openmm/amoebaKernels.h"
-#include <map>
-#include <cmath>
+#include "openmm/internal/ForceImpl.h"
+#include "openmm/MBPolTwoBodyForce.h"
+#include "openmm/Kernel.h"
+#include <utility>
+#include <set>
+#include <string>
 
-using namespace OpenMM;
-using namespace std;
+namespace OpenMM {
 
-using std::pair;
-using std::vector;
-using std::set;
+class System;
 
-AmoebaVdwForceImpl::AmoebaVdwForceImpl(const AmoebaVdwForce& owner) : owner(owner) {
-}
+/**
+ * This is the internal implementation of MBPolTwoBodyForce.
+ */
 
-AmoebaVdwForceImpl::~AmoebaVdwForceImpl() {
-}
+class OPENMM_EXPORT_MBPOL MBPolTwoBodyForceImpl : public ForceImpl {
+public:
+    MBPolTwoBodyForceImpl(const MBPolTwoBodyForce& owner);
+    ~MBPolTwoBodyForceImpl();
+    void initialize(ContextImpl& context);
+    const MBPolTwoBodyForce& getOwner() const {
+        return owner;
+    }
+    void updateContextState(ContextImpl& context) {
+        // This force field doesn't update the state directly.
+    }
+    double calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups);
+    std::map<std::string, double> getDefaultParameters() {
+        return std::map<std::string, double>(); // This force field doesn't define any parameters.
+    }
+    std::vector<std::string> getKernelNames();
 
-void AmoebaVdwForceImpl::initialize(ContextImpl& context) {
-    const System& system = context.getSystem();
 
-    // check that cutoff < 0.5*boxSize
+    void updateParametersInContext(ContextImpl& context);
+private:
+    const MBPolTwoBodyForce& owner;
+    Kernel kernel;
+};
 
-    if (owner.getNonbondedMethod() == AmoebaVdwForce::CutoffPeriodic) {
-        Vec3 boxVectors[3];
-        system.getDefaultPeriodicBoxVectors(boxVectors[0], boxVectors[1], boxVectors[2]);
-        double cutoff = owner.getCutoff();
-        if (cutoff > 0.5*boxVectors[0][0] || cutoff > 0.5*boxVectors[1][1] || cutoff > 0.5*boxVectors[2][2])
-            throw OpenMMException("AmoebaVdwForce: The cutoff distance cannot be greater than half the periodic box size.");
-    }   
+} // namespace OpenMM
 
-    kernel = context.getPlatform().createKernel(CalcAmoebaVdwForceKernel::Name(), context);
-    kernel.getAs<CalcAmoebaVdwForceKernel>().initialize(context.getSystem(), owner);
-}
+#endif /*OPENMM_MBPol_TwoBody_FORCE_IMPL_H_*/
 
-double AmoebaVdwForceImpl::calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups) {
-    if ((groups&(1<<owner.getForceGroup())) != 0)
-        return kernel.getAs<CalcAmoebaVdwForceKernel>().execute(context, includeForces, includeEnergy);
-    return 0.0;
-}
-
-std::vector<std::string> AmoebaVdwForceImpl::getKernelNames() {
-    std::vector<std::string> names;
-    names.push_back(CalcAmoebaVdwForceKernel::Name());
-    return names;
-}
-
-void AmoebaVdwForceImpl::updateParametersInContext(ContextImpl& context) {
-    kernel.getAs<CalcAmoebaVdwForceKernel>().copyParametersToContext(context, owner);
-}

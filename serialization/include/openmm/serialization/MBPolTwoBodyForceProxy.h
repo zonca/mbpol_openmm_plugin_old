@@ -1,5 +1,8 @@
+#ifndef OPENMM_MBPol_TwoBody_FORCE_PROXY_H_
+#define OPENMM_MBPol_TwoBody_FORCE_PROXY_H_
+
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -29,34 +32,22 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/serialization/AmoebaVdwForceProxy.h"
-#include "openmm/serialization/SerializationNode.h"
-#include "openmm/Force.h"
-#include "openmm/AmoebaVdwForce.h"
-#include <sstream>
+#include "openmm/serialization/internal/windowsExportAmoebaSerialization.h"
+#include "openmm/serialization/SerializationProxy.h"
 
-using namespace OpenMM;
-using namespace std;
+namespace OpenMM {
 
-AmoebaVdwForceProxy::AmoebaVdwForceProxy() : SerializationProxy("AmoebaVdwForce") {
-}
+/**
+ * This is a proxy for serializing MBPolTwoBodyForce objects.
+ */
 
-void AmoebaVdwForceProxy::serialize(const void* object, SerializationNode& node) const {
-    node.setIntProperty("version", 1);
-    const AmoebaVdwForce& force = *reinterpret_cast<const AmoebaVdwForce*>(object);
+class OPENMM_EXPORT_AMOEBA_SERIALIZATION MBPolTwoBodyForceProxy : public SerializationProxy {
+public:
+    MBPolTwoBodyForceProxy();
+    void serialize(const void* object, SerializationNode& node) const;
+    void* deserialize(const SerializationNode& node) const;
+};
 
-}
+} // namespace OpenMM
 
-void* AmoebaVdwForceProxy::deserialize(const SerializationNode& node) const {
-    if (node.getIntProperty("version") != 1)
-        throw OpenMMException("Unsupported version number");
-    AmoebaVdwForce* force = new AmoebaVdwForce();
-    try {
-
-    }
-    catch (...) {
-        delete force;
-        throw;
-    }
-    return force;
-}
+#endif /*OPENMM_MBPol_TwoBody_FORCE_PROXY_H_*/

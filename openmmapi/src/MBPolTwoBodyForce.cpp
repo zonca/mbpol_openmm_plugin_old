@@ -1,15 +1,12 @@
-#ifndef OPENMM_AMOEBA_VDW_FORCE_IMPL_H_
-#define OPENMM_AMOEBA_VDW_FORCE_IMPL_H_
-
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2008 Stanford University and the Authors.           *
+ * Portions copyright (c) 2008-2009 Stanford University and the Authors.      *
  * Authors:                                                                   *
  * Contributors:                                                              *
  *                                                                            *
@@ -32,46 +29,55 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/internal/ForceImpl.h"
-#include "openmm/AmoebaVdwForce.h"
-#include "openmm/Kernel.h"
-#include <utility>
-#include <set>
-#include <string>
+#include "openmm/Force.h"
+#include "openmm/OpenMMException.h"
+#include "openmm/MBPolTwoBodyForce.h"
+#include "openmm/internal/MBPolTwoBodyForceImpl.h"
 
-namespace OpenMM {
+using namespace OpenMM;
+using std::string;
+using std::vector;
 
-class System;
+MBPolTwoBodyForce::MBPolTwoBodyForce() : nonbondedMethod(NoCutoff), cutoff(1.0e+10) {
+}
 
-/**
- * This is the internal implementation of AmoebaVdwForce.
- */
+int MBPolTwoBodyForce::addParticle(const std::vector<int> & particleIndices ) {
+    parameters.push_back(TwoBodyInfo(particleIndices));
+    return parameters.size()-1;
+}
 
-class OPENMM_EXPORT_AMOEBA AmoebaVdwForceImpl : public ForceImpl {
-public:
-    AmoebaVdwForceImpl(const AmoebaVdwForce& owner);
-    ~AmoebaVdwForceImpl();
-    void initialize(ContextImpl& context);
-    const AmoebaVdwForce& getOwner() const {
-        return owner;
-    }
-    void updateContextState(ContextImpl& context) {
-        // This force field doesn't update the state directly.
-    }
-    double calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups);
-    std::map<std::string, double> getDefaultParameters() {
-        return std::map<std::string, double>(); // This force field doesn't define any parameters.
-    }
-    std::vector<std::string> getKernelNames();
+int MBPolTwoBodyForce::getNumMolecules() const {
+    return parameters.size();
+}
 
+void MBPolTwoBodyForce::getParticleParameters(int particleIndex, std::vector<int>& particleIndices ) const {
+    particleIndices     = parameters[particleIndex].particleIndices;
+}
 
-    void updateParametersInContext(ContextImpl& context);
-private:
-    const AmoebaVdwForce& owner;
-    Kernel kernel;
-};
+void MBPolTwoBodyForce::setParticleParameters(int particleIndex, std::vector<int>& particleIndices  ) {
+      parameters[particleIndex].particleIndices =particleIndices;
+}
 
-} // namespace OpenMM
+void MBPolTwoBodyForce::setCutoff( double inputCutoff ){
+    cutoff = inputCutoff;
+}
 
-#endif /*OPENMM_AMOEBA_VDW_FORCE_IMPL_H_*/
+double MBPolTwoBodyForce::getCutoff( void ) const {
+    return cutoff;
+}
 
+MBPolTwoBodyForce::NonbondedMethod MBPolTwoBodyForce::getNonbondedMethod() const {
+    return nonbondedMethod;
+}
+
+void MBPolTwoBodyForce::setNonbondedMethod(NonbondedMethod method) {
+    nonbondedMethod = method;
+}
+
+ForceImpl* MBPolTwoBodyForce::createImpl() const {
+    return new MBPolTwoBodyForceImpl(*this);
+}
+
+void MBPolTwoBodyForce::updateParametersInContext(Context& context) {
+    dynamic_cast<MBPolTwoBodyForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
+}
