@@ -22,28 +22,29 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __MBPolReferenceThreeBodyForce_H__
-#define __MBPolReferenceThreeBodyForce_H__
+#ifndef __MBPolReferenceDispersionForce_H__
+#define __MBPolReferenceDispersionForce_H__
 
 #include "RealVec.h"
 #include "openmm/Vec3.h"
-#include "ReferenceThreeNeighborList.h"
+#include "ReferenceNeighborList.h"
+#include "MBPolConstants.h"
 #include <string>
 #include <vector>
-#include "MBPolConstants.h"
+
 using namespace OpenMM;
 
-class MBPolReferenceThreeBodyForce;
-// typedef  RealOpenMM (MBPolReferenceThreeBodyForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;
+class MBPolReferenceDispersionForce;
+// typedef  RealOpenMM (MBPolReferenceDispersionForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;
 
 // ---------------------------------------------------------------------------------------
 
-class MBPolReferenceThreeBodyForce {
+class MBPolReferenceDispersionForce {
 
 public:
 
     /** 
-     * This is an enumeration of the different methods that may be used for handling long range ThreeBody forces.
+     * This is an enumeration of the different methods that may be used for handling long range Dispersion forces.
      */
     enum NonbondedMethod {
 
@@ -71,7 +72,7 @@ public:
        
        --------------------------------------------------------------------------------------- */
  
-    MBPolReferenceThreeBodyForce( void );
+    MBPolReferenceDispersionForce( void );
  
     /**---------------------------------------------------------------------------------------
        
@@ -79,7 +80,7 @@ public:
        
        --------------------------------------------------------------------------------------- */
  
-    ~MBPolReferenceThreeBodyForce( ){};
+    ~MBPolReferenceDispersionForce( ){};
  
     /**---------------------------------------------------------------------------------------
     
@@ -136,7 +137,7 @@ public:
 
     /**---------------------------------------------------------------------------------------
     
-       Calculate ThreeBody ixn using neighbor list
+       Calculate Dispersion ixn using neighbor list
     
        @param numParticles            number of particles
        @param particlePositions       Cartesian coordinates of particles
@@ -153,7 +154,7 @@ public:
     
     RealOpenMM calculateForceAndEnergy( int numParticles, const std::vector<OpenMM::RealVec>& particlePositions, 
                                         const std::vector<std::vector<int> >& allParticleIndices,
-                                        const ThreeNeighborList& neighborList,
+                                        const NeighborList& neighborList,
                                         std::vector<OpenMM::RealVec>& forces ) const;
          
 private:
@@ -177,7 +178,7 @@ private:
 
        --------------------------------------------------------------------------------------- */
 
-    RealOpenMM calculateTripletIxn( int siteI, int siteJ, int siteQ,
+    RealOpenMM calculatePairIxn( int siteI, int siteJ,
                                                           const std::vector<RealVec> & particlePositions,
                                                           const std::vector<std::vector<int> >& allParticleIndices,
                                                           std::vector<RealVec>& forces ) const;
@@ -185,4 +186,4 @@ private:
 
 // ---------------------------------------------------------------------------------------
 
-#endif // _MBPolReferenceThreeBodyForce___
+#endif // _MBPolReferenceDispersionForce___

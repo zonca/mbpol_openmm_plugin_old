@@ -93,7 +93,7 @@ void g_var(const double& g,
 
     const double cal2joule = 4.184;
 
-    gg *= cal2joule * 10.;
+    gg *= cal2joule * 10.*-1;
 
     for (int i = 0; i < 3; ++i) {
         g1[i] += gg*dx[i];
@@ -275,9 +275,9 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculateTripletIxn( int siteI, int sit
           const double cal2joule = 4.184;
 
           for (int n = 0; n < 3; ++n) {
-              gOa[n] += (gab*rab[n] + gac*rac[n]) * cal2joule * nm_to_A;
-              gOb[n] += (gbc*rbc[n] - gab*rab[n]) * cal2joule * nm_to_A;
-              gOc[n] -= (gac*rac[n] + gbc*rbc[n]) * cal2joule * nm_to_A;
+              gOa[n] += (gab*rab[n] + gac*rac[n]) * cal2joule * -nm_to_A;
+              gOb[n] += (gbc*rbc[n] - gab*rab[n]) * cal2joule * -nm_to_A;
+              gOc[n] -= (gac*rac[n] + gbc*rbc[n]) * cal2joule * -nm_to_A;
           }
 
     RealOpenMM energy=retval * cal2joule;

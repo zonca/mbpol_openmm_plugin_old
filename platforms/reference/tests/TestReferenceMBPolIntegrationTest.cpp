@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                   OpenMMAmoeba                             *
+ *                                   OpenMMMBPol                             *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -30,7 +30,7 @@
  * -------------------------------------------------------------------------- */
 
 /**
- * This tests the Reference implementation of ReferenceAmoebaVdwForce.
+ * This tests the Reference implementation of ReferenceMBPolThreeBodyForce.
  */
 
 #include "openmm/internal/AssertionUtilities.h"
@@ -38,6 +38,12 @@
 #include "OpenMMAmoeba.h"
 #include "openmm/System.h"
 #include "openmm/AmoebaVdwForce.h"
+#include "AmoebaReferenceMultipoleForce.h"
+#include "openmm/VirtualSite.h"
+
+#include "openmm/MBPolThreeBodyForce.h"
+#include "openmm/MBPolDispersionForce.h"
+
 #include "openmm/LangevinIntegrator.h"
 #include <iostream>
 #include <vector>
@@ -52,30 +58,89 @@ using namespace OpenMM;
 
 const double TOL = 1e-4;
 
-void testVdw( FILE* log ) {
+void testThreeBody( FILE* log ) {
 
-    std::string testName      = "testMBPol2BodyInteraction";
+    std::string testName      = "testMBPolIntegrationTest";
 
     System system;
-    int numberOfParticles          = 6;
+
+    double virtualSiteWeightO = 0.573293118;
+    double virtualSiteWeightH = 0.213353441;
+    AmoebaMultipoleForce* amoebaMultipoleForce        = new AmoebaMultipoleForce();;
+    amoebaMultipoleForce->setNonbondedMethod( AmoebaMultipoleForce::NoCutoff );
+
+    std::vector<double> zeroDipole(3);
+    std::vector<double> zeroQuadrupole(9);
+    std::vector<double> thole(5);
+
+    std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
+    std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
+
+    thole[TCC] = 0.4;
+    thole[TCD] = 0.4;
+    thole[TDD] = 0.055;
+    thole[TDDOH]  = 0.626;
+    thole[TDDHH] = 0.055;
+
+    // One body interaction
+    AmoebaStretchBendForce* amoebaStretchBendForce = new AmoebaStretchBendForce();
+
+
+    // Two body interaction
     AmoebaVdwForce* amoebaVdwForce = new AmoebaVdwForce();
     double cutoff = 1e10;
     amoebaVdwForce->setCutoff( cutoff );
     amoebaVdwForce->setNonbondedMethod(AmoebaVdwForce::CutoffNonPeriodic);
 
-    unsigned int particlesPerMolecule = 3;
+    // Three body interaction
+    MBPolThreeBodyForce* amoebaThreeBodyForce = new MBPolThreeBodyForce();
+    amoebaThreeBodyForce->setCutoff( cutoff );
+    amoebaThreeBodyForce->setNonbondedMethod(MBPolThreeBodyForce::CutoffNonPeriodic);
+
+    // Dispersion Force
+    MBPolDispersionForce* dispersionForce = new MBPolDispersionForce();
+    dispersionForce->setCutoff( cutoff );
+    dispersionForce->setNonbondedMethod(MBPolDispersionForce::CutoffNonPeriodic);
+
+    int numberOfWaterMolecules = 3;
+    unsigned int particlesPerMolecule = 4;
+    int numberOfParticles          = numberOfWaterMolecules * particlesPerMolecule;
 
     std::vector<int> particleIndices(particlesPerMolecule);
     for( unsigned int jj = 0; jj < numberOfParticles; jj += particlesPerMolecule ){
         system.addParticle( 1.5999000e+01 );
         system.addParticle( 1.0080000e+00 );
         system.addParticle( 1.0080000e+00 );
+        system.addParticle( 0. ); // Virtual Site
+        system.setVirtualSite(jj+3, new ThreeParticleAverageSite(jj, jj+1, jj+2,
+                                                                   virtualSiteWeightO, virtualSiteWeightH,virtualSiteWeightH));
+
+
         particleIndices[0] = jj;
         particleIndices[1] = jj+1;
         particleIndices[2] = jj+2;
+
+        amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+                                            thole, 0.001310, 0.001310 );
+        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+                                            thole, 0.000294, 0.000294 );
+        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+                                            thole, 0.000294, 0.000294 );
+        amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+                                                    thole,  0.001310,  0.);
+
+        amoebaStretchBendForce->addStretchBend(jj, jj+1, jj+2);
         amoebaVdwForce->addParticle( particleIndices);
+        amoebaThreeBodyForce->addParticle( particleIndices);
+        dispersionForce->addParticle( particleIndices);
+
     }
 
+    system.addForce(amoebaMultipoleForce);
+    system.addForce(amoebaStretchBendForce);
+    system.addForce(amoebaVdwForce);
+    system.addForce(amoebaThreeBodyForce);
+    system.addForce(dispersionForce);
 
     LangevinIntegrator integrator(0.0, 0.1, 0.01);
 
@@ -86,10 +151,17 @@ void testVdw( FILE* log ) {
     positions[0]             = Vec3( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
     positions[1]             = Vec3( -6.218989773e-01, -6.009430735e-01,  1.572437625e+00  );
     positions[2]             = Vec3( -2.017613812e+00, -4.190350349e-01,  2.239642849e+00  );
+    positions[3]             = Vec3( 0,0,0  );
 
-    positions[3]             = Vec3( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
-    positions[4]             = Vec3( -1.903851736e+00, -4.935677617e-01, -3.457810126e-01  );
-    positions[5]             = Vec3( -2.527904158e+00, -7.613550077e-01, -1.733803676e+00  );
+    positions[4]             = Vec3( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
+    positions[5]             = Vec3( -1.903851736e+00, -4.935677617e-01, -3.457810126e-01  );
+    positions[6]             = Vec3( -2.527904158e+00, -7.613550077e-01, -1.733803676e+00  );
+    positions[7]             = Vec3( 0,0,0  );
+
+    positions[8]             = Vec3( -5.588472140e-01,  2.006699172e+00, -1.392786582e-01  );
+    positions[9]             = Vec3( -9.411558180e-01,  1.541226676e+00,  6.163293071e-01  );
+    positions[10]            = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
+    positions[11]            = Vec3( 0,0,0  );
 
     for (int i=0; i<numberOfParticles; i++) {
         for (int j=0; j<3; j++) {
@@ -97,16 +169,22 @@ void testVdw( FILE* log ) {
         }
     }
 
-    expectedForces[0]     = Vec3( -4.85337479, -4.47836379 ,-20.08989563);
-    expectedForces[1]     = Vec3( -0.31239868,  0.52518586 , -1.88893830);
-    expectedForces[2]     = Vec3(  0.00886712,  0.73323536 , -1.81715325);
-    expectedForces[3]     = Vec3( -0.65181727, -0.72947395 ,  5.88973293);
-    expectedForces[4]     = Vec3(  4.82340981,  3.20090213 , 16.49522051);
-    expectedForces[5]     = Vec3(  0.98531382,  0.74851439 ,  1.41103374);
+    expectedForces[0]     = Vec3( -25.82906782,  11.96555757,  -3.59633570);
+    expectedForces[1]     = Vec3(  26.99237581, -11.11111590,   0.85799351);
+    expectedForces[2]     = Vec3(  -1.36390020,   1.80325388,  -2.80944334);
+    expectedForces[4]     = Vec3(   1.51466430,   1.05236599,  -4.05062141);
+    expectedForces[5]     = Vec3(   0.80024930,  -0.23872567,   9.89802544);
+    expectedForces[6]     = Vec3(  -0.11705181,  -0.00181039,  -1.35555449);
+    expectedForces[8]     = Vec3(   4.33262397,   1.50639482,  -4.28267317);
+    expectedForces[9]     = Vec3(  -3.35396424,  -5.45992971,   6.41676701);
+    expectedForces[10]    = Vec3(  -2.97592932,   0.48400940,  -1.07815786);
 
-    expectedEnergy        = 6.14207815;
+    // gradients => forces
+    for( unsigned int ii = 0; ii < expectedForces.size(); ii++ ){
+        expectedForces[ii] *= -1;
+    }
+    expectedEnergy        = -8.78893485;
 
-    system.addForce(amoebaVdwForce);
     std::string platformName;
     #define AngstromToNm 0.1    
     #define CalToJoule   4.184
@@ -115,12 +193,16 @@ void testVdw( FILE* log ) {
     Context context(system, integrator, Platform::getPlatformByName( platformName ) );
 
     context.setPositions(positions);
+    context.applyConstraints(1e-6); // update position of virtual sites
+
     State state                      = context.getState(State::Forces | State::Energy);
     std::vector<Vec3> forces         = state.getForces();
 
     for( unsigned int ii = 0; ii < forces.size(); ii++ ){
         forces[ii] /= CalToJoule*10;
-        expectedForces[ii] *= -1; // gradient -> forces
+        if ((ii+1) % 4 == 0) { // Set virtual site force to 0
+            forces[ii] *= 0;
+        }
     }    
 
     double tolerance = 1.0e-03;
@@ -142,23 +224,23 @@ void testVdw( FILE* log ) {
 
 
 
-//    ASSERT_EQUAL_TOL( expectedEnergy, energy, tolerance );
-//
-//    for( unsigned int ii = 0; ii < forces.size(); ii++ ){
-//        ASSERT_EQUAL_VEC( expectedForces[ii], forces[ii], tolerance );
-//    }
-       std::cout << "Test Successful: " << testName << std::endl << std::endl;
+   ASSERT_EQUAL_TOL( expectedEnergy, energy, tolerance );
+
+   for( unsigned int ii = 0; ii < forces.size(); ii++ ){
+       ASSERT_EQUAL_VEC( expectedForces[ii], forces[ii], tolerance );
+   }
+   std::cout << "Test Successful: " << testName << std::endl << std::endl;
 
 }
 
 int main( int numberOfArguments, char* argv[] ) {
 
     try {
-        std::cout << "TestReferenceAmoebaVdwForce running test..." << std::endl;
+        std::cout << "TestReferenceMBPolIntegrationTest running test..." << std::endl;
 
         FILE* log = NULL;
 
-        testVdw( log );
+        testThreeBody( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;

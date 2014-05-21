@@ -44,5 +44,6 @@
 #include "openmm/AmoebaVdwForce.h"
 #include "openmm/AmoebaWcaDispersionForce.h"
 #include "openmm/MBPolThreeBodyForce.h"
+#include "openmm/MBPolDispersionForce.h"
 
 #endif /*AMOEBA_OPENMM_H_*/
