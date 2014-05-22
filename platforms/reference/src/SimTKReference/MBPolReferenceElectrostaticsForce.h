@@ -21,15 +21,17 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __AmoebaReferenceMultipoleForce_H__
-#define __AmoebaReferenceMultipoleForce_H__
+#ifndef __MBPolReferenceElectrostaticsForce_H__
+#define __MBPolReferenceElectrostaticsForce_H__
 
+#include <vector>
 #include "RealVec.h"
-#include "openmm/AmoebaMultipoleForce.h"
-#include "AmoebaReferenceGeneralizedKirkwoodForce.h"
+#include "openmm/MBPolElectrostaticsForce.h"
 #include <map>
 #include "fftpack.h"
 #include <complex>
+
+using std::vector;
 
 typedef std::map< unsigned int, RealOpenMM> MapIntRealOpenMM;
 typedef MapIntRealOpenMM::iterator MapIntRealOpenMMI;
@@ -216,12 +218,12 @@ private:
 
 using namespace OpenMM;
 
-class AmoebaReferenceMultipoleForce {
+class MBPolReferenceElectrostaticsForce {
 
    /**
-    * AmoebaReferenceMultipoleForce is base class for MultipoleForce calculations
-    * AmoebaReferenceGeneralizedKirkwoodMultipoleForce  is derived class for Generalized Kirkwood calculations
-    * AmoebaReferencePmeMultipoleForce is derived class for PME calculations
+    * MBPolReferenceElectrostaticsForce is base class for ElectrostaticsForce calculations
+    * MBPolReferenceGeneralizedKirkwoodElectrostaticsForce  is derived class for Generalized Kirkwood calculations
+    * MBPolReferencePmeElectrostaticsForce is derived class for PME calculations
     *
     * Below is a outline of the sequence of methods called to evaluate the force and energy 
     * for each scenario: Generalized Kirkwood (GK) and PME.
@@ -237,7 +239,7 @@ class AmoebaReferenceMultipoleForce {
     *
     *                                                      GK case includes the following calls:
     *
-    *                                                          AmoebaReferenceMultipoleForce::calculateElectrostatic()
+    *                                                          MBPolReferenceElectrostaticsForce::calculateElectrostatic()
     *                                                               loop over particle pairs: calculateElectrostaticPairIxn()
     *
     *                                                          TINKER's egk1a: calculateKirkwoodPairIxn()
@@ -251,7 +253,7 @@ class AmoebaReferenceMultipoleForce {
     *                                                      PME case includes the following calls:
     *
     *                                                          reciprocal [computeReciprocalSpaceInducedDipoleForceAndEnergy(),
-    *                                                                      computeReciprocalSpaceFixedMultipoleForceAndEnergy]
+    *                                                                      computeReciprocalSpaceFixedElectrostaticsForceAndEnergy]
     *
     *                                                          direct space calculations [calculatePmeDirectElectrostaticPairIxn()]
     *
@@ -279,14 +281,14 @@ class AmoebaReferenceMultipoleForce {
     *                                                       For PME, base class method is used
     *
     * 
-    *     virtual zeroFixedMultipoleFields()                zero fixed multipole vectors; for GK includes zeroing of gkField vector
+    *     virtual zeroFixedElectrostaticsFields()                zero fixed multipole vectors; for GK includes zeroing of gkField vector
     * 
-    *     virtual calculateFixedMultipoleField()            calculate fixed multipole field -- particle pair loop 
+    *     virtual calculateFixedElectrostaticsField()            calculate fixed multipole field -- particle pair loop 
     *                                                       gkField also calculated for GK
     *                                                       for PME, reciprocal, direct space (particle pair loop) and self terms calculated
     *                                                       
     * 
-    *         virtual calculateFixedMultipoleFieldPairIxn() pair ixn for fixed multipole
+    *         virtual calculateFixedElectrostaticsFieldPairIxn() pair ixn for fixed multipole
     *                                                       gkField also calculated for GK
     *                                                       for PME, direct space ixn calculated here
     * 
@@ -307,7 +309,7 @@ class AmoebaReferenceMultipoleForce {
 public:
 
     /** 
-     * This is an enumeration of the different methods that may be used for handling long range Multipole forces.
+     * This is an enumeration of the different methods that may be used for handling long range Electrostatics forces.
      */
     enum NonbondedMethod {
 
@@ -343,20 +345,20 @@ public:
      * Constructor
      * 
      */
-    AmoebaReferenceMultipoleForce( );
+    MBPolReferenceElectrostaticsForce( );
  
     /**
      * Constructor
      * 
      * @param nonbondedMethod nonbonded method
      */
-    AmoebaReferenceMultipoleForce( NonbondedMethod nonbondedMethod );
+    MBPolReferenceElectrostaticsForce( NonbondedMethod nonbondedMethod );
  
     /**
      * Destructor
      * 
      */
-    virtual ~AmoebaReferenceMultipoleForce( ){};
+    virtual ~MBPolReferenceElectrostaticsForce( ){};
  
     /**
      * Get nonbonded method.
@@ -496,9 +498,9 @@ public:
      * @param multipoleAtomXs           indicies of particle specifying the molecular frame x-axis for each particle
      * @param multipoleAtomYs           indicies of particle specifying the molecular frame y-axis for each particle
      * @param multipoleAtomCovalentInfo covalent info needed to set scaling factors
-     * @param outputMultipoleMoments    output multipole moments
+     * @param outputElectrostaticsMoments    output multipole moments
      */
-    void calculateAmoebaSystemMultipoleMoments( const std::vector<RealOpenMM>& masses,
+    void calculateMBPolSystemElectrostaticsMoments( const std::vector<RealOpenMM>& masses,
                                                 const std::vector<OpenMM::RealVec>& particlePositions,
                                                 const std::vector<RealOpenMM>& charges,
                                                 const std::vector<RealOpenMM>& dipoles,
@@ -511,7 +513,7 @@ public:
                                                 const std::vector<int>& multipoleAtomXs,
                                                 const std::vector<int>& multipoleAtomYs,
                                                 const std::vector< std::vector< std::vector<int> > >& multipoleAtomCovalentInfo,
-                                                std::vector<RealOpenMM>& outputMultipoleMoments);
+                                                std::vector<RealOpenMM>& outputElectrostaticsMoments);
 
     /**
      * Calculate electrostatic potential at a set of grid points.
@@ -549,7 +551,7 @@ public:
 
 protected:
 
-    enum MultipoleParticleDataEnum { PARTICLE_POSITION, PARTICLE_CHARGE, PARTICLE_DIPOLE, PARTICLE_QUADRUPOLE,
+    enum ElectrostaticsParticleDataEnum { PARTICLE_POSITION, PARTICLE_CHARGE, PARTICLE_DIPOLE, PARTICLE_QUADRUPOLE,
                                      PARTICLE_THOLE, PARTICLE_DAMPING_FACTOR, PARTICLE_POLARITY, PARTICLE_FIELD, 
                                      PARTICLE_FIELD_POLAR, GK_FIELD, PARTICLE_INDUCED_DIPOLE, PARTICLE_INDUCED_DIPOLE_POLAR };
 
@@ -559,7 +561,7 @@ protected:
     /* 
      * Particle parameters and coordinates
      */
-    class MultipoleParticleData {
+    class ElectrostaticsParticleData {
         public:
             unsigned int particleIndex;    
             RealVec position;
@@ -581,7 +583,7 @@ protected:
      */
     struct UpdateInducedDipoleFieldStruct {
             UpdateInducedDipoleFieldStruct( std::vector<OpenMM::RealVec>* inputFixed_E_Field, std::vector<OpenMM::RealVec>* inputInducedDipoles );
-            std::vector<OpenMM::RealVec>* fixedMultipoleField;
+            std::vector<OpenMM::RealVec>* fixedElectrostaticsField;
             std::vector<OpenMM::RealVec>* inducedDipoles;
             std::vector<OpenMM::RealVec> inducedDipoleField;
     };
@@ -602,8 +604,8 @@ protected:
     RealOpenMM _mScale[5];
     RealOpenMM _uScale[5];
 
-    std::vector<RealVec> _fixedMultipoleField;
-    std::vector<RealVec> _fixedMultipoleFieldPolar;
+    std::vector<RealVec> _fixedElectrostaticsField;
+    std::vector<RealVec> _fixedElectrostaticsFieldPolar;
     std::vector<RealVec> _inducedDipole;
     std::vector<RealVec> _inducedDipolePolar;
 
@@ -647,10 +649,10 @@ protected:
                            const std::vector<int>& multipoleAtomZs,
                            const std::vector<int>& multipoleAtomXs,
                            const std::vector<int>& multipoleAtomYs,
-                           std::vector<MultipoleParticleData>& particleData ) const;
+                           std::vector<ElectrostaticsParticleData>& particleData ) const;
 
-    void computeWaterCharge(MultipoleParticleData& particleO, MultipoleParticleData& particleH1,
-                   MultipoleParticleData& particleH2,MultipoleParticleData& particleM);
+    void computeWaterCharge(ElectrostaticsParticleData& particleO, ElectrostaticsParticleData& particleH1,
+                   ElectrostaticsParticleData& particleH2,ElectrostaticsParticleData& particleM);
 
     /**
      * Calculate fixed multipole fields.
@@ -658,7 +660,7 @@ protected:
      * @param particleData vector of particle data
      * 
      */
-    virtual void calculateFixedMultipoleField( const vector<MultipoleParticleData>& particleData );
+    virtual void calculateFixedElectrostaticsField( const vector<ElectrostaticsParticleData>& particleData );
 
     /**
      * Set flag indicating if mutual induced dipoles are converged.
@@ -710,7 +712,7 @@ protected:
      *
      * @return scaleFactor 
      */
-    RealOpenMM getMultipoleScaleFactor( unsigned int particleI, unsigned int particleJ, ScaleType scaleType ) const;
+    RealOpenMM getElectrostaticsScaleFactor( unsigned int particleI, unsigned int particleJ, ScaleType scaleType ) const;
 
     /**
      * Get scale factor for particleI & particleJ
@@ -721,7 +723,7 @@ protected:
      *
      * @return array of scaleFactors 
      */
-    void getMultipoleScaleFactors( unsigned int particleI, unsigned int particleJ, std::vector<RealOpenMM>& scaleFactors ) const;
+    void getElectrostaticsScaleFactors( unsigned int particleI, unsigned int particleJ, std::vector<RealOpenMM>& scaleFactors ) const;
 
     /**
      * Get p- and d-scale factors for particleI & particleJ ixn
@@ -743,8 +745,8 @@ protected:
      */
 
 
-    RealOpenMM getAndScaleInverseRs(  const MultipoleParticleData& particleI,
-                                                                        const MultipoleParticleData& particleK,
+    RealOpenMM getAndScaleInverseRs(  const ElectrostaticsParticleData& particleI,
+                                                                        const ElectrostaticsParticleData& particleK,
                                                               RealOpenMM r, bool justScale, int interactionOrder, int interactionType) const;
 
     /**
@@ -757,8 +759,8 @@ protected:
      * @param  particleY            y-axis particle to particleI
      *
      */
-    void checkChiralCenterAtParticle( MultipoleParticleData& particleI, int axisType, MultipoleParticleData& particleZ,
-                                      MultipoleParticleData& particleX, MultipoleParticleData& particleY ) const;
+    void checkChiralCenterAtParticle( ElectrostaticsParticleData& particleI, int axisType, ElectrostaticsParticleData& particleZ,
+                                      ElectrostaticsParticleData& particleX, ElectrostaticsParticleData& particleY ) const;
 
     /**
      * Invert multipole moments (dipole[Y], quadrupole[XY] and quadrupole[YZ]) if chiral center inverted.
@@ -769,7 +771,7 @@ protected:
      * @param multipoleAtomZs         vector of y-particle indices used to map molecular frame to lab frame
      * @param axisType                axis type
      */
-    void checkChiral( std::vector<MultipoleParticleData>& particleData, 
+    void checkChiral( std::vector<ElectrostaticsParticleData>& particleData, 
                       const std::vector<int>& multipoleAtomXs,
                       const std::vector<int>& multipoleAtomYs,
                       const std::vector<int>& multipoleAtomZs,
@@ -782,10 +784,10 @@ protected:
      * @param  particleJ            particleI data
      * @param  axisType             axis type
      */
-    void applyRotationMatrixToParticle(       MultipoleParticleData& particleI,
-                                        const MultipoleParticleData& particleZ,
-                                        const MultipoleParticleData& particleX,
-                                              MultipoleParticleData* particleY, int axisType ) const;
+    void applyRotationMatrixToParticle(       ElectrostaticsParticleData& particleI,
+                                        const ElectrostaticsParticleData& particleZ,
+                                        const ElectrostaticsParticleData& particleX,
+                                              ElectrostaticsParticleData* particleY, int axisType ) const;
 
     /**
      * Apply rotation matrix to molecular dipole/quadrupoles to get corresponding lab frame values.
@@ -797,7 +799,7 @@ protected:
      * @param multipoleAtomZs         vector of y-particle indices used to map molecular frame to lab frame
      * @param axisType                axis type
      */
-    void applyRotationMatrix( std::vector<MultipoleParticleData>& particleData, 
+    void applyRotationMatrix( std::vector<ElectrostaticsParticleData>& particleData, 
                               const std::vector<int>& multipoleAtomXs,
                               const std::vector<int>& multipoleAtomYs,
                               const std::vector<int>& multipoleAtomZs,
@@ -805,7 +807,7 @@ protected:
     /**
      * Zero fixed multipole fields.
      */
-    virtual void zeroFixedMultipoleFields( void );
+    virtual void zeroFixedElectrostaticsFields( void );
 
     /**
      * Calculate electric field at particle I due fixed multipoles at particle J and vice versa
@@ -816,7 +818,7 @@ protected:
      * @param dScale                  d-scale value for i-j interaction
      * @param pScale                  p-scale value for i-j interaction
      */
-    virtual void calculateFixedMultipoleFieldPairIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
+    virtual void calculateFixedElectrostaticsFieldPairIxn( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
                                                       RealOpenMM dScale, RealOpenMM pScale );
 
     /**
@@ -850,7 +852,7 @@ protected:
      * @param particleJ                 positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
      * @param updateInducedDipoleFields vector of UpdateInducedDipoleFieldStruct containing input induced dipoles and output fields
      */
-    virtual void calculateInducedDipolePairIxns( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
+    virtual void calculateInducedDipolePairIxns( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
                                                  std::vector<UpdateInducedDipoleFieldStruct>& updateInducedDipoleFields );
 
     /**
@@ -859,7 +861,7 @@ protected:
      * @param particleData              vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
      * @param updateInducedDipoleFields vector of UpdateInducedDipoleFieldStruct containing input induced dipoles and output fields
      */
-    virtual void calculateInducedDipoleFields( const std::vector<MultipoleParticleData>& particleData,
+    virtual void calculateInducedDipoleFields( const std::vector<ElectrostaticsParticleData>& particleData,
                                                std::vector<UpdateInducedDipoleFieldStruct>& updateInducedDipoleFields);
     /**
      * Converge induced dipoles.
@@ -867,7 +869,7 @@ protected:
      * @param particleData              vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
      * @param updateInducedDipoleFields vector of UpdateInducedDipoleFieldStruct containing input induced dipoles and output fields
      */
-    void convergeInduceDipoles( const std::vector<MultipoleParticleData>& particleData,
+    void convergeInduceDipoles( const std::vector<ElectrostaticsParticleData>& particleData,
                                 std::vector<UpdateInducedDipoleFieldStruct>& calculateInducedDipoleField );
 
     /**
@@ -876,19 +878,19 @@ protected:
      * @param particleData              vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
      * @param updateInducedDipoleFields vector of UpdateInducedDipoleFieldStruct containing input induced dipoles and output fields
      */
-    RealOpenMM updateInducedDipoleFields( const std::vector<MultipoleParticleData>& particleData,
+    RealOpenMM updateInducedDipoleFields( const std::vector<ElectrostaticsParticleData>& particleData,
                                           std::vector<UpdateInducedDipoleFieldStruct>& calculateInducedDipoleField);
 
     /**
      * Update induced dipole for a particle given updated induced dipole field at the site.
      * 
      * @param particleI                 positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle I
-     * @param fixedMultipoleField       fields due fixed multipoles at each site
+     * @param fixedElectrostaticsField       fields due fixed multipoles at each site
      * @param inducedDipoleField        fields due induced dipoles at each site
      * @param inducedDipoles            output vector of updated induced dipoles
      */
-    RealOpenMM updateInducedDipole( const std::vector<MultipoleParticleData>& particleI,
-                                    const std::vector<RealVec>& fixedMultipoleField,
+    RealOpenMM updateInducedDipole( const std::vector<ElectrostaticsParticleData>& particleI,
+                                    const std::vector<RealVec>& fixedElectrostaticsField,
                                     const std::vector<RealVec>& inducedDipoleField,
                                     std::vector<RealVec>& inducedDipoles);
 
@@ -897,7 +899,7 @@ protected:
      * 
      * @param particleData      vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
      */
-    virtual void calculateInducedDipoles( const std::vector<MultipoleParticleData>& particleData );
+    virtual void calculateInducedDipoles( const std::vector<ElectrostaticsParticleData>& particleData );
 
     /**
      * Setup: 
@@ -933,7 +935,7 @@ protected:
                 const std::vector<int>& multipoleAtomXs,
                 const std::vector<int>& multipoleAtomYs,
                 const std::vector< std::vector< std::vector<int> > >& multipoleAtomCovalentInfo,
-                std::vector<MultipoleParticleData>& particleData );
+                std::vector<ElectrostaticsParticleData>& particleData );
 
     /**
      * Calculate electrostatic interaction between particles I and K.
@@ -945,11 +947,11 @@ protected:
      * @param torques           vector of particle torques to be updated
      */
     RealOpenMM calculateElectrostaticPairIxn(
-            const std::vector<MultipoleParticleData>& particleData,
+            const std::vector<ElectrostaticsParticleData>& particleData,
                                                                                     unsigned int iIndex,
                                                                                     unsigned int kIndex,
 
-            // const MultipoleParticleData& particleI, const MultipoleParticleData& particleK,
+            // const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleK,
                                               const std::vector<RealOpenMM>& scalingFactors, std::vector<OpenMM::RealVec>& forces, std::vector<RealVec>& torque ) const;
 
     /**
@@ -962,10 +964,10 @@ protected:
      * @param axisType                axis type (Bisector/Z-then-X, ...)
      * @param torque                  torque on particle I
      */
-    void mapTorqueToForceForParticle( const MultipoleParticleData& particleI,
-                                      const MultipoleParticleData& particleU,
-                                      const MultipoleParticleData& particleV,
-                                            MultipoleParticleData* particleW,
+    void mapTorqueToForceForParticle( const ElectrostaticsParticleData& particleI,
+                                      const ElectrostaticsParticleData& particleU,
+                                      const ElectrostaticsParticleData& particleV,
+                                            ElectrostaticsParticleData* particleW,
                                       int axisType, const Vec3& torque, std::vector<OpenMM::RealVec>& forces ) const;
 
     /**
@@ -981,7 +983,7 @@ protected:
      *
      * @return energy
      */
-    void mapTorqueToForce( std::vector<MultipoleParticleData>& particleData, 
+    void mapTorqueToForce( std::vector<ElectrostaticsParticleData>& particleData, 
                            const std::vector<int>& multipoleAtomXs,
                            const std::vector<int>& multipoleAtomYs,
                            const std::vector<int>& multipoleAtomZs,
@@ -998,7 +1000,7 @@ protected:
      *
      * @return energy
      */
-    virtual RealOpenMM calculateElectrostatic( const std::vector<MultipoleParticleData>& particleData, 
+    virtual RealOpenMM calculateElectrostatic( const std::vector<ElectrostaticsParticleData>& particleData, 
                                                std::vector<OpenMM::RealVec>& torques,
                                                std::vector<OpenMM::RealVec>& forces );
 
@@ -1046,7 +1048,7 @@ protected:
      * @return potential at grid point
      * 
      */
-    RealOpenMM calculateElectrostaticPotentialForParticleGridPoint( const MultipoleParticleData& particleI, const RealVec& gridPoint ) const;
+    RealOpenMM calculateElectrostaticPotentialForParticleGridPoint( const ElectrostaticsParticleData& particleI, const RealVec& gridPoint ) const;
 
     /**
      * Apply periodic boundary conditions to difference in positions
@@ -1057,7 +1059,7 @@ protected:
     virtual void getPeriodicDelta( RealVec& deltaR ) const {};
 };
 
-class AmoebaReferencePmeMultipoleForce : public AmoebaReferenceMultipoleForce {
+class MBPolReferencePmeElectrostaticsForce : public MBPolReferenceElectrostaticsForce {
 
 public:
 
@@ -1065,13 +1067,13 @@ public:
      * Constructor
      * 
      */
-    AmoebaReferencePmeMultipoleForce( void );
+    MBPolReferencePmeElectrostaticsForce( void );
  
     /**
      * Destructor
      * 
      */
-    ~AmoebaReferencePmeMultipoleForce( );
+    ~MBPolReferencePmeElectrostaticsForce( );
  
     /**
      * Get cutoff distance.
@@ -1131,7 +1133,7 @@ public:
 
 private:
 
-    static const int AMOEBA_PME_ORDER;
+    static const int MBPOL_PME_ORDER;
     static const RealOpenMM SQRT_PI;
 
     RealOpenMM _alphaEwald;
@@ -1196,7 +1198,7 @@ private:
      * @param dampedDInverseDistances damped inverse distances (drr3,drr5,drr7 in udirect2a() in TINKER)
      * @param dampedPInverseDistances damped inverse distances (prr3,prr5,prr7 in udirect2a() in TINKER)
      */
-    void getDampedInverseDistances( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
+    void getDampedInverseDistances( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
                                     RealOpenMM dscale, RealOpenMM pscale, RealOpenMM r,
                                     RealVec& dampedDInverseDistances, RealVec& dampedPInverseDistances ) const;
     
@@ -1214,7 +1216,7 @@ private:
      * @param dScale                  d-scale value for i-j interaction
      * @param pScale                  p-scale value for i-j interaction
      */
-    void calculateFixedMultipoleFieldPairIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
+    void calculateFixedElectrostaticsFieldPairIxn( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
                                               RealOpenMM dscale, RealOpenMM pscale );
     
     /**
@@ -1223,10 +1225,10 @@ private:
      * @param particleData vector particle data
      * 
      */
-    void calculateFixedMultipoleField( const vector<MultipoleParticleData>& particleData );
+    void calculateFixedElectrostaticsField( const vector<ElectrostaticsParticleData>& particleData );
 
     /**
-     * This is called from computeAmoebaBsplines().  It calculates the spline coefficients for a single atom along a single axis.
+     * This is called from computeMBPolBsplines().  It calculates the spline coefficients for a single atom along a single axis.
      * 
      * @param thetai output spline coefficients
      * @param w offset from grid point
@@ -1238,14 +1240,14 @@ private:
      *
      * @param particleData   vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
      */
-    void computeAmoebaBsplines( const std::vector<MultipoleParticleData>& particleData );
+    void computeMBPolBsplines( const std::vector<ElectrostaticsParticleData>& particleData );
 
     /**
      * For each grid point, find the range of sorted atoms associated with that point.
      * 
      * @param particleData              vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
      */
-    void findAmoebaAtomRangeForGrid( const vector<MultipoleParticleData>& particleData );
+    void findMBPolAtomRangeForGrid( const vector<ElectrostaticsParticleData>& particleData );
 
     /**
      * Get grid point given grid index.
@@ -1267,7 +1269,7 @@ private:
      * @param inputInducedDipole      induced dipole value
      * @param inputInducedDipolePolar induced dipole value
      */
-     RealOpenMM computeFixedMultipolesGridValue( const vector<MultipoleParticleData>& particleData,
+     RealOpenMM computeFixedElectrostaticssGridValue( const vector<ElectrostaticsParticleData>& particleData,
                                                  const int2& particleGridIndices, const RealVec& scale, int ix, int iy, const IntVec& gridPoint ) const;
 
     /**
@@ -1275,13 +1277,13 @@ private:
      * 
      * @param particleData vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
      */
-    void spreadFixedMultipolesOntoGrid( const vector<MultipoleParticleData>& particleData );
+    void spreadFixedElectrostaticssOntoGrid( const vector<ElectrostaticsParticleData>& particleData );
 
     /**
      * Perform reciprocal convolution.
      * 
      */
-    void performAmoebaReciprocalConvolution( void );
+    void performMBPolReciprocalConvolution( void );
 
     /**
      * Compute reciprocal potential due fixed multipoles at each particle site.
@@ -1304,14 +1306,14 @@ private:
      *
      * @return energy
      */
-    RealOpenMM computeReciprocalSpaceFixedMultipoleForceAndEnergy( const std::vector<MultipoleParticleData>& particleData,
+    RealOpenMM computeReciprocalSpaceFixedElectrostaticsForceAndEnergy( const std::vector<ElectrostaticsParticleData>& particleData,
                                                                    std::vector<RealVec>& forces, std::vector<RealVec>& torques ) const;
 
     /**
      * Set reciprocal space fixed multipole fields.
      * 
      */
-    void recordFixedMultipoleField( void );
+    void recordFixedElectrostaticsField( void );
 
     /**
      * Compute the potential due to the reciprocal space PME calculation for induced dipoles.
@@ -1344,8 +1346,8 @@ private:
      * @param particleJ                 positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
      * @param updateInducedDipoleFields vector of UpdateInducedDipoleFieldStruct containing input induced dipoles and output fields
      */
-    void calculateDirectInducedDipolePairIxns( const MultipoleParticleData& particleI,
-                                               const MultipoleParticleData& particleJ,
+    void calculateDirectInducedDipolePairIxns( const ElectrostaticsParticleData& particleI,
+                                               const ElectrostaticsParticleData& particleJ,
                                                std::vector<UpdateInducedDipoleFieldStruct>& updateInducedDipoleFields );
 
     /**
@@ -1385,7 +1387,7 @@ private:
      * @param particleData              vector of particle positions and parameters (charge, labFrame dipoles, quadrupoles, ...)
      * @param updateInducedDipoleFields vector of UpdateInducedDipoleFieldStruct containing input induced dipoles and output fields
      */
-    void calculateInducedDipoleFields( const std::vector<MultipoleParticleData>& particleData,
+    void calculateInducedDipoleFields( const std::vector<ElectrostaticsParticleData>& particleData,
                                        std::vector<UpdateInducedDipoleFieldStruct>& updateInducedDipoleFields);
 
     /**
@@ -1402,7 +1404,7 @@ private:
      *
      * @param particleData            vector of parameters (charge, labFrame dipoles, quadrupoles, ...) for particles
      */
-    RealOpenMM calculatePmeSelfEnergy( const std::vector<MultipoleParticleData>& particleData ) const;
+    RealOpenMM calculatePmeSelfEnergy( const std::vector<ElectrostaticsParticleData>& particleData ) const;
 
     /**
      * Compute the self torques.
@@ -1410,7 +1412,7 @@ private:
      * @param particleData            vector of parameters (charge, labFrame dipoles, quadrupoles, ...) for particles
      * @param torques                 vector of torques
      */
-    void calculatePmeSelfTorque( const std::vector<MultipoleParticleData>& particleData, std::vector<RealVec>& torques ) const;
+    void calculatePmeSelfTorque( const std::vector<ElectrostaticsParticleData>& particleData, std::vector<RealVec>& torques ) const;
 
     /**
      * Calculate direct space electrostatic interaction between particles I and J.
@@ -1421,7 +1423,7 @@ private:
      * @param forces            vector of particle forces to be updated
      * @param torques           vector of particle torques to be updated
      */
-    RealOpenMM calculatePmeDirectElectrostaticPairIxn( const MultipoleParticleData& particleI, const MultipoleParticleData& particleJ,
+    RealOpenMM calculatePmeDirectElectrostaticPairIxn( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
                                                        const std::vector<RealOpenMM>& scalingFactors,
                                                        std::vector<RealVec>& forces, std::vector<RealVec>& torques ) const;
 
@@ -1434,8 +1436,8 @@ private:
      * @param forces            vector of particle forces to be updated
      * @param torques           vector of particle torques to be updated
      */
-     RealOpenMM computeReciprocalSpaceInducedDipoleForceAndEnergy( AmoebaReferenceMultipoleForce::PolarizationType polarizationType,
-                                                                   const std::vector<MultipoleParticleData>& particleData,
+     RealOpenMM computeReciprocalSpaceInducedDipoleForceAndEnergy( MBPolReferenceElectrostaticsForce::PolarizationType polarizationType,
+                                                                   const std::vector<ElectrostaticsParticleData>& particleData,
                                                                    std::vector<RealVec>& forces, std::vector<RealVec>& torques) const;
 
     /**
@@ -1447,10 +1449,10 @@ private:
      *
      * @return energy
      */
-    RealOpenMM calculateElectrostatic( const std::vector<MultipoleParticleData>& particleData, 
+    RealOpenMM calculateElectrostatic( const std::vector<ElectrostaticsParticleData>& particleData, 
                                        std::vector<OpenMM::RealVec>& torques,
                                        std::vector<OpenMM::RealVec>& forces );
 
 };
 
-#endif // _AmoebaReferenceMultipoleForce___
+#endif // _MBPolReferenceElectrostaticsForce___

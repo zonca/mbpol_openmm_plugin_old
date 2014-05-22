@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -29,16 +29,16 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/serialization/AmoebaMultipoleForceProxy.h"
+#include "openmm/serialization/MBPolElectrostaticsForceProxy.h"
 #include "openmm/serialization/SerializationNode.h"
 #include "openmm/Force.h"
-#include "openmm/AmoebaMultipoleForce.h"
+#include "openmm/MBPolElectrostaticsForce.h"
 #include <sstream>
 
 using namespace OpenMM;
 using namespace std;
 
-AmoebaMultipoleForceProxy::AmoebaMultipoleForceProxy() : SerializationProxy("AmoebaMultipoleForce") {
+MBPolElectrostaticsForceProxy::MBPolElectrostaticsForceProxy() : SerializationProxy("MBPolElectrostaticsForce") {
 }
 
 static void getCovalentTypes( std::vector<std::string>& covalentTypes ){
@@ -67,9 +67,9 @@ void loadCovalentMap( const SerializationNode& map, std::vector< int >& covalent
     }
 }
 
-void AmoebaMultipoleForceProxy::serialize(const void* object, SerializationNode& node) const {
+void MBPolElectrostaticsForceProxy::serialize(const void* object, SerializationNode& node) const {
     node.setIntProperty("version", 2);
-    const AmoebaMultipoleForce& force = *reinterpret_cast<const AmoebaMultipoleForce*>(object);
+    const MBPolElectrostaticsForce& force = *reinterpret_cast<const MBPolElectrostaticsForce*>(object);
 
     node.setIntProperty("nonbondedMethod",                  force.getNonbondedMethod());
     node.setIntProperty("polarizationType",                 force.getPolarizationType());
@@ -85,14 +85,14 @@ void AmoebaMultipoleForceProxy::serialize(const void* object, SerializationNode&
 
     std::vector<int> gridDimensions;
     force.getPmeGridDimensions( gridDimensions );
-    SerializationNode& gridDimensionsNode  = node.createChildNode("MultipoleParticleGridDimension");
+    SerializationNode& gridDimensionsNode  = node.createChildNode("ElectrostaticsParticleGridDimension");
     gridDimensionsNode.setIntProperty( "d0", gridDimensions[0] ).setIntProperty( "d1", gridDimensions[1] ).setIntProperty( "d2", gridDimensions[2] ); 
 
     std::vector<std::string> covalentTypes;
     getCovalentTypes( covalentTypes );
 
-    SerializationNode& particles = node.createChildNode("MultipoleParticles");
-    for (unsigned int ii = 0; ii < static_cast<unsigned int>(force.getNumMultipoles()); ii++) {
+    SerializationNode& particles = node.createChildNode("ElectrostaticsParticles");
+    for (unsigned int ii = 0; ii < static_cast<unsigned int>(force.getNumElectrostaticss()); ii++) {
 
         int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
         double charge, dampingFactor, polarity;
@@ -101,7 +101,7 @@ void AmoebaMultipoleForceProxy::serialize(const void* object, SerializationNode&
         std::vector<double> molecularQuadrupole;
         std::vector<double> thole;
 
-        force.getMultipoleParameters( ii, charge, molecularDipole, molecularQuadrupole,
+        force.getElectrostaticsParameters( ii, charge, molecularDipole, molecularQuadrupole,
                                       axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY, thole, dampingFactor, polarity );
 
         SerializationNode& particle    = particles.createChildNode("Particle");
@@ -122,25 +122,25 @@ void AmoebaMultipoleForceProxy::serialize(const void* object, SerializationNode&
 
         for (unsigned int jj = 0; jj < covalentTypes.size(); jj++) {
             std::vector< int > covalentMap;
-            force.getCovalentMap(ii, static_cast<AmoebaMultipoleForce::CovalentType>(jj), covalentMap );
+            force.getCovalentMap(ii, static_cast<MBPolElectrostaticsForce::CovalentType>(jj), covalentMap );
             addCovalentMap( particle, ii, covalentTypes[jj], covalentMap );
         }
     }
 }
 
-void* AmoebaMultipoleForceProxy::deserialize(const SerializationNode& node) const {
+void* MBPolElectrostaticsForceProxy::deserialize(const SerializationNode& node) const {
     if (node.getIntProperty("version") > 2)
         throw OpenMMException("Unsupported version number");
-    AmoebaMultipoleForce* force = new AmoebaMultipoleForce();
+    MBPolElectrostaticsForce* force = new MBPolElectrostaticsForce();
 
     try {
 
-        force->setNonbondedMethod( static_cast<AmoebaMultipoleForce::NonbondedMethod>(node.getIntProperty( "nonbondedMethod" )) );
+        force->setNonbondedMethod( static_cast<MBPolElectrostaticsForce::NonbondedMethod>(node.getIntProperty( "nonbondedMethod" )) );
         if( node.getIntProperty("version") == 2 ){
-            force->setPolarizationType( static_cast<AmoebaMultipoleForce::PolarizationType>(node.getIntProperty( "polarizationType" )) );
+            force->setPolarizationType( static_cast<MBPolElectrostaticsForce::PolarizationType>(node.getIntProperty( "polarizationType" )) );
         }
         //force->setPmeBSplineOrder( node.getIntProperty( "pmeBSplineOrder" ) );
-        //force->setMutualInducedIterationMethod( static_cast<AmoebaMultipoleForce::MutualInducedIterationMethod>(node.getIntProperty( "mutualInducedIterationMethod" ) ) );
+        //force->setMutualInducedIterationMethod( static_cast<MBPolElectrostaticsForce::MutualInducedIterationMethod>(node.getIntProperty( "mutualInducedIterationMethod" ) ) );
         force->setMutualInducedMaxIterations( node.getIntProperty( "mutualInducedMaxIterations" ) );
 
         force->setCutoffDistance( node.getDoubleProperty( "cutoffDistance" ) );
@@ -150,7 +150,7 @@ void* AmoebaMultipoleForceProxy::deserialize(const SerializationNode& node) cons
         force->setEwaldErrorTolerance( node.getDoubleProperty( "ewaldErrorTolerance" ) );
 
         std::vector<int> gridDimensions;
-        const SerializationNode& gridDimensionsNode  = node.getChildNode("MultipoleParticleGridDimension");
+        const SerializationNode& gridDimensionsNode  = node.getChildNode("ElectrostaticsParticleGridDimension");
         gridDimensions.push_back( gridDimensionsNode.getIntProperty( "d0" ));
         gridDimensions.push_back( gridDimensionsNode.getIntProperty( "d1" ));
         gridDimensions.push_back( gridDimensionsNode.getIntProperty( "d2" ));
@@ -159,7 +159,7 @@ void* AmoebaMultipoleForceProxy::deserialize(const SerializationNode& node) cons
         std::vector<std::string> covalentTypes;
         getCovalentTypes( covalentTypes );
 
-        const SerializationNode& particles = node.getChildNode("MultipoleParticles");
+        const SerializationNode& particles = node.getChildNode("ElectrostaticsParticles");
         for ( unsigned int ii = 0; ii < particles.getChildren().size(); ii++) {
 
             const SerializationNode& particle = particles.getChildren()[ii];
@@ -190,7 +190,7 @@ void* AmoebaMultipoleForceProxy::deserialize(const SerializationNode& node) cons
             thole.push_back( tholeNode.getDoubleProperty( "thole_dipole_dipole_OH" ) );
             thole.push_back( tholeNode.getDoubleProperty( "thole_dipole_dipole_HH" ) );
 
-            force->addMultipole( particle.getDoubleProperty("charge"), molecularDipole, molecularQuadrupole,
+            force->addElectrostatics( particle.getDoubleProperty("charge"), molecularDipole, molecularQuadrupole,
                                 particle.getIntProperty("axisType"),
                                 particle.getIntProperty("multipoleAtomZ"),
                                 particle.getIntProperty("multipoleAtomX"),
@@ -203,7 +203,7 @@ void* AmoebaMultipoleForceProxy::deserialize(const SerializationNode& node) cons
             for (unsigned int jj = 0; jj < covalentTypes.size(); jj++) {
                 std::vector< int > covalentMap;
                 loadCovalentMap( particle.getChildNode(covalentTypes[jj]), covalentMap );
-                force->setCovalentMap( ii, static_cast<AmoebaMultipoleForce::CovalentType>(jj), covalentMap );
+                force->setCovalentMap( ii, static_cast<MBPolElectrostaticsForce::CovalentType>(jj), covalentMap );
             }
         }
 

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -31,7 +31,7 @@
 
 #include "openmm/Platform.h"
 #include "openmm/internal/AssertionUtilities.h"
-#include "openmm/AmoebaMultipoleForce.h"
+#include "openmm/MBPolElectrostaticsForce.h"
 #include "openmm/serialization/XmlSerializer.h"
 #include <iostream>
 #include <sstream>
@@ -58,8 +58,8 @@ static void getCovalentTypes( std::vector<std::string>& covalentTypes ){
 void testSerialization() {
     // Create a Force.
 
-    AmoebaMultipoleForce force1;
-    force1.setNonbondedMethod( AmoebaMultipoleForce::NoCutoff );
+    MBPolElectrostaticsForce force1;
+    force1.setNonbondedMethod( MBPolElectrostaticsForce::NoCutoff );
     force1.setCutoffDistance( 0.9 );
     force1.setAEwald( 0.544 );
     //force1.setPmeBSplineOrder( 4 );
@@ -69,7 +69,7 @@ void testSerialization() {
     gridDimension.push_back( 63 );
     gridDimension.push_back( 61 );
     force1.setPmeGridDimensions( gridDimension ); 
-    //force1.setMutualInducedIterationMethod( AmoebaMultipoleForce::SOR ); 
+    //force1.setMutualInducedIterationMethod( MBPolElectrostaticsForce::SOR ); 
     force1.setMutualInducedMaxIterations( 200 ); 
     force1.setMutualInducedTargetEpsilon( 1.0e-05 ); 
     //force1.setElectricConstant( 138.93 ); 
@@ -86,32 +86,32 @@ void testSerialization() {
             molecularQuadrupole.push_back( static_cast<double>(rand()) );
         }
         // TODO unit test for tholes serializer
-        //force1.addMultipole( static_cast<double>(ii+1), molecularDipole, molecularQuadrupole, AmoebaMultipoleForce::Bisector,
+        //force1.addElectrostatics( static_cast<double>(ii+1), molecularDipole, molecularQuadrupole, MBPolElectrostaticsForce::Bisector,
         //                    ii+1, ii+2, ii+3, static_cast<double>(rand()), static_cast<double>(rand()), static_cast<double>(rand()) );
 
         for( unsigned int jj = 0; jj < covalentTypes.size(); jj++ ){
             std::vector< int > covalentMap;
             covalentMap.push_back( ii*jj ); covalentMap.push_back( rand() ); covalentMap.push_back( rand() );
-            force1.setCovalentMap( ii, static_cast<AmoebaMultipoleForce::CovalentType>(jj), covalentMap);
+            force1.setCovalentMap( ii, static_cast<MBPolElectrostaticsForce::CovalentType>(jj), covalentMap);
         }
     }
 
     // Serialize and then deserialize it.
 
     stringstream buffer;
-    XmlSerializer::serialize<AmoebaMultipoleForce>(&force1, "Force", buffer);
-#ifdef AMOEBA_DEBUG
+    XmlSerializer::serialize<MBPolElectrostaticsForce>(&force1, "Force", buffer);
+#ifdef MBPOL_DEBUG
     if( 0 ){
-        FILE* filePtr = fopen("Multipole.xml", "w" );
+        FILE* filePtr = fopen("Electrostatics.xml", "w" );
         (void) fprintf( filePtr, "%s", buffer.str().c_str() );
         (void) fclose( filePtr );
     }
 #endif
 
-    AmoebaMultipoleForce* copy = XmlSerializer::deserialize<AmoebaMultipoleForce>(buffer);
+    MBPolElectrostaticsForce* copy = XmlSerializer::deserialize<MBPolElectrostaticsForce>(buffer);
 
     // Compare the two forces to see if they are identical.  
-    AmoebaMultipoleForce& force2 = *copy;
+    MBPolElectrostaticsForce& force2 = *copy;
 
     ASSERT_EQUAL(force1.getCutoffDistance(),                force2.getCutoffDistance());
     ASSERT_EQUAL(force1.getNonbondedMethod(),               force2.getNonbondedMethod());
@@ -133,8 +133,8 @@ void testSerialization() {
         ASSERT_EQUAL(gridDimension1[jj], gridDimension2[jj]);
     }
     
-    ASSERT_EQUAL(force1.getNumMultipoles(),  force2.getNumMultipoles());
-    for (unsigned int ii = 0; ii < static_cast<unsigned int>(force1.getNumMultipoles()); ii++) {
+    ASSERT_EQUAL(force1.getNumElectrostaticss(),  force2.getNumElectrostaticss());
+    for (unsigned int ii = 0; ii < static_cast<unsigned int>(force1.getNumElectrostaticss()); ii++) {
 
         int axisType1, multipoleAtomZ1, multipoleAtomX1, multipoleAtomY1;
         int axisType2, multipoleAtomZ2, multipoleAtomX2, multipoleAtomY2;
@@ -148,10 +148,10 @@ void testSerialization() {
         std::vector<double> molecularDipole2;
         std::vector<double> molecularQuadrupole2;
 // TODO test serializer
-//        force1.getMultipoleParameters( ii, charge1, molecularDipole1, molecularQuadrupole1, axisType1, multipoleAtomZ1, multipoleAtomX1, multipoleAtomY1,
+//        force1.getElectrostaticsParameters( ii, charge1, molecularDipole1, molecularQuadrupole1, axisType1, multipoleAtomZ1, multipoleAtomX1, multipoleAtomY1,
 //                                       thole1, dampingFactor1, polarity1 );
 //
-//        force2.getMultipoleParameters( ii, charge2, molecularDipole2, molecularQuadrupole2, axisType2, multipoleAtomZ2, multipoleAtomX2, multipoleAtomY2,
+//        force2.getElectrostaticsParameters( ii, charge2, molecularDipole2, molecularQuadrupole2, axisType2, multipoleAtomZ2, multipoleAtomX2, multipoleAtomY2,
 //                                       thole2, dampingFactor2, polarity2 );
 
         ASSERT_EQUAL(charge1,                        charge2);
@@ -177,8 +177,8 @@ void testSerialization() {
         for (unsigned int jj = 0; jj < covalentTypes.size(); jj++) {
             std::vector<int> covalentMap1;
             std::vector<int> covalentMap2;
-            force1.getCovalentMap( ii, static_cast<AmoebaMultipoleForce::CovalentType>(jj), covalentMap1 );
-            force2.getCovalentMap( ii, static_cast<AmoebaMultipoleForce::CovalentType>(jj), covalentMap2 );
+            force1.getCovalentMap( ii, static_cast<MBPolElectrostaticsForce::CovalentType>(jj), covalentMap1 );
+            force2.getCovalentMap( ii, static_cast<MBPolElectrostaticsForce::CovalentType>(jj), covalentMap2 );
             ASSERT_EQUAL(covalentMap1.size(),        covalentMap2.size() );
             for (unsigned int kk = 0; kk < covalentMap1.size(); kk++) {
                 ASSERT_EQUAL(covalentMap1[kk],        covalentMap2[kk] );

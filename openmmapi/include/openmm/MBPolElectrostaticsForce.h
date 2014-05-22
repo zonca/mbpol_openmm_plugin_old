@@ -1,8 +1,8 @@
-#ifndef OPENMM_AMOEBA_MULTIPOLE_FORCE_H_
-#define OPENMM_AMOEBA_MULTIPOLE_FORCE_H_
+#ifndef OPENMM_MBPOL_MULTIPOLE_FORCE_H_
+#define OPENMM_MBPOL_MULTIPOLE_FORCE_H_
 
 /* -------------------------------------------------------------------------- *
- *                              OpenMMAmoeba                                  *
+ *                              OpenMMMBPol                                  *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -34,7 +34,7 @@
 
 #include "openmm/Force.h"
 #include "openmm/OpenMMException.h"
-#include "internal/windowsExportAmoeba.h"
+#include "internal/windowsExportMBPol.h"
 #include "openmm/Vec3.h"
 
 #include <sstream>
@@ -43,14 +43,14 @@
 namespace OpenMM {
 
 /**
- * This class implements the Amoeba multipole interaction.
+ * This class implements the MBPol multipole interaction.
  *
- * To use it, create an AmoebaMultipoleForce object then call addMultipole() once for each atom.  After
- * an entry has been added, you can modify its force field parameters by calling setMultipoleParameters().
+ * To use it, create an MBPolElectrostaticsForce object then call addElectrostatics() once for each atom.  After
+ * an entry has been added, you can modify its force field parameters by calling setElectrostaticsParameters().
  * This will have no effect on Contexts that already exist unless you call updateParametersInContext().
  */
 
-class OPENMM_EXPORT_AMOEBA AmoebaMultipoleForce : public Force {
+class OPENMM_EXPORT_MBPOL MBPolElectrostaticsForce : public Force {
 
 public:
 
@@ -82,21 +82,21 @@ public:
         Direct = 1
     };
 
-    enum MultipoleAxisTypes { ZThenX = 0, Bisector = 1, ZBisect = 2, ThreeFold = 3, ZOnly = 4, NoAxisType = 5, LastAxisTypeIndex = 6 };
+    enum ElectrostaticsAxisTypes { ZThenX = 0, Bisector = 1, ZBisect = 2, ThreeFold = 3, ZOnly = 4, NoAxisType = 5, LastAxisTypeIndex = 6 };
 
     enum CovalentType {
                           Covalent12 = 0, Covalent13 = 1, Covalent14 = 2, Covalent15 = 3,
                           PolarizationCovalent11 = 4, PolarizationCovalent12 = 5, PolarizationCovalent13 = 6, PolarizationCovalent14 = 7, CovalentEnd = 8 };
 
     /**
-     * Create an AmoebaMultipoleForce.
+     * Create an MBPolElectrostaticsForce.
      */
-    AmoebaMultipoleForce();
+    MBPolElectrostaticsForce();
 
     /**
      * Get the number of particles in the potential function
      */
-    int getNumMultipoles() const {
+    int getNumElectrostaticss() const {
         return multipoles.size();
     }
 
@@ -194,7 +194,7 @@ public:
      *
      * @return the index of the particle that was added
      */
-    int addMultipole(double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType,
+    int addElectrostatics(double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType,
                      int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity);
 
     /**
@@ -212,7 +212,7 @@ public:
      * @param dampingFactor        dampingFactor parameter
      * @param polarity             polarity parameter
      */
-    void getMultipoleParameters(int index, double& charge, std::vector<double>& molecularDipole, std::vector<double>& molecularQuadrupole,
+    void getElectrostaticsParameters(int index, double& charge, std::vector<double>& molecularDipole, std::vector<double>& molecularQuadrupole,
                                 int& axisType, int& multipoleAtomZ, int& multipoleAtomX, int& multipoleAtomY, std::vector<double>& thole, double& dampingFactor, double& polarity) const;
 
     /**
@@ -228,7 +228,7 @@ public:
      * @param multipoleAtomY       index of second atom used in constructing lab<->molecular frames
      * @param polarity             polarity parameter
      */
-    void setMultipoleParameters(int index, double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole,
+    void setElectrostaticsParameters(int index, double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole,
                                 int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity);
 
     /**
@@ -325,17 +325,17 @@ public:
      * the quadrupole moment is still undefined and should be ignored.
      *
      * @param context      context
-     * @param outputMultipoleMonents (charge,
+     * @param outputElectrostaticsMonents (charge,
                                       dipole_x, dipole_y, dipole_z,
                                       quadrupole_xx, quadrupole_xy, quadrupole_xz,
                                       quadrupole_yx, quadrupole_yy, quadrupole_yz,
                                       quadrupole_zx, quadrupole_zy, quadrupole_zz)
      */
-    void getSystemMultipoleMoments(Context& context, std::vector< double >& outputMultipoleMoments);
+    void getSystemElectrostaticsMoments(Context& context, std::vector< double >& outputElectrostaticsMoments);
     /**
      * Update the multipole parameters in a Context to match those stored in this Force object.  This method
      * provides an efficient method to update certain parameters in an existing Context without needing to reinitialize it.
-     * Simply call setMultipoleParameters() to modify this object's parameters, then call updateParametersInState() to
+     * Simply call setElectrostaticsParameters() to modify this object's parameters, then call updateParametersInState() to
      * copy them over to the Context.
      * 
      * This method has several limitations.  The only information it updates is the parameters of multipoles.
@@ -360,11 +360,11 @@ private:
     double electricConstant;
     double ewaldErrorTol;
     bool includeChargeRedistribution;
-    class MultipoleInfo;
-    std::vector<MultipoleInfo> multipoles;
+    class ElectrostaticsInfo;
+    std::vector<ElectrostaticsInfo> multipoles;
 };
 
-class AmoebaMultipoleForce::MultipoleInfo {
+class MBPolElectrostaticsForce::ElectrostaticsInfo {
 public:
 
     int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
@@ -375,7 +375,7 @@ public:
     std::vector< std::vector<int> > covalentInfo;
     std::vector<double> thole;
 
-    MultipoleInfo() {
+    ElectrostaticsInfo() {
         axisType = multipoleAtomZ = multipoleAtomX = multipoleAtomY = -1;
         charge = dampingFactor = polarity = 0.0;
 
@@ -385,7 +385,7 @@ public:
 
     }
 
-    MultipoleInfo(double charge, const std::vector<double>& inputMolecularDipole, const std::vector<double>& inputMolecularQuadrupole,
+    ElectrostaticsInfo(double charge, const std::vector<double>& inputMolecularDipole, const std::vector<double>& inputMolecularQuadrupole,
                    int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& inputThole, double dampingFactor, double polarity) :
         charge(charge), axisType(axisType), multipoleAtomZ(multipoleAtomZ), multipoleAtomX(multipoleAtomX), multipoleAtomY(multipoleAtomY),
         dampingFactor(dampingFactor), polarity(polarity) {
@@ -417,4 +417,4 @@ public:
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_MULTIPOLE_FORCE_H_*/
+#endif /*OPENMM_MBPOL_MULTIPOLE_FORCE_H_*/

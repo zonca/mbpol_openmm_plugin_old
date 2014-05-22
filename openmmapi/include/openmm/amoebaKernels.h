@@ -317,26 +317,26 @@ public:
 };
 
 /**
- * This kernel is invoked by AmoebaMultipoleForce to calculate the forces acting on the system and the energy of the system.
+ * This kernel is invoked by MBPolElectrostaticsForce to calculate the forces acting on the system and the energy of the system.
  */
-class CalcAmoebaMultipoleForceKernel : public KernelImpl {
+class CalcMBPolElectrostaticsForceKernel : public KernelImpl {
 
 public:
 
     static std::string Name() {
-        return "CalcAmoebaMultipoleForce";
+        return "CalcMBPolElectrostaticsForce";
     }
 
-    CalcAmoebaMultipoleForceKernel(std::string name, const Platform& platform) : KernelImpl(name, platform) {
+    CalcMBPolElectrostaticsForceKernel(std::string name, const Platform& platform) : KernelImpl(name, platform) {
     }
 
     /**
      * Initialize the kernel.
      * 
      * @param system     the System this kernel will be applied to
-     * @param force      the MultipoleForce this kernel will be used for
+     * @param force      the ElectrostaticsForce this kernel will be used for
      */
-    virtual void initialize(const System& system, const AmoebaMultipoleForce& force) = 0;
+    virtual void initialize(const System& system, const MBPolElectrostaticsForce& force) = 0;
 
     /**
      * Execute the kernel to calculate the forces and/or energy.
@@ -351,14 +351,14 @@ public:
     virtual void getElectrostaticPotential( ContextImpl& context, const std::vector< Vec3 >& inputGrid,
                                             std::vector< double >& outputElectrostaticPotential ) = 0;
 
-    virtual void getSystemMultipoleMoments( ContextImpl& context, std::vector< double >& outputMultipoleMonents ) = 0;
+    virtual void getSystemElectrostaticsMoments( ContextImpl& context, std::vector< double >& outputElectrostaticsMonents ) = 0;
     /**
      * Copy changed parameters over to a context.
      *
      * @param context    the context to copy parameters to
-     * @param force      the AmoebaMultipoleForce to copy the parameters from
+     * @param force      the MBPolElectrostaticsForce to copy the parameters from
      */
-    virtual void copyParametersToContext(ContextImpl& context, const AmoebaMultipoleForce& force) = 0;
+    virtual void copyParametersToContext(ContextImpl& context, const MBPolElectrostaticsForce& force) = 0;
 };
 
 /**

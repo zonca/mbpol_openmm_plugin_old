@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -31,65 +31,65 @@
 
 #include "openmm/Force.h"
 #include "openmm/OpenMMException.h"
-#include "openmm/AmoebaMultipoleForce.h"
-#include "openmm/internal/AmoebaMultipoleForceImpl.h"
+#include "openmm/MBPolElectrostaticsForce.h"
+#include "openmm/internal/MBPolElectrostaticsForceImpl.h"
 #include <stdio.h>
 
 using namespace OpenMM;
 using std::string;
 using std::vector;
 
-AmoebaMultipoleForce::AmoebaMultipoleForce() : nonbondedMethod(NoCutoff), polarizationType(Mutual), pmeBSplineOrder(5), cutoffDistance(1.0), ewaldErrorTol(1e-4), mutualInducedMaxIterations(60),
+MBPolElectrostaticsForce::MBPolElectrostaticsForce() : nonbondedMethod(NoCutoff), polarizationType(Mutual), pmeBSplineOrder(5), cutoffDistance(1.0), ewaldErrorTol(1e-4), mutualInducedMaxIterations(60),
                                                mutualInducedTargetEpsilon(1.0e-07), scalingDistanceCutoff(100.0), electricConstant(138.9354558456), aewald(0.0), includeChargeRedistribution(true) {
     pmeGridDimension.resize(3);
     pmeGridDimension[0] = pmeGridDimension[1] = pmeGridDimension[2];
 }
 
-AmoebaMultipoleForce::NonbondedMethod AmoebaMultipoleForce::getNonbondedMethod( void ) const {
+MBPolElectrostaticsForce::NonbondedMethod MBPolElectrostaticsForce::getNonbondedMethod( void ) const {
     return nonbondedMethod;
 }
 
-void AmoebaMultipoleForce::setNonbondedMethod( AmoebaMultipoleForce::NonbondedMethod method) {
+void MBPolElectrostaticsForce::setNonbondedMethod( MBPolElectrostaticsForce::NonbondedMethod method) {
     nonbondedMethod = method;
 }
 
-AmoebaMultipoleForce::PolarizationType AmoebaMultipoleForce::getPolarizationType( void ) const {
+MBPolElectrostaticsForce::PolarizationType MBPolElectrostaticsForce::getPolarizationType( void ) const {
     return polarizationType;
 }
 
-void AmoebaMultipoleForce::setPolarizationType( AmoebaMultipoleForce::PolarizationType type ) {
+void MBPolElectrostaticsForce::setPolarizationType( MBPolElectrostaticsForce::PolarizationType type ) {
     polarizationType = type;
 }
 
-double AmoebaMultipoleForce::getCutoffDistance( void ) const {
+double MBPolElectrostaticsForce::getCutoffDistance( void ) const {
     return cutoffDistance;
 }
 
-void AmoebaMultipoleForce::setCutoffDistance(double distance) {
+void MBPolElectrostaticsForce::setCutoffDistance(double distance) {
     cutoffDistance = distance;
 }
 
-double AmoebaMultipoleForce::getAEwald() const { 
+double MBPolElectrostaticsForce::getAEwald() const { 
     return aewald; 
 } 
 
-void AmoebaMultipoleForce::setIncludeChargeRedistribution( bool chargeRedistribution ) {
+void MBPolElectrostaticsForce::setIncludeChargeRedistribution( bool chargeRedistribution ) {
     includeChargeRedistribution = chargeRedistribution;
 }
 
-bool AmoebaMultipoleForce::getIncludeChargeRedistribution( void ) const {
+bool MBPolElectrostaticsForce::getIncludeChargeRedistribution( void ) const {
     return includeChargeRedistribution;
 }
 
-void AmoebaMultipoleForce::setAEwald(double inputAewald ) { 
+void MBPolElectrostaticsForce::setAEwald(double inputAewald ) { 
     aewald = inputAewald; 
 } 
  
-int AmoebaMultipoleForce::getPmeBSplineOrder( void ) const { 
+int MBPolElectrostaticsForce::getPmeBSplineOrder( void ) const { 
     return pmeBSplineOrder; 
 } 
  
-void AmoebaMultipoleForce::getPmeGridDimensions( std::vector<int>& gridDimension ) const { 
+void MBPolElectrostaticsForce::getPmeGridDimensions( std::vector<int>& gridDimension ) const { 
     if( gridDimension.size() < 3 ){
         gridDimension.resize(3);
     }
@@ -103,7 +103,7 @@ void AmoebaMultipoleForce::getPmeGridDimensions( std::vector<int>& gridDimension
     return;
 } 
  
-void AmoebaMultipoleForce::setPmeGridDimensions( const std::vector<int>& gridDimension ) {
+void MBPolElectrostaticsForce::setPmeGridDimensions( const std::vector<int>& gridDimension ) {
     pmeGridDimension.resize(3);
     pmeGridDimension[0] = gridDimension[0];
     pmeGridDimension[1] = gridDimension[1];
@@ -111,37 +111,37 @@ void AmoebaMultipoleForce::setPmeGridDimensions( const std::vector<int>& gridDim
     return;
 } 
 
-int AmoebaMultipoleForce::getMutualInducedMaxIterations( void ) const {
+int MBPolElectrostaticsForce::getMutualInducedMaxIterations( void ) const {
     return mutualInducedMaxIterations;
 }
 
-void AmoebaMultipoleForce::setMutualInducedMaxIterations( int inputMutualInducedMaxIterations ) {
+void MBPolElectrostaticsForce::setMutualInducedMaxIterations( int inputMutualInducedMaxIterations ) {
     mutualInducedMaxIterations = inputMutualInducedMaxIterations;
 }
 
-double AmoebaMultipoleForce::getMutualInducedTargetEpsilon( void ) const {
+double MBPolElectrostaticsForce::getMutualInducedTargetEpsilon( void ) const {
     return mutualInducedTargetEpsilon;
 }
 
-void AmoebaMultipoleForce::setMutualInducedTargetEpsilon( double inputMutualInducedTargetEpsilon ) {
+void MBPolElectrostaticsForce::setMutualInducedTargetEpsilon( double inputMutualInducedTargetEpsilon ) {
     mutualInducedTargetEpsilon = inputMutualInducedTargetEpsilon;
 }
 
-double AmoebaMultipoleForce::getEwaldErrorTolerance() const {
+double MBPolElectrostaticsForce::getEwaldErrorTolerance() const {
     return ewaldErrorTol;
 }
 
-void AmoebaMultipoleForce::setEwaldErrorTolerance(double tol) {
+void MBPolElectrostaticsForce::setEwaldErrorTolerance(double tol) {
     ewaldErrorTol = tol;
 }
 
-int AmoebaMultipoleForce::addMultipole( double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType, 
+int MBPolElectrostaticsForce::addElectrostatics( double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType, 
                                        int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity) {
-    multipoles.push_back(MultipoleInfo( charge, molecularDipole, molecularQuadrupole,  axisType, multipoleAtomZ,  multipoleAtomX, multipoleAtomY, thole, dampingFactor, polarity));
+    multipoles.push_back(ElectrostaticsInfo( charge, molecularDipole, molecularQuadrupole,  axisType, multipoleAtomZ,  multipoleAtomX, multipoleAtomY, thole, dampingFactor, polarity));
     return multipoles.size()-1;
 }
 
-void AmoebaMultipoleForce::getMultipoleParameters(int index, double& charge, std::vector<double>& molecularDipole, std::vector<double>& molecularQuadrupole, 
+void MBPolElectrostaticsForce::getElectrostaticsParameters(int index, double& charge, std::vector<double>& molecularDipole, std::vector<double>& molecularQuadrupole, 
                                                   int& axisType, int& multipoleAtomZ, int& multipoleAtomX, int& multipoleAtomY, std::vector<double>& thole, double& dampingFactor, double& polarity ) const {
     charge                      = multipoles[index].charge;
 
@@ -173,7 +173,7 @@ void AmoebaMultipoleForce::getMultipoleParameters(int index, double& charge, std
     polarity                    = multipoles[index].polarity;
 }
 
-void AmoebaMultipoleForce::setMultipoleParameters(int index, double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, 
+void MBPolElectrostaticsForce::setElectrostaticsParameters(int index, double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, 
                                                   int axisType, int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>&  thole, double dampingFactor, double polarity ) {
 
     multipoles[index].charge                      = charge;
@@ -203,7 +203,7 @@ void AmoebaMultipoleForce::setMultipoleParameters(int index, double charge, cons
 
 }
 
-void AmoebaMultipoleForce::setCovalentMap(int index, CovalentType typeId, const std::vector<int>& covalentAtoms ) {
+void MBPolElectrostaticsForce::setCovalentMap(int index, CovalentType typeId, const std::vector<int>& covalentAtoms ) {
 
     std::vector<int>& covalentList = multipoles[index].covalentInfo[typeId];
     covalentList.resize( covalentAtoms.size() );
@@ -212,7 +212,7 @@ void AmoebaMultipoleForce::setCovalentMap(int index, CovalentType typeId, const 
     }
 }
 
-void AmoebaMultipoleForce::getCovalentMap(int index, CovalentType typeId, std::vector<int>& covalentAtoms ) const {
+void MBPolElectrostaticsForce::getCovalentMap(int index, CovalentType typeId, std::vector<int>& covalentAtoms ) const {
 
     // load covalent atom index entries for atomId==index and covalentId==typeId into covalentAtoms
 
@@ -223,7 +223,7 @@ void AmoebaMultipoleForce::getCovalentMap(int index, CovalentType typeId, std::v
     }
 }
 
-void AmoebaMultipoleForce::getCovalentMaps(int index, std::vector< std::vector<int> >& covalentLists ) const {
+void MBPolElectrostaticsForce::getCovalentMaps(int index, std::vector< std::vector<int> >& covalentLists ) const {
 
     covalentLists.resize( CovalentEnd );
     for( unsigned int jj = 0; jj < CovalentEnd; jj++ ){
@@ -237,18 +237,18 @@ void AmoebaMultipoleForce::getCovalentMaps(int index, std::vector< std::vector<i
     }
 }
 
-void AmoebaMultipoleForce::getElectrostaticPotential( const std::vector< Vec3 >& inputGrid, Context& context, std::vector< double >& outputElectrostaticPotential ){
-    dynamic_cast<AmoebaMultipoleForceImpl&>(getImplInContext(context)).getElectrostaticPotential(getContextImpl(context), inputGrid, outputElectrostaticPotential);
+void MBPolElectrostaticsForce::getElectrostaticPotential( const std::vector< Vec3 >& inputGrid, Context& context, std::vector< double >& outputElectrostaticPotential ){
+    dynamic_cast<MBPolElectrostaticsForceImpl&>(getImplInContext(context)).getElectrostaticPotential(getContextImpl(context), inputGrid, outputElectrostaticPotential);
 }
 
-void AmoebaMultipoleForce::getSystemMultipoleMoments(Context& context, std::vector< double >& outputMultipoleMonents ){
-    dynamic_cast<AmoebaMultipoleForceImpl&>(getImplInContext(context)).getSystemMultipoleMoments(getContextImpl(context), outputMultipoleMonents);
+void MBPolElectrostaticsForce::getSystemElectrostaticsMoments(Context& context, std::vector< double >& outputElectrostaticsMonents ){
+    dynamic_cast<MBPolElectrostaticsForceImpl&>(getImplInContext(context)).getSystemElectrostaticsMoments(getContextImpl(context), outputElectrostaticsMonents);
 }
 
-ForceImpl* AmoebaMultipoleForce::createImpl()  const {
-    return new AmoebaMultipoleForceImpl(*this);
+ForceImpl* MBPolElectrostaticsForce::createImpl()  const {
+    return new MBPolElectrostaticsForceImpl(*this);
 }
 
-void AmoebaMultipoleForce::updateParametersInContext(Context& context) {
-    dynamic_cast<AmoebaMultipoleForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
+void MBPolElectrostaticsForce::updateParametersInContext(Context& context) {
+    dynamic_cast<MBPolElectrostaticsForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
 }

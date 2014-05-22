@@ -39,7 +39,7 @@
 #include "openmm/MBPolOneBodyForce.h"
 #include "openmm/AmoebaOutOfPlaneBendForce.h"
 #include "openmm/AmoebaTorsionTorsionForce.h"
-#include "openmm/AmoebaMultipoleForce.h"
+#include "openmm/MBPolElectrostaticsForce.h"
 #include "openmm/AmoebaGeneralizedKirkwoodForce.h"
 #include "openmm/MBPolTwoBodyForce.h"
 #include "openmm/AmoebaWcaDispersionForce.h"

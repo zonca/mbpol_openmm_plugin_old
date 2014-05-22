@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                                   OpenMMAmoeba                             *
+ *                                   OpenMMMBPol                             *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -30,15 +30,15 @@
  * -------------------------------------------------------------------------- */
 
 /**
- * This tests the Reference implementation of ReferenceAmoebaMultipoleForce.
+ * This tests the Reference implementation of ReferenceMBPolElectrostaticsForce.
  */
 
 #include "openmm/internal/AssertionUtilities.h"
 #include "openmm/Context.h"
 #include "OpenMMAmoeba.h"
 #include "openmm/System.h"
-#include "openmm/AmoebaMultipoleForce.h"
-#include "AmoebaReferenceMultipoleForce.h"
+#include "openmm/MBPolElectrostaticsForce.h"
+#include "MBPolReferenceElectrostaticsForce.h"
 #include "openmm/LangevinIntegrator.h"
 #include "openmm/VirtualSite.h"
 #include <iostream>
@@ -52,11 +52,12 @@
 
 
 using namespace OpenMM;
+using namespace std;
 const double TOL = 1e-4;
 const double cal2joule = 4.184;
 
 // getAndScaleInverseRs is protected, so we need to create a wrapping class for testing it.
-class WrappedAmoebaReferenceMultipoleForce : public AmoebaReferenceMultipoleForce {
+class WrappedMBPolReferenceElectrostaticsForce : public MBPolReferenceElectrostaticsForce {
     public:
     void wrapGetAndScaleInverseRs(
             RealOpenMM dampI, RealOpenMM dampJ,
@@ -64,7 +65,7 @@ class WrappedAmoebaReferenceMultipoleForce : public AmoebaReferenceMultipoleForc
             RealOpenMM r, bool justScale, RealOpenMM & damp, MapIntRealOpenMM& rrI
             )   { 
 
-                    std::vector<MultipoleParticleData> particleData;
+                    std::vector<ElectrostaticsParticleData> particleData;
                     particleData.resize(2);
                     particleData[0].dampingFactor = dampI;
                     particleData[1].dampingFactor = dampJ;
@@ -93,13 +94,13 @@ static void testGetAndScaleInverseRs( FILE* log ) {
     RealOpenMM thole=0.400;
 
 
-    WrappedAmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForce();;
-    amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampH,
+    WrappedMBPolReferenceElectrostaticsForce* amoebaReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForce();;
+    amoebaReferenceElectrostaticsForce->wrapGetAndScaleInverseRs( dampO, dampH,
                           thole, thole, r, false, damp, rrI);
 
     ASSERT_EQUAL_TOL_MOD(9.33047, rrI[1], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
     ASSERT_EQUAL_TOL_MOD(5.324612470e+02, rrI[3], 1e-5, testName); // from mbpol
-    // mbpol multiplies by constant factor (3) later, AMOEBA in this function
+    // mbpol multiplies by constant factor (3) later, MBPOL in this function
     ASSERT_EQUAL_TOL_MOD(4.747626558e+03*3., rrI[5], 1e-5, testName); // from mbpol
     ASSERT_EQUAL_TOL_MOD(             -2.13404e+07, rrI[7], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
 
@@ -115,8 +116,8 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
     RealOpenMM r=2.771936396e+00*1e-1; // from Water3 test
     RealOpenMM thole=0.400;
 
-    WrappedAmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForce();;
-    amoebaReferenceMultipoleForce->wrapGetAndScaleInverseRs( dampO, dampO,
+    WrappedMBPolReferenceElectrostaticsForce* amoebaReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForce();;
+    amoebaReferenceElectrostaticsForce->wrapGetAndScaleInverseRs( dampO, dampO,
                           thole, thole, r, false, damp, rrI);
 
     ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[1], 1e-5, testName); // from mbpol
@@ -125,7 +126,7 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
     ASSERT_EQUAL_TOL_MOD(119289, rrI[7], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
 }
 
-class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceMultipoleForce {
+class WrappedMBPolReferenceElectrostaticsForceForIndDipole : public MBPolReferenceElectrostaticsForce {
     public:
     int wrapCalculateInducedDipolePairIxns()   {
     	string testName = "computeInducedDipoles";
@@ -162,27 +163,27 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
         	intZeros.push_back(0);
     	}
 
-        std::vector<MultipoleParticleData> particleData;
+        std::vector<ElectrostaticsParticleData> particleData;
         _numParticles = numberOfParticles;
     	loadParticleData(positions, charges, dipoles, quadrupoles,
     	                      tholes, dampingFactors, polarity, intZeros, intZeros, intZeros, particleData );
 
-    	_fixedMultipoleField.resize( numberOfParticles );
-    	_fixedMultipoleFieldPolar.resize( numberOfParticles );
-        _fixedMultipoleField[0]      = RealVec(-6.040604308e-03*1e2, -4.375756834e-03*1e2, -6.721950569e-02*1e2);
-        _fixedMultipoleFieldPolar[0] = RealVec(0., 0., 0);
-        _fixedMultipoleField[1]      = RealVec(6.040604308e-03*1e2, 4.375756834e-03*1e2, 6.721950569e-02*1e2);
-        _fixedMultipoleFieldPolar[1] = RealVec(0., 0., 0);
+    	_fixedElectrostaticsField.resize( numberOfParticles );
+    	_fixedElectrostaticsFieldPolar.resize( numberOfParticles );
+        _fixedElectrostaticsField[0]      = RealVec(-6.040604308e-03*1e2, -4.375756834e-03*1e2, -6.721950569e-02*1e2);
+        _fixedElectrostaticsFieldPolar[0] = RealVec(0., 0., 0);
+        _fixedElectrostaticsField[1]      = RealVec(6.040604308e-03*1e2, 4.375756834e-03*1e2, 6.721950569e-02*1e2);
+        _fixedElectrostaticsFieldPolar[1] = RealVec(0., 0., 0);
 
         for( unsigned int ii = 0; ii < _numParticles; ii++ ){
-            _fixedMultipoleField[ii]      *= particleData[ii].polarity;
-            _fixedMultipoleFieldPolar[ii] *= particleData[ii].polarity;
+            _fixedElectrostaticsField[ii]      *= particleData[ii].polarity;
+            _fixedElectrostaticsFieldPolar[ii] *= particleData[ii].polarity;
         }
         _inducedDipole.resize( numberOfParticles );
         _inducedDipolePolar.resize( numberOfParticles );
         std::vector<UpdateInducedDipoleFieldStruct> updateInducedDipoleField;
-        updateInducedDipoleField.push_back( UpdateInducedDipoleFieldStruct( &_fixedMultipoleField,       &_inducedDipole ) );
-        updateInducedDipoleField.push_back( UpdateInducedDipoleFieldStruct( &_fixedMultipoleFieldPolar,  &_inducedDipolePolar ) );
+        updateInducedDipoleField.push_back( UpdateInducedDipoleFieldStruct( &_fixedElectrostaticsField,       &_inducedDipole ) );
+        updateInducedDipoleField.push_back( UpdateInducedDipoleFieldStruct( &_fixedElectrostaticsFieldPolar,  &_inducedDipolePolar ) );
 
 //        std::cout << "initializeInducedDipoles" << std::endl;
 
@@ -200,7 +201,7 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
 //    		std::cout << "******** Particle " << ii << std::endl;
 //    		//"[ protoncharge nm ]"
 //    		std::cout << "inducedDipoles:     " << updateInducedDipoleField[0].inducedDipoles[0][ii]*18.2226*10 << "[ protoncharge A sqrt(A kcal/mol) ]"<< std::endl;
-//    		std::cout << "fixedMultipoleField:" << updateInducedDipoleField[0].fixedMultipoleField[0][ii] << "[ Kj/mol/nm ]" << std::endl;
+//    		std::cout << "fixedElectrostaticsField:" << updateInducedDipoleField[0].fixedElectrostaticsField[0][ii] << "[ Kj/mol/nm ]" << std::endl;
 //    		std::cout << "inducedDipoleField: " << updateInducedDipoleField[0].inducedDipoleField[ii] << "[ Kj/mol/nm ]" << std::endl;
 //    	}
 
@@ -222,7 +223,7 @@ class WrappedAmoebaReferenceMultipoleForceForIndDipole : public AmoebaReferenceM
     }
 };
 
-class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaReferenceMultipoleForce {
+class WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge : public MBPolReferenceElectrostaticsForce {
     public:
     int testComputeWaterCharge()   {
         string testName = "testComputeWaterCharge";
@@ -240,10 +241,10 @@ class WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge : public AmoebaR
              }
          }
 
-        MultipoleParticleData particleO;
-        MultipoleParticleData particleH1;
-        MultipoleParticleData particleH2;
-        MultipoleParticleData particleM;
+        ElectrostaticsParticleData particleO;
+        ElectrostaticsParticleData particleH1;
+        ElectrostaticsParticleData particleH2;
+        ElectrostaticsParticleData particleM;
         for (int j=0; j<3; j++) {
             particleO.position[j]  = positions[0][j];
             particleH1.position[j] = positions[1][j];
@@ -323,13 +324,13 @@ static void testWater3VirtualSite( FILE* log ) {
     int numberOfParticles     = 12;
     double cutoff             = 0.70;
 
-    std::vector<double> outputMultipoleMoments;
+    std::vector<double> outputElectrostaticsMoments;
     std::vector< Vec3 > inputGrid;
     std::vector< double > outputGridPotential;
 
 
-    // beginning of Multipole setup
-    AmoebaMultipoleForce::NonbondedMethod nonbondedMethod = AmoebaMultipoleForce::NoCutoff;
+    // beginning of Electrostatics setup
+    MBPolElectrostaticsForce::NonbondedMethod nonbondedMethod = MBPolElectrostaticsForce::NoCutoff;
 
     System system;
     // box dimensions
@@ -340,14 +341,14 @@ static void testWater3VirtualSite( FILE* log ) {
     // Vec3 c( 0.0, 0.0, boxDimension );
     // system.setDefaultPeriodicBoxVectors( a, b, c );
 
-    AmoebaMultipoleForce* amoebaMultipoleForce        = new AmoebaMultipoleForce();;
-    amoebaMultipoleForce->setNonbondedMethod( nonbondedMethod );
-    //amoebaMultipoleForce->setPolarizationType( polarizationType );
-    //amoebaMultipoleForce->setCutoffDistance( cutoff );
-    //amoebaMultipoleForce->setMutualInducedTargetEpsilon( 1.0e-06 );
-    //amoebaMultipoleForce->setMutualInducedMaxIterations( 500 );
-    //amoebaMultipoleForce->setAEwald( 5.4459052e+00 );
-    //amoebaMultipoleForce->setEwaldErrorTolerance( 1.0e-04 );
+    MBPolElectrostaticsForce* amoebaElectrostaticsForce        = new MBPolElectrostaticsForce();;
+    amoebaElectrostaticsForce->setNonbondedMethod( nonbondedMethod );
+    //amoebaElectrostaticsForce->setPolarizationType( polarizationType );
+    //amoebaElectrostaticsForce->setCutoffDistance( cutoff );
+    //amoebaElectrostaticsForce->setMutualInducedTargetEpsilon( 1.0e-06 );
+    //amoebaElectrostaticsForce->setMutualInducedMaxIterations( 500 );
+    //amoebaElectrostaticsForce->setAEwald( 5.4459052e+00 );
+    //amoebaElectrostaticsForce->setEwaldErrorTolerance( 1.0e-04 );
 
     double virtualSiteWeightO = 0.573293118;
     double virtualSiteWeightH = 0.213353441;
@@ -375,25 +376,25 @@ static void testWater3VirtualSite( FILE* log ) {
     thole[TDDHH] = 0.055;
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
-        amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+        amoebaElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
                                             thole, 0.001310, 0.001310 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+        amoebaElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
                                             thole, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+        amoebaElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
                                             thole, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+        amoebaElectrostaticsForce->addElectrostatics(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
                                                     thole,  0.001310,  0.);
-//        amoebaMultipoleForce->addMultipole( 0, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+//        amoebaElectrostaticsForce->addElectrostatics( 0, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
 //                                              4.000000e-01, 0.001310, 0.001310 );
-//          amoebaMultipoleForce->addMultipole(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+//          amoebaElectrostaticsForce->addElectrostatics(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
 //                                              4.000000e-01, 0.000294, 0.000294 );
-//          amoebaMultipoleForce->addMultipole(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+//          amoebaElectrostaticsForce->addElectrostatics(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
 //                                              4.000000e-01, 0.000294, 0.000294 );
-//          amoebaMultipoleForce->addMultipole(  -1, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+//          amoebaElectrostaticsForce->addElectrostatics(  -1, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
 //                                                      4.000000e-01,  0.001310,  0.);
     }
 
-    system.addForce(amoebaMultipoleForce);
+    system.addForce(amoebaElectrostaticsForce);
 
     static std::vector<Vec3> positions; // Static to work around bug in Visual Studio that makes compilation very very slow.
     positions.resize(numberOfParticles);
@@ -540,7 +541,7 @@ static void testWater3VirtualSite( FILE* log ) {
     return;
 }
 
-class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : public AmoebaReferenceMultipoleForce {
+class WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn : public MBPolReferenceElectrostaticsForce {
     public:
 
     void testCalculateElectrostaticPairIxn ( FILE * log ) {
@@ -551,7 +552,7 @@ class WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn : pub
         std::cout << "Test START: " << testName << std::endl;
 
         int numberOfParticles = 2;
-        std::vector<MultipoleParticleData> particleData;
+        std::vector<ElectrostaticsParticleData> particleData;
         particleData.resize(numberOfParticles);
         particleData[0].dampingFactor = 0.001310;
         particleData[1].dampingFactor = 0.001310;
@@ -631,19 +632,19 @@ static void testWater3( FILE* log ) {
     int numberOfParticles     = 9;
     double cutoff             = 0.70;
 
-    std::vector<double> outputMultipoleMoments;
+    std::vector<double> outputElectrostaticsMoments;
     std::vector< Vec3 > inputGrid;
     std::vector< double > outputGridPotential;
 
 
-    // beginning of Multipole setup
-    AmoebaMultipoleForce::NonbondedMethod nonbondedMethod = AmoebaMultipoleForce::NoCutoff;
+    // beginning of Electrostatics setup
+    MBPolElectrostaticsForce::NonbondedMethod nonbondedMethod = MBPolElectrostaticsForce::NoCutoff;
 
     System system;
     // box dimensions
-    AmoebaMultipoleForce* amoebaMultipoleForce        = new AmoebaMultipoleForce();;
-    amoebaMultipoleForce->setNonbondedMethod( nonbondedMethod );
-    amoebaMultipoleForce->setIncludeChargeRedistribution(false);
+    MBPolElectrostaticsForce* amoebaElectrostaticsForce        = new MBPolElectrostaticsForce();;
+    amoebaElectrostaticsForce->setNonbondedMethod( nonbondedMethod );
+    amoebaElectrostaticsForce->setIncludeChargeRedistribution(false);
 
     unsigned int particlesPerMolecule = 3;
 
@@ -661,15 +662,15 @@ static void testWater3( FILE* log ) {
     std::fill(thole.begin(), thole.end(), 0.4);
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += particlesPerMolecule ){
-        amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+        amoebaElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
                                             thole, 0.001310, 0.001310 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+        amoebaElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
                                             thole, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+        amoebaElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
                                             thole, 0.000294, 0.000294 );
     }
 
-    system.addForce(amoebaMultipoleForce);
+    system.addForce(amoebaElectrostaticsForce);
 
     static std::vector<Vec3> positions; // Static to work around bug in Visual Studio that makes compilation very very slow.
     positions.resize(numberOfParticles);
@@ -809,21 +810,21 @@ static void testWater3( FILE* log ) {
 int main( int numberOfArguments, char* argv[] ) {
 
     try {
-        std::cout << "TestReferenceAmoebaMultipoleForce running test..." << std::endl;
+        std::cout << "TestReferenceMBPolElectrostaticsForce running test..." << std::endl;
 
         FILE* log = NULL;
 
         testGetAndScaleInverseRs( log );
         testGetAndScaleInverseRsInterMulecolar( log );
 
-        WrappedAmoebaReferenceMultipoleForceForIndDipole* amoebaReferenceMultipoleForce = new WrappedAmoebaReferenceMultipoleForceForIndDipole();
-        amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon(1e-7);
-        amoebaReferenceMultipoleForce->wrapCalculateInducedDipolePairIxns();
+        WrappedMBPolReferenceElectrostaticsForceForIndDipole* amoebaReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForceForIndDipole();
+        amoebaReferenceElectrostaticsForce->setMutualInducedDipoleTargetEpsilon(1e-7);
+        amoebaReferenceElectrostaticsForce->wrapCalculateInducedDipolePairIxns();
 
-        WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedAmoebaReferenceMultipoleForceForCalculateElectrostaticPairIxn();
+        WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn();
         wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
 
-        WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedAmoebaReferenceMultipoleForceForComputeWaterCharge();
+        WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge();
         wrapperForComputeWaterCharge->testComputeWaterCharge();
 
         testWater3( log );

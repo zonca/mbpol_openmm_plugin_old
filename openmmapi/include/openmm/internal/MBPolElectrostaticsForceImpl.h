@@ -1,8 +1,8 @@
-#ifndef OPENMM_AMOEBA_MULTIPOLE_FORCE_IMPL_H_
-#define OPENMM_AMOEBA_MULTIPOLE_FORCE_IMPL_H_
+#ifndef OPENMM_MBPOL_MULTIPOLE_FORCE_IMPL_H_
+#define OPENMM_MBPOL_MULTIPOLE_FORCE_IMPL_H_
 
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -33,7 +33,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "openmm/internal/ForceImpl.h"
-#include "openmm/AmoebaMultipoleForce.h"
+#include "openmm/MBPolElectrostaticsForce.h"
 #include "openmm/Kernel.h"
 #include "openmm/Vec3.h"
 #include <utility>
@@ -42,15 +42,15 @@
 namespace OpenMM {
 
 /**
- * This is the internal implementation of AmoebaMultipoleForce.
+ * This is the internal implementation of MBPolElectrostaticsForce.
  */
 
-class OPENMM_EXPORT_AMOEBA AmoebaMultipoleForceImpl : public ForceImpl {
+class OPENMM_EXPORT_MBPOL MBPolElectrostaticsForceImpl : public ForceImpl {
 public:
-    AmoebaMultipoleForceImpl(const AmoebaMultipoleForce& owner);
-    ~AmoebaMultipoleForceImpl();
+    MBPolElectrostaticsForceImpl(const MBPolElectrostaticsForce& owner);
+    ~MBPolElectrostaticsForceImpl();
     void initialize(ContextImpl& context);
-    const AmoebaMultipoleForce& getOwner() const {
+    const MBPolElectrostaticsForce& getOwner() const {
         return owner;
     }
     void updateContextState(ContextImpl& context) {
@@ -65,39 +65,39 @@ public:
     /**
      * Get the CovalentMap for an atom
      * 
-     * @param force                AmoebaMultipoleForce force reference
+     * @param force                MBPolElectrostaticsForce force reference
      * @param index                the index of the atom for which to set parameters
      * @param minCovalentIndex     minimum covalent index
      * @param maxCovalentIndex     maximum covalent index
      */
-    static void getCovalentRange( const AmoebaMultipoleForce& force, int index,
-                                  const std::vector< AmoebaMultipoleForce::CovalentType>& lists,
+    static void getCovalentRange( const MBPolElectrostaticsForce& force, int index,
+                                  const std::vector< MBPolElectrostaticsForce::CovalentType>& lists,
                                   int* minCovalentIndex, int* maxCovalentIndex );
 
     /**
      * Get the covalent degree for the  CovalentEnd lists
      * 
-     * @param force                AmoebaMultipoleForce force reference
+     * @param force                MBPolElectrostaticsForce force reference
      * @param covalentDegree      covalent degrees for the CovalentEnd lists
      */
-    static void getCovalentDegree( const AmoebaMultipoleForce& force, std::vector<int>& covalentDegree );
+    static void getCovalentDegree( const MBPolElectrostaticsForce& force, std::vector<int>& covalentDegree );
 
     void getElectrostaticPotential( ContextImpl& context, const std::vector< Vec3 >& inputGrid,
                                     std::vector< double >& outputElectrostaticPotential );
 
-    void getSystemMultipoleMoments( ContextImpl& context, std::vector< double >& outputMultipoleMonents );
+    void getSystemElectrostaticsMoments( ContextImpl& context, std::vector< double >& outputElectrostaticsMonents );
     void updateParametersInContext(ContextImpl& context);
  
 
 private:
-    const AmoebaMultipoleForce& owner;
+    const MBPolElectrostaticsForce& owner;
     Kernel kernel;
 
-    static int CovalentDegrees[AmoebaMultipoleForce::CovalentEnd];
+    static int CovalentDegrees[MBPolElectrostaticsForce::CovalentEnd];
     static bool initializedCovalentDegrees;
     static const int* getCovalentDegrees( void );
 };
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_MULTIPOLE_FORCE_IMPL_H_*/
+#endif /*OPENMM_MBPOL_MULTIPOLE_FORCE_IMPL_H_*/

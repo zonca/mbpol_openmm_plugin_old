@@ -38,7 +38,7 @@
 #include "OpenMMAmoeba.h"
 #include "openmm/System.h"
 #include "openmm/MBPolTwoBodyForce.h"
-#include "AmoebaReferenceMultipoleForce.h"
+#include "MBPolReferenceElectrostaticsForce.h"
 #include "openmm/VirtualSite.h"
 
 #include "openmm/MBPolThreeBodyForce.h"
@@ -66,8 +66,8 @@ void testThreeBody( FILE* log ) {
 
     double virtualSiteWeightO = 0.573293118;
     double virtualSiteWeightH = 0.213353441;
-    AmoebaMultipoleForce* amoebaMultipoleForce        = new AmoebaMultipoleForce();;
-    amoebaMultipoleForce->setNonbondedMethod( AmoebaMultipoleForce::NoCutoff );
+    MBPolElectrostaticsForce* mbpolElectrostaticsForce        = new MBPolElectrostaticsForce();;
+    mbpolElectrostaticsForce->setNonbondedMethod( MBPolElectrostaticsForce::NoCutoff );
 
     std::vector<double> zeroDipole(3);
     std::vector<double> zeroQuadrupole(9);
@@ -120,13 +120,13 @@ void testThreeBody( FILE* log ) {
         particleIndices[1] = jj+1;
         particleIndices[2] = jj+2;
 
-        amoebaMultipoleForce->addMultipole( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
                                             thole, 0.001310, 0.001310 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
                                             thole, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
                                             thole, 0.000294, 0.000294 );
-        amoebaMultipoleForce->addMultipole(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+        mbpolElectrostaticsForce->addElectrostatics(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
                                                     thole,  0.001310,  0.);
 
         mbpolOneBodyForce->addOneBody(jj, jj+1, jj+2);
@@ -136,7 +136,7 @@ void testThreeBody( FILE* log ) {
 
     }
 
-    system.addForce(amoebaMultipoleForce);
+    system.addForce(mbpolElectrostaticsForce);
     system.addForce(mbpolOneBodyForce);
     system.addForce(mbpolTwoBodyForce);
     system.addForce(amoebaThreeBodyForce);

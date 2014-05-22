@@ -29,8 +29,8 @@
 
 #include "openmm/System.h"
 #include "openmm/amoebaKernels.h"
-#include "openmm/AmoebaMultipoleForce.h"
-#include "AmoebaReferenceMultipoleForce.h"
+#include "openmm/MBPolElectrostaticsForce.h"
+#include "MBPolReferenceElectrostaticsForce.h"
 #include "ReferenceNeighborList.h"
 #include "ReferenceThreeNeighborList.h"
 #include "SimTKOpenMMRealType.h"
@@ -337,27 +337,27 @@ private:
 };
 
 /**
- * This kernel is invoked by AmoebaMultipoleForce to calculate the forces acting on the system and the energy of the system.
+ * This kernel is invoked by MBPolElectrostaticsForce to calculate the forces acting on the system and the energy of the system.
  */
-class ReferenceCalcAmoebaMultipoleForceKernel : public CalcAmoebaMultipoleForceKernel {
+class ReferenceCalcMBPolElectrostaticsForceKernel : public CalcMBPolElectrostaticsForceKernel {
 public:
-    ReferenceCalcAmoebaMultipoleForceKernel(std::string name, const Platform& platform, const System& system);
-    ~ReferenceCalcAmoebaMultipoleForceKernel();
+    ReferenceCalcMBPolElectrostaticsForceKernel(std::string name, const Platform& platform, const System& system);
+    ~ReferenceCalcMBPolElectrostaticsForceKernel();
     /**
      * Initialize the kernel.
      * 
      * @param system     the System this kernel will be applied to
-     * @param force      the AmoebaMultipoleForce this kernel will be used for
+     * @param force      the MBPolElectrostaticsForce this kernel will be used for
      */
-    void initialize(const System& system, const AmoebaMultipoleForce& force);
+    void initialize(const System& system, const MBPolElectrostaticsForce& force);
     /**
-     * Setup for AmoebaReferenceMultipoleForce instance. 
+     * Setup for MBPolReferenceElectrostaticsForce instance. 
      *
      * @param context        the current context
      *
-     * @return pointer to initialized instance of AmoebaReferenceMultipoleForce
+     * @return pointer to initialized instance of MBPolReferenceElectrostaticsForce
      */
-    AmoebaReferenceMultipoleForce* setupAmoebaReferenceMultipoleForce(ContextImpl& context );
+    MBPolReferenceElectrostaticsForce* setupMBPolReferenceElectrostaticsForce(ContextImpl& context );
     /**
      * Execute the kernel to calculate the forces and/or energy.
      *
@@ -381,27 +381,27 @@ public:
      * Get the system multipole moments.
      *
      * @param context                context 
-     * @param outputMultipoleMonents vector of multipole moments:
+     * @param outputElectrostaticsMonents vector of multipole moments:
                                      (charge,
                                       dipole_x, dipole_y, dipole_z,
                                       quadrupole_xx, quadrupole_xy, quadrupole_xz,
                                       quadrupole_yx, quadrupole_yy, quadrupole_yz,
                                       quadrupole_zx, quadrupole_zy, quadrupole_zz )
      */
-    void getSystemMultipoleMoments(ContextImpl& context, std::vector< double >& outputMultipoleMoments);
+    void getSystemElectrostaticsMoments(ContextImpl& context, std::vector< double >& outputElectrostaticsMoments);
     /**
      * Copy changed parameters over to a context.
      *
      * @param context    the context to copy parameters to
-     * @param force      the AmoebaMultipoleForce to copy the parameters from
+     * @param force      the MBPolElectrostaticsForce to copy the parameters from
      */
-    void copyParametersToContext(ContextImpl& context, const AmoebaMultipoleForce& force);
+    void copyParametersToContext(ContextImpl& context, const MBPolElectrostaticsForce& force);
 
 private:
 
-    int numMultipoles;
-    AmoebaMultipoleForce::NonbondedMethod nonbondedMethod;
-    AmoebaMultipoleForce::PolarizationType polarizationType;
+    int numElectrostaticss;
+    MBPolElectrostaticsForce::NonbondedMethod nonbondedMethod;
+    MBPolElectrostaticsForce::PolarizationType polarizationType;
     std::vector<RealOpenMM> charges;
     std::vector<RealOpenMM> dipoles;
     std::vector<RealOpenMM> quadrupoles;
@@ -554,7 +554,7 @@ public:
      * Initialize the kernel.
      * 
      * @param system     the System this kernel will be applied to
-     * @param force      the AmoebaMultipoleForce this kernel will be used for
+     * @param force      the MBPolElectrostaticsForce this kernel will be used for
      */
     void initialize(const System& system, const AmoebaWcaDispersionForce& force);
     /**

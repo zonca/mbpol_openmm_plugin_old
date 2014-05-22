@@ -1,8 +1,8 @@
-#ifndef OPENMM_AMOEBA_MULTIPOLE_FORCE_PROXY_H_
-#define OPENMM_AMOEBA_MULTIPOLE_FORCE_PROXY_H_
+#ifndef OPENMM_MBPOL_MULTIPOLE_FORCE_PROXY_H_
+#define OPENMM_MBPOL_MULTIPOLE_FORCE_PROXY_H_
 
 /* -------------------------------------------------------------------------- *
- *                                OpenMMAmoeba                                *
+ *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
@@ -38,16 +38,16 @@
 namespace OpenMM {
 
 /**
- * This is a proxy for serializing AmoebaMultipoleForce objects.
+ * This is a proxy for serializing MBPolElectrostaticsForce objects.
  */
 
-class OPENMM_EXPORT_AMOEBA_SERIALIZATION AmoebaMultipoleForceProxy : public SerializationProxy {
+class OPENMM_EXPORT_AMOEBA_SERIALIZATION MBPolElectrostaticsForceProxy : public SerializationProxy {
 public:
-    AmoebaMultipoleForceProxy();
+    MBPolElectrostaticsForceProxy();
     void serialize(const void* object, SerializationNode& node) const;
     void* deserialize(const SerializationNode& node) const;
 };
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_MULTIPOLE_FORCE_PROXY_H_*/
+#endif /*OPENMM_MBPOL_MULTIPOLE_FORCE_PROXY_H_*/

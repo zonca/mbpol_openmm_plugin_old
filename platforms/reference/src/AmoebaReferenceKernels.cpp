@@ -41,8 +41,8 @@
 #include "openmm/internal/AmoebaWcaDispersionForceImpl.h"
 #include "ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
-#include "openmm/AmoebaMultipoleForce.h"
-#include "openmm/internal/AmoebaMultipoleForceImpl.h"
+#include "openmm/MBPolElectrostaticsForce.h"
+#include "openmm/internal/MBPolElectrostaticsForceImpl.h"
 #include "openmm/internal/MBPolTwoBodyForceImpl.h"
 #include "openmm/internal/MBPolThreeBodyForceImpl.h"
 #include "openmm/internal/MBPolDispersionForceImpl.h"
@@ -472,40 +472,40 @@ double ReferenceCalcAmoebaTorsionTorsionForceKernel::execute(ContextImpl& contex
 }
 
 /* -------------------------------------------------------------------------- *
- *                             AmoebaMultipole                                *
+ *                             MBPolElectrostatics                                *
  * -------------------------------------------------------------------------- */
 
-ReferenceCalcAmoebaMultipoleForceKernel::ReferenceCalcAmoebaMultipoleForceKernel(std::string name, const Platform& platform, const System& system) : 
-         CalcAmoebaMultipoleForceKernel(name, platform), system(system), numMultipoles(0), mutualInducedMaxIterations(60), mutualInducedTargetEpsilon(1.0e-03),
+ReferenceCalcMBPolElectrostaticsForceKernel::ReferenceCalcMBPolElectrostaticsForceKernel(std::string name, const Platform& platform, const System& system) : 
+         CalcMBPolElectrostaticsForceKernel(name, platform), system(system), numElectrostaticss(0), mutualInducedMaxIterations(60), mutualInducedTargetEpsilon(1.0e-03),
                                                          usePme(false),alphaEwald(0.0), cutoffDistance(1.0) {  
 
 }
 
-ReferenceCalcAmoebaMultipoleForceKernel::~ReferenceCalcAmoebaMultipoleForceKernel() {
+ReferenceCalcMBPolElectrostaticsForceKernel::~ReferenceCalcMBPolElectrostaticsForceKernel() {
 }
 
-void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, const AmoebaMultipoleForce& force) {
+void ReferenceCalcMBPolElectrostaticsForceKernel::initialize(const System& system, const MBPolElectrostaticsForce& force) {
 
-    numMultipoles   = force.getNumMultipoles();
+    numElectrostaticss   = force.getNumElectrostaticss();
 
-    charges.resize(numMultipoles);
-    dipoles.resize(3*numMultipoles);
-    quadrupoles.resize(9*numMultipoles);
-    tholes.resize(5*numMultipoles);
-    dampingFactors.resize(numMultipoles);
-    polarity.resize(numMultipoles);
-    axisTypes.resize(numMultipoles);
-    multipoleAtomZs.resize(numMultipoles);
-    multipoleAtomXs.resize(numMultipoles);
-    multipoleAtomYs.resize(numMultipoles);
-    multipoleAtomCovalentInfo.resize(numMultipoles);
+    charges.resize(numElectrostaticss);
+    dipoles.resize(3*numElectrostaticss);
+    quadrupoles.resize(9*numElectrostaticss);
+    tholes.resize(5*numElectrostaticss);
+    dampingFactors.resize(numElectrostaticss);
+    polarity.resize(numElectrostaticss);
+    axisTypes.resize(numElectrostaticss);
+    multipoleAtomZs.resize(numElectrostaticss);
+    multipoleAtomXs.resize(numElectrostaticss);
+    multipoleAtomYs.resize(numElectrostaticss);
+    multipoleAtomCovalentInfo.resize(numElectrostaticss);
 
     int dipoleIndex      = 0;
     int quadrupoleIndex  = 0;
     int tholeIndex       = 0;
     int maxCovalentRange = 0;
     double totalCharge   = 0.0;
-    for( int ii = 0; ii < numMultipoles; ii++ ){
+    for( int ii = 0; ii < numElectrostaticss; ii++ ){
 
         // multipoles
 
@@ -514,7 +514,7 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
         std::vector<double> dipolesD;
         std::vector<double> quadrupolesD;
         std::vector<double> tholesD;
-        force.getMultipoleParameters(ii, charge, dipolesD, quadrupolesD, axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY,
+        force.getElectrostaticsParameters(ii, charge, dipolesD, quadrupolesD, axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY,
                                      tholesD, dampingFactorD, polarityD );
 
         totalCharge                       += charge;
@@ -557,7 +557,7 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
     }
 
     polarizationType = force.getPolarizationType();
-    if( polarizationType == AmoebaMultipoleForce::Mutual ){
+    if( polarizationType == MBPolElectrostaticsForce::Mutual ){
         mutualInducedMaxIterations = force.getMutualInducedMaxIterations();
         mutualInducedTargetEpsilon = force.getMutualInducedTargetEpsilon();
     }
@@ -567,7 +567,7 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
     // PME
 
     nonbondedMethod  = force.getNonbondedMethod();
-    if( nonbondedMethod == AmoebaMultipoleForce::PME ){
+    if( nonbondedMethod == MBPolElectrostaticsForce::PME ){
         usePme     = true;
         alphaEwald = force.getAEwald();
         cutoffDistance = force.getCutoffDistance();
@@ -588,77 +588,77 @@ void ReferenceCalcAmoebaMultipoleForceKernel::initialize(const System& system, c
     return;
 }
 
-AmoebaReferenceMultipoleForce* ReferenceCalcAmoebaMultipoleForceKernel::setupAmoebaReferenceMultipoleForce(ContextImpl& context )
+MBPolReferenceElectrostaticsForce* ReferenceCalcMBPolElectrostaticsForceKernel::setupMBPolReferenceElectrostaticsForce(ContextImpl& context )
 {
 
-    // amoebaReferenceMultipoleForce is set to AmoebaReferenceGeneralizedKirkwoodForce if AmoebaGeneralizedKirkwoodForce is present
-    // amoebaReferenceMultipoleForce is set to AmoebaReferencePmeMultipoleForce if 'usePme' is set
-    // amoebaReferenceMultipoleForce is set to AmoebaReferenceMultipoleForce otherwise
+    // amoebaReferenceElectrostaticsForce is set to AmoebaReferenceGeneralizedKirkwoodForce if AmoebaGeneralizedKirkwoodForce is present
+    // amoebaReferenceElectrostaticsForce is set to MBPolReferencePmeElectrostaticsForce if 'usePme' is set
+    // amoebaReferenceElectrostaticsForce is set to MBPolReferenceElectrostaticsForce otherwise
 
-    AmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = NULL;
+    MBPolReferenceElectrostaticsForce* amoebaReferenceElectrostaticsForce = NULL;
     if( usePme ) {
 
-         AmoebaReferencePmeMultipoleForce* amoebaReferencePmeMultipoleForce = new AmoebaReferencePmeMultipoleForce( );
-         amoebaReferencePmeMultipoleForce->setAlphaEwald( alphaEwald );
-         amoebaReferencePmeMultipoleForce->setCutoffDistance( cutoffDistance );
-         amoebaReferencePmeMultipoleForce->setPmeGridDimensions( pmeGridDimension );
+         MBPolReferencePmeElectrostaticsForce* mbpolReferencePmeElectrostaticsForce = new MBPolReferencePmeElectrostaticsForce( );
+         mbpolReferencePmeElectrostaticsForce->setAlphaEwald( alphaEwald );
+         mbpolReferencePmeElectrostaticsForce->setCutoffDistance( cutoffDistance );
+         mbpolReferencePmeElectrostaticsForce->setPmeGridDimensions( pmeGridDimension );
          RealVec& box = extractBoxSize(context);
          double minAllowedSize = 1.999999*cutoffDistance;
          if (box[0] < minAllowedSize || box[1] < minAllowedSize || box[2] < minAllowedSize){
             throw OpenMMException("The periodic box size has decreased to less than twice the nonbonded cutoff.");
          }
-         amoebaReferencePmeMultipoleForce->setPeriodicBoxSize(box);
-         amoebaReferenceMultipoleForce = static_cast<AmoebaReferenceMultipoleForce*>(amoebaReferencePmeMultipoleForce);
+         mbpolReferencePmeElectrostaticsForce->setPeriodicBoxSize(box);
+         amoebaReferenceElectrostaticsForce = static_cast<MBPolReferenceElectrostaticsForce*>(mbpolReferencePmeElectrostaticsForce);
 
     } else {
-         amoebaReferenceMultipoleForce = new AmoebaReferenceMultipoleForce( AmoebaReferenceMultipoleForce::NoCutoff );
+         amoebaReferenceElectrostaticsForce = new MBPolReferenceElectrostaticsForce( MBPolReferenceElectrostaticsForce::NoCutoff );
     }
 
     // set polarization type
 
-    if( polarizationType == AmoebaMultipoleForce::Mutual ){
-        amoebaReferenceMultipoleForce->setPolarizationType( AmoebaReferenceMultipoleForce::Mutual );
-        amoebaReferenceMultipoleForce->setMutualInducedDipoleTargetEpsilon( mutualInducedTargetEpsilon );
-        amoebaReferenceMultipoleForce->setMaximumMutualInducedDipoleIterations( mutualInducedMaxIterations );
-    } else if( polarizationType == AmoebaMultipoleForce::Direct ){
-        amoebaReferenceMultipoleForce->setPolarizationType( AmoebaReferenceMultipoleForce::Direct );
+    if( polarizationType == MBPolElectrostaticsForce::Mutual ){
+        amoebaReferenceElectrostaticsForce->setPolarizationType( MBPolReferenceElectrostaticsForce::Mutual );
+        amoebaReferenceElectrostaticsForce->setMutualInducedDipoleTargetEpsilon( mutualInducedTargetEpsilon );
+        amoebaReferenceElectrostaticsForce->setMaximumMutualInducedDipoleIterations( mutualInducedMaxIterations );
+    } else if( polarizationType == MBPolElectrostaticsForce::Direct ){
+        amoebaReferenceElectrostaticsForce->setPolarizationType( MBPolReferenceElectrostaticsForce::Direct );
     } else {
         throw OpenMMException("Polarization type not recognzied." );
     }
 
-    amoebaReferenceMultipoleForce->setIncludeChargeRedistribution(includeChargeRedistribution);
+    amoebaReferenceElectrostaticsForce->setIncludeChargeRedistribution(includeChargeRedistribution);
 
-    return amoebaReferenceMultipoleForce;
+    return amoebaReferenceElectrostaticsForce;
 
 }
 
-double ReferenceCalcAmoebaMultipoleForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
+double ReferenceCalcMBPolElectrostaticsForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
 
-    AmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = setupAmoebaReferenceMultipoleForce( context );
+    MBPolReferenceElectrostaticsForce* amoebaReferenceElectrostaticsForce = setupMBPolReferenceElectrostaticsForce( context );
 
     vector<RealVec>& posData   = extractPositions(context);
     vector<RealVec>& forceData = extractForces(context);
-    RealOpenMM energy          = amoebaReferenceMultipoleForce->calculateForceAndEnergy( posData, charges, dipoles, quadrupoles, tholes,
+    RealOpenMM energy          = amoebaReferenceElectrostaticsForce->calculateForceAndEnergy( posData, charges, dipoles, quadrupoles, tholes,
                                                                                          dampingFactors, polarity, axisTypes, 
                                                                                          multipoleAtomZs, multipoleAtomXs, multipoleAtomYs,
                                                                                          multipoleAtomCovalentInfo, forceData);
 
-    delete amoebaReferenceMultipoleForce;
+    delete amoebaReferenceElectrostaticsForce;
 
     return static_cast<double>(energy);
 }
 
-void ReferenceCalcAmoebaMultipoleForceKernel::getElectrostaticPotential(ContextImpl& context, const std::vector< Vec3 >& inputGrid,
+void ReferenceCalcMBPolElectrostaticsForceKernel::getElectrostaticPotential(ContextImpl& context, const std::vector< Vec3 >& inputGrid,
                                                                         std::vector< double >& outputElectrostaticPotential ){
 
-    AmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = setupAmoebaReferenceMultipoleForce( context );
+    MBPolReferenceElectrostaticsForce* amoebaReferenceElectrostaticsForce = setupMBPolReferenceElectrostaticsForce( context );
     vector<RealVec>& posData                                     = extractPositions(context);
     vector<RealVec> grid( inputGrid.size() );
     vector<RealOpenMM> potential( inputGrid.size() );
     for( unsigned int ii = 0; ii < inputGrid.size(); ii++ ){
         grid[ii] = inputGrid[ii];
     }
-    amoebaReferenceMultipoleForce->calculateElectrostaticPotential( posData, charges, dipoles, quadrupoles, tholes,
+    amoebaReferenceElectrostaticsForce->calculateElectrostaticPotential( posData, charges, dipoles, quadrupoles, tholes,
                                                                     dampingFactors, polarity, axisTypes, 
                                                                     multipoleAtomZs, multipoleAtomXs, multipoleAtomYs,
                                                                     multipoleAtomCovalentInfo, grid, potential );
@@ -668,12 +668,12 @@ void ReferenceCalcAmoebaMultipoleForceKernel::getElectrostaticPotential(ContextI
         outputElectrostaticPotential[ii] = potential[ii];
     }
 
-    delete amoebaReferenceMultipoleForce;
+    delete amoebaReferenceElectrostaticsForce;
 
     return;
 }
 
-void ReferenceCalcAmoebaMultipoleForceKernel::getSystemMultipoleMoments(ContextImpl& context, std::vector< double >& outputMultipoleMoments){
+void ReferenceCalcMBPolElectrostaticsForceKernel::getSystemElectrostaticsMoments(ContextImpl& context, std::vector< double >& outputElectrostaticsMoments){
 
     // retrieve masses
 
@@ -683,20 +683,20 @@ void ReferenceCalcAmoebaMultipoleForceKernel::getSystemMultipoleMoments(ContextI
         masses.push_back( static_cast<RealOpenMM>(system.getParticleMass(i)) );
     }    
 
-    AmoebaReferenceMultipoleForce* amoebaReferenceMultipoleForce = setupAmoebaReferenceMultipoleForce( context );
+    MBPolReferenceElectrostaticsForce* amoebaReferenceElectrostaticsForce = setupMBPolReferenceElectrostaticsForce( context );
     vector<RealVec>& posData                                     = extractPositions(context);
-    amoebaReferenceMultipoleForce->calculateAmoebaSystemMultipoleMoments( masses, posData, charges, dipoles, quadrupoles, tholes,
+    amoebaReferenceElectrostaticsForce->calculateMBPolSystemElectrostaticsMoments( masses, posData, charges, dipoles, quadrupoles, tholes,
                                                                           dampingFactors, polarity, axisTypes, 
                                                                           multipoleAtomZs, multipoleAtomXs, multipoleAtomYs,
-                                                                          multipoleAtomCovalentInfo, outputMultipoleMoments );
+                                                                          multipoleAtomCovalentInfo, outputElectrostaticsMoments );
 
-    delete amoebaReferenceMultipoleForce;
+    delete amoebaReferenceElectrostaticsForce;
 
     return;
 }
 
-void ReferenceCalcAmoebaMultipoleForceKernel::copyParametersToContext(ContextImpl& context, const AmoebaMultipoleForce& force) {
-    if (numMultipoles != force.getNumMultipoles())
+void ReferenceCalcMBPolElectrostaticsForceKernel::copyParametersToContext(ContextImpl& context, const MBPolElectrostaticsForce& force) {
+    if (numElectrostaticss != force.getNumElectrostaticss())
         throw OpenMMException("updateParametersInContext: The number of multipoles has changed");
 
     // Record the values.
@@ -704,13 +704,13 @@ void ReferenceCalcAmoebaMultipoleForceKernel::copyParametersToContext(ContextImp
     int dipoleIndex = 0;
     int quadrupoleIndex = 0;
     int tholeIndex = 0;
-    for (int i = 0; i < numMultipoles; ++i) {
+    for (int i = 0; i < numElectrostaticss; ++i) {
         int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
         double charge, dampingFactorD, polarityD;
         std::vector<double> dipolesD;
         std::vector<double> tholeD;
         std::vector<double> quadrupolesD;
-        force.getMultipoleParameters(i, charge, dipolesD, quadrupolesD, axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY, tholeD, dampingFactorD, polarityD);
+        force.getElectrostaticsParameters(i, charge, dipolesD, quadrupolesD, axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY, tholeD, dampingFactorD, polarityD);
         axisTypes[i] = axisType;
         multipoleAtomZs[i] = multipoleAtomZ;
         multipoleAtomXs[i] = multipoleAtomX;
