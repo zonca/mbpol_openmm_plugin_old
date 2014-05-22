@@ -31,9 +31,11 @@
 
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/internal/MBPolElectrostaticsForceImpl.h"
-#include "openmm/amoebaKernels.h"
+#include "openmm/mbpolKernels.h"
 #include <stdio.h>
+#include <cmath>
 
+using namespace std;
 using namespace OpenMM;
 
 using std::vector;

@@ -35,7 +35,7 @@
 
 #include "openmm/internal/AssertionUtilities.h"
 #include "openmm/Context.h"
-#include "OpenMMAmoeba.h"
+#include "OpenMMMBPol.h"
 #include "openmm/System.h"
 #include "openmm/MBPolThreeBodyForce.h"
 
@@ -59,10 +59,10 @@ void testThreeBody( FILE* log ) {
 
     System system;
     int numberOfParticles          = 9;
-    MBPolThreeBodyForce* amoebaThreeBodyForce = new MBPolThreeBodyForce();
+    MBPolThreeBodyForce* mbpolThreeBodyForce = new MBPolThreeBodyForce();
     double cutoff = 1e10;
-    amoebaThreeBodyForce->setCutoff( cutoff );
-    amoebaThreeBodyForce->setNonbondedMethod(MBPolThreeBodyForce::CutoffNonPeriodic);
+    mbpolThreeBodyForce->setCutoff( cutoff );
+    mbpolThreeBodyForce->setNonbondedMethod(MBPolThreeBodyForce::CutoffNonPeriodic);
 
     unsigned int particlesPerMolecule = 3;
 
@@ -74,7 +74,7 @@ void testThreeBody( FILE* log ) {
         particleIndices[0] = jj;
         particleIndices[1] = jj+1;
         particleIndices[2] = jj+2;
-        amoebaThreeBodyForce->addParticle( particleIndices);
+        mbpolThreeBodyForce->addParticle( particleIndices);
     }
 
 
@@ -120,7 +120,7 @@ void testThreeBody( FILE* log ) {
 
     expectedEnergy        = 0.15586446;
 
-    system.addForce(amoebaThreeBodyForce);
+    system.addForce(mbpolThreeBodyForce);
     std::string platformName;
     #define AngstromToNm 0.1    
     #define CalToJoule   4.184

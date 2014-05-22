@@ -47,7 +47,7 @@ class System;
  * This is the internal implementation of MBPolThreeBodyForce.
  */
 
-class OPENMM_EXPORT_AMOEBA MBPolThreeBodyForceImpl : public ForceImpl {
+class OPENMM_EXPORT_MBPOL MBPolThreeBodyForceImpl : public ForceImpl {
 public:
     MBPolThreeBodyForceImpl(const MBPolThreeBodyForce& owner);
     ~MBPolThreeBodyForceImpl();
@@ -73,5 +73,5 @@ private:
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_VDW_FORCE_IMPL_H_*/
+#endif /*OPENMM_MBPOL_VDW_FORCE_IMPL_H_*/
 

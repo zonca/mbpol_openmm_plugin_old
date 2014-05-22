@@ -1,6 +1,3 @@
-#ifndef OPENMM_MBPOL_STRETCH_BEND_FORCE_PROXY_H_
-#define OPENMM_MBPOL_STRETCH_BEND_FORCE_PROXY_H_
-
 /* -------------------------------------------------------------------------- *
  *                                OpenMMMBPol                                *
  * -------------------------------------------------------------------------- *
@@ -32,22 +29,45 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/serialization/internal/windowsExportMBPolSerialization.h"
+#ifdef WIN32
+#include <windows.h>
+#include <sstream>
+#else
+#include <dlfcn.h>
+#include <dirent.h>
+#include <cstdlib>
+#endif
+
+#include "openmm/OpenMMException.h"
+
+#include "openmm/MBPolElectrostaticsForce.h"
+#include "openmm/MBPolOneBodyForce.h"
+#include "openmm/MBPolTwoBodyForce.h"
+
 #include "openmm/serialization/SerializationProxy.h"
 
-namespace OpenMM {
+#include "openmm/serialization/MBPolElectrostaticsForceProxy.h"
+#include "openmm/serialization/MBPolOneBodyForceProxy.h"
+#include "openmm/serialization/MBPolTorsionTorsionForceProxy.h"
+#include "openmm/serialization/MBPolTwoBodyForceProxy.h"
+#include "openmm/serialization/internal/windowsExportMBPolSerialization.h"
 
-/**
- * This is a proxy for serializing MBPolOneBodyForce objects.
- */
+#if defined(WIN32)
+    #include <windows.h>
+    extern "C" OPENMM_EXPORT_MBPOL_SERIALIZATION void registerMBPolSerializationProxies();
+    BOOL WINAPI DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
+        if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+            registerMBPolSerializationProxies();
+        return TRUE;
+    }
+#else
+    extern "C" void __attribute__((constructor)) registerMBPolSerializationProxies();
+#endif
 
-class OPENMM_EXPORT_MBPOL_SERIALIZATION MBPolOneBodyForceProxy : public SerializationProxy {
-public:
-    MBPolOneBodyForceProxy();
-    void serialize(const void* object, SerializationNode& node) const;
-    void* deserialize(const SerializationNode& node) const;
-};
+using namespace OpenMM;
 
-} // namespace OpenMM
-
-#endif /*OPENMM_MBPOL_STRETCH_BEND_FORCE_PROXY_H_*/
+extern "C" OPENMM_EXPORT_MBPOL_SERIALIZATION void registerMBPolSerializationProxies() {
+    SerializationProxy::registerProxy(typeid(MBPolElectrostaticsForce),                   new MBPolElectrostaticsForceProxy());
+    SerializationProxy::registerProxy(typeid(MBPolOneBodyForce),                 new MBPolOneBodyForceProxy());
+    SerializationProxy::registerProxy(typeid(MBPolTwoBodyForce),                         new MBPolTwoBodyForceProxy());
+}

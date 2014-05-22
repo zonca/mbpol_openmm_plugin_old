@@ -1,15 +1,15 @@
 #---------------------------------------------------
-# OpenMM CUDA Amoeba Implementation
+# OpenMM CUDA MBPol Implementation
 #
-# Creates OpenMM library, base name=OpenMMAmoebaCUDA.
+# Creates OpenMM library, base name=OpenMMMBPolCUDA.
 # Default libraries are shared & optimized. Variants
 # are created for debug (_d).
 #
 # Windows:
-#   OpenMMAmoebaCUDA[_d].dll
-#   OpenMMAmoebaCUDA[_d].lib
+#   OpenMMMBPolCUDA[_d].dll
+#   OpenMMMBPolCUDA[_d].lib
 # Unix:
-#   libOpenMMAmoebaCUDA[_d].so
+#   libOpenMMMBPolCUDA[_d].so
 #----------------------------------------------------
 
 # The source is organized into subdirectories, but we handle them all from
@@ -20,9 +20,9 @@ SET(OPENMM_SOURCE_SUBDIRS .)
 # Collect up information about the version of the OpenMM library we're building
 # and make it available to the code so it can be built into the binaries.
 
-SET(OPENMMAMOEBACUDA_LIBRARY_NAME OpenMMAmoebaCUDA)
+SET(OPENMMMBPOLCUDA_LIBRARY_NAME OpenMMMBPolCUDA)
 
-SET(SHARED_TARGET ${OPENMMAMOEBACUDA_LIBRARY_NAME})
+SET(SHARED_TARGET ${OPENMMMBPOLCUDA_LIBRARY_NAME})
 
 
 # Ensure that debug libraries have "_d" appended to their names.
@@ -82,7 +82,7 @@ INCLUDE_DIRECTORIES(BEFORE ${CMAKE_BINARY_DIR}/platforms/cuda/src)
 # Set variables needed for encoding kernel sources into a C++ class
 
 SET(CUDA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-SET(CUDA_SOURCE_CLASS CudaAmoebaKernelSources)
+SET(CUDA_SOURCE_CLASS CudaMBPolKernelSources)
 SET(CUDA_KERNELS_CPP ${CMAKE_CURRENT_BINARY_DIR}/src/${CUDA_SOURCE_CLASS}.cpp)
 SET(CUDA_KERNELS_H ${CMAKE_CURRENT_BINARY_DIR}/src/${CUDA_SOURCE_CLASS}.h)
 SET(SOURCE_FILES ${SOURCE_FILES} ${CUDA_KERNELS_CPP} ${CUDA_KERNELS_H})
@@ -108,7 +108,7 @@ ELSE (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
 ENDIF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
 TARGET_LINK_LIBRARIES(${SHARED_TARGET} ${MAIN_OPENMM_LIB}  ${CUDA_LIBRARIES} ${PTHREADS_LIB})
 TARGET_LINK_LIBRARIES(${SHARED_TARGET} debug ${OPENMM_LIBRARY_NAME}CUDA_d optimized ${OPENMM_LIBRARY_NAME}CUDA)
-TARGET_LINK_LIBRARIES(${SHARED_TARGET} debug ${SHARED_AMOEBA_TARGET} optimized ${SHARED_AMOEBA_TARGET})
+TARGET_LINK_LIBRARIES(${SHARED_TARGET} debug ${SHARED_MBPOL_TARGET} optimized ${SHARED_MBPOL_TARGET})
 SET_TARGET_PROPERTIES(${SHARED_TARGET} PROPERTIES COMPILE_FLAGS "-DOPENMM_BUILDING_SHARED_LIBRARY")
 
 INSTALL(TARGETS ${SHARED_TARGET} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/plugins)

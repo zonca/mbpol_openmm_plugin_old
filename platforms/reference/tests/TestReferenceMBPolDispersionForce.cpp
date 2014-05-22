@@ -35,7 +35,7 @@
 
 #include "openmm/internal/AssertionUtilities.h"
 #include "openmm/Context.h"
-#include "OpenMMAmoeba.h"
+#include "OpenMMMBPol.h"
 #include "openmm/System.h"
 
 #include "openmm/MBPolDispersionForce.h"

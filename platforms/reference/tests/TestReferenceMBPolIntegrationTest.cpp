@@ -35,7 +35,7 @@
 
 #include "openmm/internal/AssertionUtilities.h"
 #include "openmm/Context.h"
-#include "OpenMMAmoeba.h"
+#include "OpenMMMBPol.h"
 #include "openmm/System.h"
 #include "openmm/MBPolTwoBodyForce.h"
 #include "MBPolReferenceElectrostaticsForce.h"
@@ -93,9 +93,9 @@ void testThreeBody( FILE* log ) {
     mbpolTwoBodyForce->setNonbondedMethod(MBPolTwoBodyForce::CutoffNonPeriodic);
 
     // Three body interaction
-    MBPolThreeBodyForce* amoebaThreeBodyForce = new MBPolThreeBodyForce();
-    amoebaThreeBodyForce->setCutoff( cutoff );
-    amoebaThreeBodyForce->setNonbondedMethod(MBPolThreeBodyForce::CutoffNonPeriodic);
+    MBPolThreeBodyForce* mbpolThreeBodyForce = new MBPolThreeBodyForce();
+    mbpolThreeBodyForce->setCutoff( cutoff );
+    mbpolThreeBodyForce->setNonbondedMethod(MBPolThreeBodyForce::CutoffNonPeriodic);
 
     // Dispersion Force
     MBPolDispersionForce* dispersionForce = new MBPolDispersionForce();
@@ -131,7 +131,7 @@ void testThreeBody( FILE* log ) {
 
         mbpolOneBodyForce->addOneBody(jj, jj+1, jj+2);
         mbpolTwoBodyForce->addParticle( particleIndices);
-        amoebaThreeBodyForce->addParticle( particleIndices);
+        mbpolThreeBodyForce->addParticle( particleIndices);
         dispersionForce->addParticle( particleIndices);
 
     }
@@ -139,7 +139,7 @@ void testThreeBody( FILE* log ) {
     system.addForce(mbpolElectrostaticsForce);
     system.addForce(mbpolOneBodyForce);
     system.addForce(mbpolTwoBodyForce);
-    system.addForce(amoebaThreeBodyForce);
+    system.addForce(mbpolThreeBodyForce);
     system.addForce(dispersionForce);
 
     LangevinIntegrator integrator(0.0, 0.1, 0.01);

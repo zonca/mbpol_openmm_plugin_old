@@ -31,7 +31,7 @@
 
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/internal/MBPolOneBodyForceImpl.h"
-#include "openmm/amoebaKernels.h"
+#include "openmm/mbpolKernels.h"
 
 using namespace OpenMM;
 

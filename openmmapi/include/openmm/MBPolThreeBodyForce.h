@@ -33,7 +33,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "openmm/Force.h"
-#include "internal/windowsExportAmoeba.h"
+#include "internal/windowsExportMBPol.h"
 #include <vector>
 
 namespace OpenMM {
@@ -52,7 +52,7 @@ namespace OpenMM {
  * from the parent atom to the interaction site.
  */
 
-class OPENMM_EXPORT_AMOEBA MBPolThreeBodyForce : public Force {
+class OPENMM_EXPORT_MBPOL MBPolThreeBodyForce : public Force {
 public:
     /**
      * This is an enumeration of the different methods that may be used for handling long range nonbonded forces.
@@ -177,5 +177,5 @@ public:
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_VDW_FORCE_H_*/
+#endif /*OPENMM_MBPOL_VDW_FORCE_H_*/
 

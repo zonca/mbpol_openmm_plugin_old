@@ -1,16 +1,16 @@
-#ifndef OPENMM_MBPOL_STRETCH_BEND_FORCE_PROXY_H_
-#define OPENMM_MBPOL_STRETCH_BEND_FORCE_PROXY_H_
+#ifndef MBPOL_OPENMM_H_
+#define MBPOL_OPENMM_H_
 
 /* -------------------------------------------------------------------------- *
- *                                OpenMMMBPol                                *
+ *                               OpenMMMBPol                                 *
  * -------------------------------------------------------------------------- *
  * This is part of the OpenMM molecular simulation toolkit originating from   *
  * Simbios, the NIH National Center for Physics-Based Simulation of           *
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2010 Stanford University and the Authors.           *
- * Authors: Peter Eastman                                                     *
+ * Portions copyright (c) 2009 Stanford University and the Authors.           *
+ * Authors:                                                                   *
  * Contributors:                                                              *
  *                                                                            *
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -32,22 +32,10 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "openmm/serialization/internal/windowsExportMBPolSerialization.h"
-#include "openmm/serialization/SerializationProxy.h"
+#include "openmm/MBPolElectrostaticsForce.h"
+#include "openmm/MBPolOneBodyForce.h"
+#include "openmm/MBPolTwoBodyForce.h"
+#include "openmm/MBPolThreeBodyForce.h"
+#include "openmm/MBPolDispersionForce.h"
 
-namespace OpenMM {
-
-/**
- * This is a proxy for serializing MBPolOneBodyForce objects.
- */
-
-class OPENMM_EXPORT_MBPOL_SERIALIZATION MBPolOneBodyForceProxy : public SerializationProxy {
-public:
-    MBPolOneBodyForceProxy();
-    void serialize(const void* object, SerializationNode& node) const;
-    void* deserialize(const SerializationNode& node) const;
-};
-
-} // namespace OpenMM
-
-#endif /*OPENMM_MBPOL_STRETCH_BEND_FORCE_PROXY_H_*/
+#endif /*MBPOL_OPENMM_H_*/

@@ -1,5 +1,5 @@
-#ifndef OPENMM_AMOEBA_STRETCH_BEND_FORCE_H_
-#define OPENMM_AMOEBA_STRETCH_BEND_FORCE_H_
+#ifndef OPENMM_MBPOL_STRETCH_BEND_FORCE_H_
+#define OPENMM_MBPOL_STRETCH_BEND_FORCE_H_
 
 /* -------------------------------------------------------------------------- *
  *                              OpenMMMBPol                                  *
@@ -137,4 +137,4 @@ public:
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_STRETCH_BEND_FORCE_H_*/
+#endif /*OPENMM_MBPOL_STRETCH_BEND_FORCE_H_*/

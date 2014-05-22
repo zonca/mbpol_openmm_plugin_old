@@ -7,22 +7,22 @@
 
 SET(SAXON_JAR ${CMAKE_SOURCE_DIR}/wrappers/saxonb9-1-0-7j/saxon9.jar)
 
-# OpenMMAmoeba
+# OpenMMMBPol
 
-ADD_CUSTOM_COMMAND(OUTPUT AmoebaOpenMMApi.xml COMMAND ${GCCXML_PATH} ${GCCXML_ARGS} -I${CMAKE_SOURCE_DIR}/openmmapi/include -I${CMAKE_SOURCE_DIR}/olla/include ${CMAKE_SOURCE_DIR}/plugins/amoeba/openmmapi/include/OpenMMAmoeba.h -fxml=AmoebaOpenMMApi.xml)
+ADD_CUSTOM_COMMAND(OUTPUT MBPolOpenMMApi.xml COMMAND ${GCCXML_PATH} ${GCCXML_ARGS} -I${CMAKE_SOURCE_DIR}/openmmapi/include -I${CMAKE_SOURCE_DIR}/olla/include ${CMAKE_SOURCE_DIR}/plugins/mbpol/openmmapi/include/OpenMMMBPol.h -fxml=MBPolOpenMMApi.xml)
 
-ADD_CUSTOM_COMMAND(OUTPUT AmoebaOpenMMCWrapper.h COMMAND ${JAVA_RUNTIME} -jar ${SAXON_JAR} -t -s:AmoebaOpenMMApi.xml
-     -xsl:${CMAKE_SOURCE_DIR}/plugins/amoeba/wrappers/CWrapper_Header.xslt -o:AmoebaOpenMMCWrapper.h DEPENDS AmoebaOpenMMApi.xml)
+ADD_CUSTOM_COMMAND(OUTPUT MBPolOpenMMCWrapper.h COMMAND ${JAVA_RUNTIME} -jar ${SAXON_JAR} -t -s:MBPolOpenMMApi.xml
+     -xsl:${CMAKE_SOURCE_DIR}/plugins/mbpol/wrappers/CWrapper_Header.xslt -o:MBPolOpenMMCWrapper.h DEPENDS MBPolOpenMMApi.xml)
 #
-ADD_CUSTOM_COMMAND(OUTPUT AmoebaOpenMMCWrapper.cpp COMMAND ${JAVA_RUNTIME} -jar ${SAXON_JAR} -t -s:AmoebaOpenMMApi.xml
-     -xsl:${CMAKE_SOURCE_DIR}/plugins/amoeba/wrappers/CWrapper_Source.xslt -o:AmoebaOpenMMCWrapper.cpp DEPENDS AmoebaOpenMMApi.xml)
+ADD_CUSTOM_COMMAND(OUTPUT MBPolOpenMMCWrapper.cpp COMMAND ${JAVA_RUNTIME} -jar ${SAXON_JAR} -t -s:MBPolOpenMMApi.xml
+     -xsl:${CMAKE_SOURCE_DIR}/plugins/mbpol/wrappers/CWrapper_Source.xslt -o:MBPolOpenMMCWrapper.cpp DEPENDS MBPolOpenMMApi.xml)
 
-ADD_CUSTOM_COMMAND(OUTPUT AmoebaOpenMMFortranModule.f90 COMMAND ${JAVA_RUNTIME} -jar ${SAXON_JAR} -t -s:AmoebaOpenMMApi.xml
-     -xsl:${CMAKE_SOURCE_DIR}/plugins/amoeba/wrappers/FortranWrapper_Header.xslt -o:AmoebaOpenMMFortranModule.f90 DEPENDS AmoebaOpenMMApi.xml ${CMAKE_SOURCE_DIR}/plugins/amoeba/wrappers/FortranWrapper_Header.xslt)
+ADD_CUSTOM_COMMAND(OUTPUT MBPolOpenMMFortranModule.f90 COMMAND ${JAVA_RUNTIME} -jar ${SAXON_JAR} -t -s:MBPolOpenMMApi.xml
+     -xsl:${CMAKE_SOURCE_DIR}/plugins/mbpol/wrappers/FortranWrapper_Header.xslt -o:MBPolOpenMMFortranModule.f90 DEPENDS MBPolOpenMMApi.xml ${CMAKE_SOURCE_DIR}/plugins/mbpol/wrappers/FortranWrapper_Header.xslt)
 
-ADD_CUSTOM_COMMAND(OUTPUT AmoebaOpenMMFortranWrapper.cpp COMMAND ${JAVA_RUNTIME} -jar ${SAXON_JAR} -t -s:AmoebaOpenMMApi.xml
-     -xsl:${CMAKE_SOURCE_DIR}/plugins/amoeba/wrappers/FortranWrapper_Source.xslt -o:AmoebaOpenMMFortranWrapper.cpp DEPENDS AmoebaOpenMMApi.xml)
+ADD_CUSTOM_COMMAND(OUTPUT MBPolOpenMMFortranWrapper.cpp COMMAND ${JAVA_RUNTIME} -jar ${SAXON_JAR} -t -s:MBPolOpenMMApi.xml
+     -xsl:${CMAKE_SOURCE_DIR}/plugins/mbpol/wrappers/FortranWrapper_Source.xslt -o:MBPolOpenMMFortranWrapper.cpp DEPENDS MBPolOpenMMApi.xml)
 
-ADD_CUSTOM_TARGET(AmoebaApiWrappers DEPENDS AmoebaOpenMMCWrapper.h AmoebaOpenMMCWrapper.cpp  AmoebaOpenMMFortranModule.f90 AmoebaOpenMMFortranWrapper.cpp)
+ADD_CUSTOM_TARGET(MBPolApiWrappers DEPENDS MBPolOpenMMCWrapper.h MBPolOpenMMCWrapper.cpp  MBPolOpenMMFortranModule.f90 MBPolOpenMMFortranWrapper.cpp)
 
-INSTALL_FILES(/include FILES AmoebaOpenMMCWrapper.h AmoebaOpenMMFortranModule.f90 )
+INSTALL_FILES(/include FILES MBPolOpenMMCWrapper.h MBPolOpenMMFortranModule.f90 )

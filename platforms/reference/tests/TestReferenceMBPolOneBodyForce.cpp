@@ -37,7 +37,7 @@
 //#include "MBPolTinkerParameterFile.h"
 const double DegreesToRadians = 3.14159265/180.0;
 #include "openmm/Context.h"
-#include "OpenMMAmoeba.h"
+#include "OpenMMMBPol.h"
 #include "openmm/System.h"
 #include "openmm/LangevinIntegrator.h"
 #include <iostream>
@@ -59,7 +59,7 @@ void testOneOneBody( FILE* log ) {
 
     LangevinIntegrator integrator(0.0, 0.1, 0.01);
 
-    MBPolOneBodyForce* amoebaOneBodyForce = new MBPolOneBodyForce();
+    MBPolOneBodyForce* mbpolOneBodyForce = new MBPolOneBodyForce();
 
     double abLength         = 0.144800000E+01;
     double cbLength         = 0.101500000E+01;
@@ -67,9 +67,9 @@ void testOneOneBody( FILE* log ) {
     //double kOneBody     = 0.750491578E-01;
     double kOneBody     = 1.0;
 
-    amoebaOneBodyForce->addOneBody(0, 1, 2);
+    mbpolOneBodyForce->addOneBody(0, 1, 2);
 
-    system.addForce(amoebaOneBodyForce);
+    system.addForce(mbpolOneBodyForce);
     Context context(system, integrator, Platform::getPlatformByName( "Reference"));
 
     std::vector<Vec3> positions(numberOfParticles);
@@ -145,7 +145,7 @@ int main( int numberOfArguments, char* argv[] ) {
         //FILE* log = stderr;
         //FILE* log = fopen( "MBPolOneBodyForce1.log", "w" );;
         testOneOneBody( log );
-#ifdef AMOEBA_DEBUG
+#ifdef MBPOL_DEBUG
         if( log && log != stderr )
             (void) fclose( log );
 #endif

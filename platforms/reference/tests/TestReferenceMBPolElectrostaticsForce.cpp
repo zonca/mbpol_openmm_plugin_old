@@ -35,7 +35,7 @@
 
 #include "openmm/internal/AssertionUtilities.h"
 #include "openmm/Context.h"
-#include "OpenMMAmoeba.h"
+#include "OpenMMMBPol.h"
 #include "openmm/System.h"
 #include "openmm/MBPolElectrostaticsForce.h"
 #include "MBPolReferenceElectrostaticsForce.h"
@@ -94,8 +94,8 @@ static void testGetAndScaleInverseRs( FILE* log ) {
     RealOpenMM thole=0.400;
 
 
-    WrappedMBPolReferenceElectrostaticsForce* amoebaReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForce();;
-    amoebaReferenceElectrostaticsForce->wrapGetAndScaleInverseRs( dampO, dampH,
+    WrappedMBPolReferenceElectrostaticsForce* mbpolReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForce();;
+    mbpolReferenceElectrostaticsForce->wrapGetAndScaleInverseRs( dampO, dampH,
                           thole, thole, r, false, damp, rrI);
 
     ASSERT_EQUAL_TOL_MOD(9.33047, rrI[1], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
@@ -116,8 +116,8 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
     RealOpenMM r=2.771936396e+00*1e-1; // from Water3 test
     RealOpenMM thole=0.400;
 
-    WrappedMBPolReferenceElectrostaticsForce* amoebaReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForce();;
-    amoebaReferenceElectrostaticsForce->wrapGetAndScaleInverseRs( dampO, dampO,
+    WrappedMBPolReferenceElectrostaticsForce* mbpolReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForce();;
+    mbpolReferenceElectrostaticsForce->wrapGetAndScaleInverseRs( dampO, dampO,
                           thole, thole, r, false, damp, rrI);
 
     ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[1], 1e-5, testName); // from mbpol
@@ -341,14 +341,14 @@ static void testWater3VirtualSite( FILE* log ) {
     // Vec3 c( 0.0, 0.0, boxDimension );
     // system.setDefaultPeriodicBoxVectors( a, b, c );
 
-    MBPolElectrostaticsForce* amoebaElectrostaticsForce        = new MBPolElectrostaticsForce();;
-    amoebaElectrostaticsForce->setNonbondedMethod( nonbondedMethod );
-    //amoebaElectrostaticsForce->setPolarizationType( polarizationType );
-    //amoebaElectrostaticsForce->setCutoffDistance( cutoff );
-    //amoebaElectrostaticsForce->setMutualInducedTargetEpsilon( 1.0e-06 );
-    //amoebaElectrostaticsForce->setMutualInducedMaxIterations( 500 );
-    //amoebaElectrostaticsForce->setAEwald( 5.4459052e+00 );
-    //amoebaElectrostaticsForce->setEwaldErrorTolerance( 1.0e-04 );
+    MBPolElectrostaticsForce* mbpolElectrostaticsForce        = new MBPolElectrostaticsForce();;
+    mbpolElectrostaticsForce->setNonbondedMethod( nonbondedMethod );
+    //mbpolElectrostaticsForce->setPolarizationType( polarizationType );
+    //mbpolElectrostaticsForce->setCutoffDistance( cutoff );
+    //mbpolElectrostaticsForce->setMutualInducedTargetEpsilon( 1.0e-06 );
+    //mbpolElectrostaticsForce->setMutualInducedMaxIterations( 500 );
+    //mbpolElectrostaticsForce->setAEwald( 5.4459052e+00 );
+    //mbpolElectrostaticsForce->setEwaldErrorTolerance( 1.0e-04 );
 
     double virtualSiteWeightO = 0.573293118;
     double virtualSiteWeightH = 0.213353441;
@@ -376,25 +376,25 @@ static void testWater3VirtualSite( FILE* log ) {
     thole[TDDHH] = 0.055;
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
-        amoebaElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
                                             thole, 0.001310, 0.001310 );
-        amoebaElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
                                             thole, 0.000294, 0.000294 );
-        amoebaElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
                                             thole, 0.000294, 0.000294 );
-        amoebaElectrostaticsForce->addElectrostatics(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+        mbpolElectrostaticsForce->addElectrostatics(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
                                                     thole,  0.001310,  0.);
-//        amoebaElectrostaticsForce->addElectrostatics( 0, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+//        mbpolElectrostaticsForce->addElectrostatics( 0, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
 //                                              4.000000e-01, 0.001310, 0.001310 );
-//          amoebaElectrostaticsForce->addElectrostatics(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+//          mbpolElectrostaticsForce->addElectrostatics(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
 //                                              4.000000e-01, 0.000294, 0.000294 );
-//          amoebaElectrostaticsForce->addElectrostatics(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+//          mbpolElectrostaticsForce->addElectrostatics(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
 //                                              4.000000e-01, 0.000294, 0.000294 );
-//          amoebaElectrostaticsForce->addElectrostatics(  -1, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+//          mbpolElectrostaticsForce->addElectrostatics(  -1, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
 //                                                      4.000000e-01,  0.001310,  0.);
     }
 
-    system.addForce(amoebaElectrostaticsForce);
+    system.addForce(mbpolElectrostaticsForce);
 
     static std::vector<Vec3> positions; // Static to work around bug in Visual Studio that makes compilation very very slow.
     positions.resize(numberOfParticles);
@@ -642,9 +642,9 @@ static void testWater3( FILE* log ) {
 
     System system;
     // box dimensions
-    MBPolElectrostaticsForce* amoebaElectrostaticsForce        = new MBPolElectrostaticsForce();;
-    amoebaElectrostaticsForce->setNonbondedMethod( nonbondedMethod );
-    amoebaElectrostaticsForce->setIncludeChargeRedistribution(false);
+    MBPolElectrostaticsForce* mbpolElectrostaticsForce        = new MBPolElectrostaticsForce();;
+    mbpolElectrostaticsForce->setNonbondedMethod( nonbondedMethod );
+    mbpolElectrostaticsForce->setIncludeChargeRedistribution(false);
 
     unsigned int particlesPerMolecule = 3;
 
@@ -662,15 +662,15 @@ static void testWater3( FILE* log ) {
     std::fill(thole.begin(), thole.end(), 0.4);
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += particlesPerMolecule ){
-        amoebaElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
                                             thole, 0.001310, 0.001310 );
-        amoebaElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
                                             thole, 0.000294, 0.000294 );
-        amoebaElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
                                             thole, 0.000294, 0.000294 );
     }
 
-    system.addForce(amoebaElectrostaticsForce);
+    system.addForce(mbpolElectrostaticsForce);
 
     static std::vector<Vec3> positions; // Static to work around bug in Visual Studio that makes compilation very very slow.
     positions.resize(numberOfParticles);
@@ -817,9 +817,9 @@ int main( int numberOfArguments, char* argv[] ) {
         testGetAndScaleInverseRs( log );
         testGetAndScaleInverseRsInterMulecolar( log );
 
-        WrappedMBPolReferenceElectrostaticsForceForIndDipole* amoebaReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForceForIndDipole();
-        amoebaReferenceElectrostaticsForce->setMutualInducedDipoleTargetEpsilon(1e-7);
-        amoebaReferenceElectrostaticsForce->wrapCalculateInducedDipolePairIxns();
+        WrappedMBPolReferenceElectrostaticsForceForIndDipole* mbpolReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForceForIndDipole();
+        mbpolReferenceElectrostaticsForce->setMutualInducedDipoleTargetEpsilon(1e-7);
+        mbpolReferenceElectrostaticsForce->wrapCalculateInducedDipolePairIxns();
 
         WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn();
         wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);

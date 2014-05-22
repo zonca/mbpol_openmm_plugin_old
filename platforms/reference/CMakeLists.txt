@@ -1,17 +1,17 @@
 #---------------------------------------------------
-# OpenMMAmoeba REFERENCE Platform
+# OpenMMMBPol REFERENCE Platform
 #
-# Creates OpenMM library, base name=OpenMMAmoebaReference.
+# Creates OpenMM library, base name=OpenMMMBPolReference.
 # Default libraries are shared & optimized. Variants
 # are created for static (_static) and debug (_d).
 #
 # Windows:
-#   OpenMMAmoebaReference[_d].dll
-#   OpenMMAmoebaReference[_d].lib
-#   OpenMMAmoebaReference_static[_d].lib
+#   OpenMMMBPolReference[_d].dll
+#   OpenMMMBPolReference[_d].lib
+#   OpenMMMBPolReference_static[_d].lib
 # Unix:
-#   libOpenMMAmoebaReference[_d].so
-#   libOpenMMAmoebaReference_static[_d].a
+#   libOpenMMMBPolReference[_d].so
+#   libOpenMMMBPolReference_static[_d].a
 #----------------------------------------------------
 
 # ----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ SET(LOG TRUE)
    
 IF(LOG)
    SET(LOG_FILE "CMakeLog.txt" )
-   FILE( WRITE ${LOG_FILE} "In plugins/amoeba/platforms/reference\n")
+   FILE( WRITE ${LOG_FILE} "In plugins/mbpol/platforms/reference\n")
 ENDIF(LOG)
 
 IF(LOG)
@@ -42,12 +42,12 @@ SET(DO_TESTS TRUE)
 
 # The source is organized into subdirectories, but we handle them all from
 # this CMakeLists file rather than letting CMake visit them as SUBDIRS.
-SET(OPENMM_AMOEBA_SOURCE_SUBDIRS .)
+SET(OPENMM_MBPOL_SOURCE_SUBDIRS .)
 
 # Collect up information about the version of the OpenMM library we're building
 # and make it available to the code so it can be built into the binaries.
 
-SET(OPENMM_REFERENCE_LIBRARY_NAME OpenMMAmoebaReference)
+SET(OPENMM_REFERENCE_LIBRARY_NAME OpenMMMBPolReference)
 
 SET(SHARED_TARGET ${OPENMM_REFERENCE_LIBRARY_NAME})
 SET(STATIC_TARGET ${OPENMM_REFERENCE_LIBRARY_NAME}_static)
@@ -66,40 +66,40 @@ ENDIF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
 
 # These are all the places to search for header files which are
 # to be part of the API.
-SET(API_AMOEBA_INCLUDE_DIRS) # start empty
-FOREACH(subdir ${OPENMM_AMOEBA_SOURCE_SUBDIRS})
+SET(API_MBPOL_INCLUDE_DIRS) # start empty
+FOREACH(subdir ${OPENMM_MBPOL_SOURCE_SUBDIRS})
     # append
-    SET(API_AMOEBA_INCLUDE_DIRS ${API_AMOEBA_INCLUDE_DIRS}
+    SET(API_MBPOL_INCLUDE_DIRS ${API_MBPOL_INCLUDE_DIRS}
                                 ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/include ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/include/internal)
 ENDFOREACH(subdir)
 
 ## ----------------------------------------------------------------------------
 IF(LOG)
    LOG_DIR( ${LOG_FILE} "OPENMM_SOURCE_SUBDIRS"              ${OPENMM_SOURCE_SUBDIRS} )
-   LOG_DIR( ${LOG_FILE} "OPENMM_AMOEBA_SOURCE_SUBDIRS"       ${OPENMM_AMOEBA_SOURCE_SUBDIRS} )
-   LOG_DIR( ${LOG_FILE} "API_AMOEBA_INCLUDE_DIRS"            ${API_AMOEBA_INCLUDE_DIRS} )
+   LOG_DIR( ${LOG_FILE} "OPENMM_MBPOL_SOURCE_SUBDIRS"       ${OPENMM_MBPOL_SOURCE_SUBDIRS} )
+   LOG_DIR( ${LOG_FILE} "API_MBPOL_INCLUDE_DIRS"            ${API_MBPOL_INCLUDE_DIRS} )
    LOG_DIR( ${LOG_FILE} "CMAKE_CURRENT_SOURCE_DIR"           ${CMAKE_CURRENT_SOURCE_DIR} )
 ENDIF(LOG)
 ## ----------------------------------------------------------------------------
 
-# We'll need both *relative* path names, starting with their API_AMOEBA_INCLUDE_DIRS,
+# We'll need both *relative* path names, starting with their API_MBPOL_INCLUDE_DIRS,
 # and absolute pathnames.
-SET(API_AMOEBA_REL_INCLUDE_FILES)   # start these out empty
-SET(API_AMOEBA_ABS_INCLUDE_FILES)
+SET(API_MBPOL_REL_INCLUDE_FILES)   # start these out empty
+SET(API_MBPOL_ABS_INCLUDE_FILES)
 
-FOREACH(dir ${API_AMOEBA_INCLUDE_DIRS})
+FOREACH(dir ${API_MBPOL_INCLUDE_DIRS})
     FILE(GLOB fullpaths ${dir}/*.h)	# returns full pathnames
-    SET(API_AMOEBA_ABS_INCLUDE_FILES ${API_AMOEBA_ABS_INCLUDE_FILES} ${fullpaths})
+    SET(API_MBPOL_ABS_INCLUDE_FILES ${API_MBPOL_ABS_INCLUDE_FILES} ${fullpaths})
 
     FOREACH(pathname ${fullpaths})
         GET_FILENAME_COMPONENT(filename ${pathname} NAME)
-        SET(API_AMOEBA_REL_INCLUDE_FILES ${API_AMOEBA_REL_INCLUDE_FILES} ${dir}/${filename})
+        SET(API_MBPOL_REL_INCLUDE_FILES ${API_MBPOL_REL_INCLUDE_FILES} ${dir}/${filename})
     ENDFOREACH(pathname)
 ENDFOREACH(dir)
 
 ## ----------------------------------------------------------------------------
 IF(LOG)
-   LOG_DIR( ${LOG_FILE} "API_AMOEBA_REL_INCLUDE_FILES" ${API_AMOEBA_REL_INCLUDE_FILES} )
+   LOG_DIR( ${LOG_FILE} "API_MBPOL_REL_INCLUDE_FILES" ${API_MBPOL_REL_INCLUDE_FILES} )
    LOG_DIR( ${LOG_FILE} "OPENMM_DIR" ${OPENMM_DIR} )
 ENDIF(LOG)
 ## ----------------------------------------------------------------------------
@@ -108,7 +108,7 @@ ENDIF(LOG)
 SET(SOURCE_FILES) # empty
 SET(SOURCE_INCLUDE_FILES)
 
-FOREACH(subdir ${OPENMM_AMOEBA_SOURCE_SUBDIRS})
+FOREACH(subdir ${OPENMM_MBPOL_SOURCE_SUBDIRS})
     FILE(GLOB_RECURSE src_files  ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/src/*.c)
     FILE(GLOB incl_files ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/src/*.h)
     SET(SOURCE_FILES         ${SOURCE_FILES}         ${src_files})   #append

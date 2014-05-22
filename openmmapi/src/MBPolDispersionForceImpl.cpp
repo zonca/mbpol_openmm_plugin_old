@@ -34,7 +34,7 @@
 #endif
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/internal/MBPolDispersionForceImpl.h"
-#include "openmm/amoebaKernels.h"
+#include "openmm/mbpolKernels.h"
 #include <map>
 #include <cmath>
 

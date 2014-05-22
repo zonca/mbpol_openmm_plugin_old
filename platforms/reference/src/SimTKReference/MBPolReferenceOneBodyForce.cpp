@@ -22,7 +22,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "AmoebaReferenceForce.h"
+#include "MBPolReferenceForce.h"
 #include "MBPolReferenceOneBodyForce.h"
 #include <vector>
 #include "mbpol_interaction_constants.h"

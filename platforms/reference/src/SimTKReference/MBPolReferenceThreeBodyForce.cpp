@@ -23,7 +23,7 @@
  */
 
 
-#include "AmoebaReferenceForce.h"
+#include "MBPolReferenceForce.h"
 #include "MBPolReferenceThreeBodyForce.h"
 #include <algorithm>
 #include <cctype>

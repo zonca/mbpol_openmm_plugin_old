@@ -47,7 +47,7 @@ class System;
  * This is the internal implementation of MBPolDispersionForce.
  */
 
-class OPENMM_EXPORT_AMOEBA MBPolDispersionForceImpl : public ForceImpl {
+class OPENMM_EXPORT_MBPOL MBPolDispersionForceImpl : public ForceImpl {
 public:
     MBPolDispersionForceImpl(const MBPolDispersionForce& owner);
     ~MBPolDispersionForceImpl();
@@ -73,5 +73,5 @@ private:
 
 } // namespace OpenMM
 
-#endif /*OPENMM_AMOEBA_VDW_FORCE_IMPL_H_*/
+#endif /*OPENMM_MBPOL_VDW_FORCE_IMPL_H_*/
 
