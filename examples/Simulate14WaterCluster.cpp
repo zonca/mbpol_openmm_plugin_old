@@ -1,38 +1,3 @@
-/* -------------------------------------------------------------------------- *
- *                                   OpenMMMBPol                             *
- * -------------------------------------------------------------------------- *
- * This is part of the OpenMM molecular simulation toolkit originating from   *
- * Simbios, the NIH National Center for Physics-Based Simulation of           *
- * Biological Structures at Stanford, funded under the NIH Roadmap for        *
- * Medical Research, grant U54 GM072970. See https://simtk.org.               *
- *                                                                            *
- * Portions copyright (c) 2008-2012 Stanford University and the Authors.      *
- * Authors: Mark Friedrichs                                                   *
- * Contributors:                                                              *
- *                                                                            *
- * Permission is hereby granted, free of charge, to any person obtaining a    *
- * copy of this software and associated documentation files (the "Software"), *
- * to deal in the Software without restriction, including without limitation  *
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,   *
- * and/or sell copies of the Software, and to permit persons to whom the      *
- * Software is furnished to do so, subject to the following conditions:       *
- *                                                                            *
- * The above copyright notice and this permission notice shall be included in *
- * all copies or substantial portions of the Software.                        *
- *                                                                            *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR *
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,   *
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL    *
- * THE AUTHORS, CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,    *
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR      *
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE  *
- * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
- * -------------------------------------------------------------------------- */
-
-/**
- * This tests the Reference implementation of ReferenceMBPolThreeBodyForce.
- */
-
 #include "openmm/internal/AssertionUtilities.h"
 #include "openmm/Context.h"
 #include "OpenMMMBPol.h"
@@ -54,10 +19,43 @@ using namespace OpenMM;
 const double TOL = 1e-4;
 const double cal2joule = 4.184;
 
-void testWater14( FILE* log ) {
+// Handy homebrew PDB writer for quick-and-dirty trajectory output.
+void writePdbFrame(int frameNum, double time_ps, const OpenMM::State& state)
+{
+    // Open file
+    FILE * pFile;
+    char buf[4];
+    sprintf( buf, "%04d", frameNum );
+    std::string zeroPaddedFrameNum = buf;
+    pFile = fopen (("simulate14WaterCluster_" + zeroPaddedFrameNum + ".pdb").c_str(),"w");
 
-    std::string testName      = "testMBPolWater14Test";
+    // Reference atomic positions in the OpenMM State.
+    const std::vector<OpenMM::Vec3>& pos_nm = state.getPositions();
 
+    const char* atomNames[] = {" O  ", " H1 ", " H2 "}; // cycle through these
+    fprintf(pFile, "MODEL     %d\n", frameNum);
+    fprintf(pFile, "REMARK 250 time=%.3f picoseconds\n", time_ps);
+    int atomCount = 1;
+    for (int atom=0; atom < (int)pos_nm.size(); ++atom)
+    {
+        if (atom%4 != 3) 
+        {
+            fprintf(pFile, "HETATM%5d %4s HOH  %4d    ",        // start of pdb HETATM line
+                atomCount, atomNames[atom%4], 1 + (atomCount-1)/3); // atom number, name, residue #
+            fprintf(pFile, "%8.3f%8.3f%8.3f",                   // middle of pdb HETATM line
+                pos_nm[atom][0]*10, pos_nm[atom][1]*10, pos_nm[atom][2]*10);
+            fprintf(pFile, "  1.00  0.00            \n");       // end of pdb HETATM line
+            atomCount++;
+        }
+    }
+
+    fprintf(pFile, "ENDMDL\n"); // end of frame
+    fclose (pFile);
+}
+
+void testWater14() {
+
+    std::string testName      = "simulate14WaterCluster";
 
     // Electrostatics
 
@@ -204,13 +202,16 @@ void testWater14( FILE* log ) {
 
     // Setup context
     std::string platformName = "Reference";
-    LangevinIntegrator integrator(0.0, 0.1, 0.01);
+    double temperature_K = 100;
+    double frictionCoeff_invps = 0.1;
+    double stepSize_ps = 0.2 * 1e-3; // 0.2 femtoseconds
+    LangevinIntegrator integrator(temperature_K, frictionCoeff_invps, stepSize_ps);
     Context context(system, integrator, Platform::getPlatformByName( platformName ) );
     context.setPositions(positions);
     context.applyConstraints(1e-6); // update position of virtual sites
 
-    // Run computation
-    State state                      = context.getState(State::Forces | State::Energy);
+    // Compute energy and forces of initial state
+    State state                      = context.getState(State::Forces | State::Energy | State::Positions);
     double energy = state.getPotentialEnergy() / cal2joule;
     std::vector<Vec3> forces         = state.getForces();
 
@@ -301,16 +302,31 @@ void testWater14( FILE* log ) {
    }
    std::cout << "Test Successful: " << testName << std::endl << std::endl;
 
+    // Simulate.
+    for (int frameNum=1; ;++frameNum) {
+        
+       std::cout << "Simulation frame: " << frameNum << std::endl;
+        // Output current state information.
+        OpenMM::State state    = context.getState(State::Positions);
+        const double  time_ps = state.getTime();
+        writePdbFrame(frameNum, time_ps, state); // output coordinates
+
+        //if (frameNum >= 2)
+        if (time_ps >= 100.)
+            break;
+
+        // Advance state many steps at a time, for efficient use of OpenMM.
+        // 500 steps = .1 picoseconds
+        integrator.step(500);
+    }
 }
 
 int main( int numberOfArguments, char* argv[] ) {
 
     try {
-        std::cout << "testMBPolWater14Test running test..." << std::endl;
+        std::cout << "simulate14WaterCluster" << std::endl;
 
-        FILE* log = NULL;
-
-        testWater14( log );
+        testWater14();
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;

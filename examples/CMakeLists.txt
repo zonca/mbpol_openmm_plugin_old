@@ -5,9 +5,9 @@ SET(OpenMM_INSTALL_DIR "/usr/local/openmm")
 
 INCLUDE_DIRECTORIES (${OpenMM_INSTALL_DIR}/include/) 
 
-ADD_LIBRARY( openmmlib SHARED IMPORTED )
-SET_TARGET_PROPERTIES( openmmlib PROPERTIES IMPORTED_LOCATION (${OpenMM_INSTALL_DIR}/lib/ ) )
+LINK_DIRECTORIES(${OpenMM_INSTALL_DIR}/lib/)
 
 ADD_EXECUTABLE (Simulate14WaterCluster Simulate14WaterCluster.cpp)
 
-TARGET_LINK_LIBRARIES(Simulate14WaterCluster openmmlib)
+# link Debug versions of the libraries, to link Release versions, remove _d
+TARGET_LINK_LIBRARIES(Simulate14WaterCluster OpenMM_d OpenMMMBPol_d)
