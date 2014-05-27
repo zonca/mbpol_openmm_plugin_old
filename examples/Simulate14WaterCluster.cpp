@@ -3,8 +3,10 @@
 #include "OpenMMMBPol.h"
 #include "openmm/System.h"
 #include "openmm/VirtualSite.h"
+#include "openmm/LocalEnergyMinimizer.h"
 
 #include "openmm/LangevinIntegrator.h"
+#include "openmm/VerletIntegrator.h"
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
@@ -20,14 +22,14 @@ const double TOL = 1e-4;
 const double cal2joule = 4.184;
 
 // Handy homebrew PDB writer for quick-and-dirty trajectory output.
-void writePdbFrame(int frameNum, double time_ps, const OpenMM::State& state)
+void writePdbFrame(std::string filenametag, int frameNum, double time_ps, const OpenMM::State& state)
 {
     // Open file
     FILE * pFile;
     char buf[4];
     sprintf( buf, "%04d", frameNum );
     std::string zeroPaddedFrameNum = buf;
-    pFile = fopen (("simulate14WaterCluster_" + zeroPaddedFrameNum + ".pdb").c_str(),"w");
+    pFile = fopen (("simulate14WaterCluster_" + filenametag + "_" + zeroPaddedFrameNum + ".pdb").c_str(),"w");
 
     // Reference atomic positions in the OpenMM State.
     const std::vector<OpenMM::Vec3>& pos_nm = state.getPositions();
@@ -84,12 +86,15 @@ void testWater14() {
 
     // Two body interaction
     MBPolTwoBodyForce* mbpolTwoBodyForce = new MBPolTwoBodyForce();
-    double cutoff = 1e10;
+    double cutoff = 6.5 / 10.; // 6.5 A => nm
+    cutoff = 1e10;
     mbpolTwoBodyForce->setCutoff( cutoff );
     mbpolTwoBodyForce->setNonbondedMethod(MBPolTwoBodyForce::CutoffNonPeriodic);
 
     // Three body interaction
     MBPolThreeBodyForce* mbpolThreeBodyForce = new MBPolThreeBodyForce();
+    //cutoff = 5. / 10.; // 4.5 A => nm
+    cutoff = 1e10; // 4.5 A => nm
     mbpolThreeBodyForce->setCutoff( cutoff );
     mbpolThreeBodyForce->setNonbondedMethod(MBPolThreeBodyForce::CutoffNonPeriodic);
 
@@ -302,6 +307,13 @@ void testWater14() {
    }
    std::cout << "Test Successful: " << testName << std::endl << std::endl;
 
+    writePdbFrame("Tconst", 0, 0., state); // initial state
+
+    // Local minimization of energy
+    double minimizationTolerance = 1e-5;
+    // LocalEnergyMinimizer::minimize(context, minimizationTolerance);
+    context.applyConstraints(1e-6); // update position of virtual sites
+
     // Simulate.
     for (int frameNum=1; ;++frameNum) {
         
@@ -309,16 +321,46 @@ void testWater14() {
         // Output current state information.
         OpenMM::State state    = context.getState(State::Positions);
         const double  time_ps = state.getTime();
-        writePdbFrame(frameNum, time_ps, state); // output coordinates
+        writePdbFrame("Tconst", frameNum, time_ps, state); // output coordinates
 
-        //if (frameNum >= 2)
-        if (time_ps >= 100.)
+        if (frameNum >= 2)
+        // if (time_ps >= 100.)
             break;
 
         // Advance state many steps at a time, for efficient use of OpenMM.
         // 500 steps = .1 picoseconds
-        integrator.step(500);
+        integrator.step(10);
     }
+
+    VerletIntegrator constantEnergyIntegrator(stepSize_ps);
+    Context constantEnergyContext(system, constantEnergyIntegrator, Platform::getPlatformByName( platformName ) );
+
+    state    = context.getState(State::Positions | State::Velocities);
+    constantEnergyContext.setPositions(state.getPositions());
+
+    constantEnergyContext.setVelocitiesToTemperature(temperature_K);
+    // constantEnergyContext.setVelocities(state.getVelocities());
+
+    // Simulate.
+    for (int frameNum=1; ;++frameNum) {
+        
+        // Output current state information.
+        OpenMM::State state    = constantEnergyContext.getState(State::Positions | State::Energy);
+        energy = state.getPotentialEnergy();
+        std::cout << "Constant Energy simulation frame: " << frameNum << ", Energy: " << energy/cal2joule << " Kcal/mol" << std::endl;
+        const double  time_ps = state.getTime();
+        writePdbFrame("Econst", frameNum, time_ps, state); // output coordinates
+
+        if (frameNum >= 5)
+        // if (time_ps >= 100.)
+            break;
+
+        // Advance state many steps at a time, for efficient use of OpenMM.
+        // 500 steps = .1 picoseconds
+        constantEnergyIntegrator.step(10);
+    }
+    
+    
 }
 
 int main( int numberOfArguments, char* argv[] ) {
