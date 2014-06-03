@@ -338,13 +338,11 @@ void simulate14WaterCluster() {
     VerletIntegrator constantEnergyIntegrator(stepSize_ps);
     Context constantEnergyContext(system, constantEnergyIntegrator, Platform::getPlatformByName( platformName ) );
 
-    state    = context.getState(State::Positions | State::Velocities);
-    constantEnergyContext.setPositions(state.getPositions());
+    constantEnergyContext.setPositions(positions);
 
     // either set velocity randomly given temperature or get the velocities at the last step
     // of the constant temperature run
     constantEnergyContext.setVelocitiesToTemperature(temperature_K);
-    // constantEnergyContext.setVelocities(state.getVelocities());
 
     for (int frameNum=1; ;++frameNum) {
         
