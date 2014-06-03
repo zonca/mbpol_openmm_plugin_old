@@ -309,11 +309,6 @@ void simulate14WaterCluster() {
 
     writePdbFrame("Tconst", 0, 0., state); // initial state
 
-    // Local minimization of energy
-    double minimizationTolerance = 1e-5;
-
-    // Option 1) Local energy minimization
-    // LocalEnergyMinimizer::minimize(context, minimizationTolerance);
 
     // Option 2) Simulate at constant temperature
     for (int frameNum=1; ;++frameNum) {
@@ -337,6 +332,12 @@ void simulate14WaterCluster() {
     //
     VerletIntegrator constantEnergyIntegrator(stepSize_ps);
     Context constantEnergyContext(system, constantEnergyIntegrator, Platform::getPlatformByName( platformName ) );
+    //
+    // Local minimization of energy
+    double minimizationTolerance = 1e-5;
+
+    // Option 1) Local energy minimization
+    LocalEnergyMinimizer::minimize(constantEnergyContext, minimizationTolerance);
 
     constantEnergyContext.setPositions(positions);
 
