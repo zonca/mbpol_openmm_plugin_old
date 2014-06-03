@@ -311,10 +311,11 @@ void simulate14WaterCluster() {
 
     // Local minimization of energy
     double minimizationTolerance = 1e-5;
-    // LocalEnergyMinimizer::minimize(context, minimizationTolerance);
-    context.applyConstraints(1e-6); // update position of virtual sites
 
-    // Simulate.
+    // Option 1) Local energy minimization
+    // LocalEnergyMinimizer::minimize(context, minimizationTolerance);
+
+    // Option 2) Simulate at constant temperature
     for (int frameNum=1; ;++frameNum) {
         
        std::cout << "Simulation frame: " << frameNum << std::endl;
@@ -332,16 +333,19 @@ void simulate14WaterCluster() {
         integrator.step(10);
     }
 
+    // Option 2) Simulate at constant temperature
+    //
     VerletIntegrator constantEnergyIntegrator(stepSize_ps);
     Context constantEnergyContext(system, constantEnergyIntegrator, Platform::getPlatformByName( platformName ) );
 
     state    = context.getState(State::Positions | State::Velocities);
     constantEnergyContext.setPositions(state.getPositions());
 
+    // either set velocity randomly given temperature or get the velocities at the last step
+    // of the constant temperature run
     constantEnergyContext.setVelocitiesToTemperature(temperature_K);
     // constantEnergyContext.setVelocities(state.getVelocities());
 
-    // Simulate.
     for (int frameNum=1; ;++frameNum) {
         
         // Output current state information.
@@ -351,7 +355,7 @@ void simulate14WaterCluster() {
         const double  time_ps = state.getTime();
         writePdbFrame("Econst", frameNum, time_ps, state); // output coordinates
 
-        if (frameNum >= 5)
+        if (frameNum >= 10)
         // if (time_ps >= 100.)
             break;
 
@@ -359,7 +363,6 @@ void simulate14WaterCluster() {
         // 500 steps = .1 picoseconds
         constantEnergyIntegrator.step(10);
     }
-    
     
 }
 
