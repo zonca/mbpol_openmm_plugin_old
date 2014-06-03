@@ -229,7 +229,7 @@ void simulate14WaterCluster() {
 
     // Testing
 
-    double tolerance = 1.0e-03;
+    double tolerance = 1.0e-06;
 
     std::vector<Vec3> expectedForces;
     expectedForces.push_back(Vec3(  -9.03018602, -25.22018024, -53.51380581 ));
