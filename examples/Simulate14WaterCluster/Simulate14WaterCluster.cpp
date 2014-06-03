@@ -55,9 +55,9 @@ void writePdbFrame(std::string filenametag, int frameNum, double time_ps, const 
     fclose (pFile);
 }
 
-void testWater14() {
+void simulate14WaterCluster() {
 
-    std::string testName      = "simulate14WaterCluster";
+    std::string testName = "simulate14WaterCluster";
 
     // Electrostatics
 
@@ -368,7 +368,7 @@ int main( int numberOfArguments, char* argv[] ) {
     try {
         std::cout << "simulate14WaterCluster" << std::endl;
 
-        testWater14();
+        simulate14WaterCluster();
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;
