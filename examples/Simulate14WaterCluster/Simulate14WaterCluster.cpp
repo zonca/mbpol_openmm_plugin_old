@@ -309,24 +309,24 @@ void simulate14WaterCluster() {
 
     writePdbFrame("Tconst", 0, 0., state); // initial state
 
-
-    // Option 2) Simulate at constant temperature
-    for (int frameNum=1; ;++frameNum) {
-        
-       std::cout << "Simulation frame: " << frameNum << std::endl;
-        // Output current state information.
-        OpenMM::State state    = context.getState(State::Positions);
-        const double  time_ps = state.getTime();
-        writePdbFrame("Tconst", frameNum, time_ps, state); // output coordinates
-
-        if (frameNum >= 2)
-        // if (time_ps >= 100.)
-            break;
-
-        // Advance state many steps at a time, for efficient use of OpenMM.
-        // 500 steps = .1 picoseconds
-        integrator.step(10);
-    }
+//
+//    // Option 2) Simulate at constant temperature
+//    for (int frameNum=1; ;++frameNum) {
+//
+//       std::cout << "Simulation frame: " << frameNum << std::endl;
+//        // Output current state information.
+//        OpenMM::State state    = context.getState(State::Positions);
+//        const double  time_ps = state.getTime();
+//        writePdbFrame("Tconst", frameNum, time_ps, state); // output coordinates
+//
+//        if (frameNum >= 2)
+//        // if (time_ps >= 100.)
+//            break;
+//
+//        // Advance state many steps at a time, for efficient use of OpenMM.
+//        // 500 steps = .1 picoseconds
+//        integrator.step(10);
+//    }
 
     // Option 2) Simulate at constant temperature
     //
@@ -336,10 +336,27 @@ void simulate14WaterCluster() {
     // Local minimization of energy
     double minimizationTolerance = 1e-5;
 
+    constantEnergyContext.setPositions(positions);
+    constantEnergyContext.applyConstraints(1e-6); // update position of virtual sites
+
+    state    = constantEnergyContext.getState(State::Positions | State::Energy);
+    energy = state.getPotentialEnergy();
+    writePdbFrame("BeforeMin", 0, 0, state); // output coordinates
+
+    std::cout << "Energy before energy minimization: " << energy/cal2joule << " Kcal/mol" << std::endl;
+
     // Option 1) Local energy minimization
     LocalEnergyMinimizer::minimize(constantEnergyContext, minimizationTolerance);
 
+    state    = constantEnergyContext.getState(State::Positions | State::Energy);
+    energy = state.getPotentialEnergy();
+    writePdbFrame("AfterMin", 0, 0, state); // output coordinates
+    std::cout << "Energy after energy minimization: " << energy/cal2joule << " Kcal/mol" << std::endl;
+
+    std::cout << "Reset position to initial state" << std::endl;
+
     constantEnergyContext.setPositions(positions);
+    constantEnergyContext.applyConstraints(1e-6); // update position of virtual sites
 
     // either set velocity randomly given temperature or get the velocities at the last step
     // of the constant temperature run
