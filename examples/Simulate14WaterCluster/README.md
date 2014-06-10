@@ -1,16 +1,15 @@
 Cluster of 14 water molecules
 =============================
 
-Example simulation in C++ of a cluster of 14 water molecules 
+Example simulation in C++ of a cluster of 3 or 14 water molecules 
 using the MBPol force field
 
 The example performs the following operations:
 
-* sets up a system of 14 water molecules
+* sets up a system of either 3 or 14 water molecules cluster
 * creates and configures all MBPol force field components
 * computes the initial state of the system
-* compares it with the output of the legacy code `mbpol`
-* has code for running either energy minimization or simulation at constant temperature or at constant energy 
+* runs energy minimization and simulation at constant energy 
 
 ## How to compile
 
