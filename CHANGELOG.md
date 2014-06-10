@@ -1,3 +1,14 @@
+# v0.3.0 (10-06-2014)
+
+Complete MBPol force field implementation for clusters of water molecules
+
+* Implementation of 2B interaction [#12](https://github.com/sdsc/mbpol_openmm_plugin/pull/12)
+* Implementation of ThreeBody Neighbor list that scales in linear time [#14](https://github.com/sdsc/mbpol_openmm_plugin/pull/14)
+* Implementation of 3B interaction [#13](https://github.com/sdsc/mbpol_openmm_plugin/pull/13)
+* Implementation of Dispersion force [#15](https://github.com/sdsc/mbpol_openmm_plugin/pull/15)
+* Large code cleanup and consistent renaming [#17](https://github.com/sdsc/mbpol_openmm_plugin/pull/17)
+* Implementation of a full integration test with comparison to the legacy `mbpol` code
+
 # v0.2.0 (28-04-2014)
 
 Complete MBPol electrostatics and 1B interaction
