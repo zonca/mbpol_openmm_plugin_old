@@ -119,7 +119,7 @@ void simulate14WaterCluster() {
     std::vector<Vec3> positions;
 
     // CONFIGURATION OPTIONS
-    bool useWater3 = false;
+    bool useWater3 = true;
     unsigned int particlesPerMolecule = 4;
 
     // restore initial positions for water14, so that we can run constant energy
