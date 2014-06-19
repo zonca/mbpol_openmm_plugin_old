@@ -29,7 +29,7 @@
 #include "MBPolReferenceTwoBodyForce.h"
 #include "MBPolReferenceThreeBodyForce.h"
 #include "MBPolReferenceDispersionForce.h"
-#include "ReferencePlatform.h"
+#include "openmm/reference/ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/MBPolElectrostaticsForce.h"
 #include "openmm/internal/MBPolElectrostaticsForceImpl.h"

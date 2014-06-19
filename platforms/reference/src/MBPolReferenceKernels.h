@@ -31,9 +31,9 @@
 #include "openmm/mbpolKernels.h"
 #include "openmm/MBPolElectrostaticsForce.h"
 #include "MBPolReferenceElectrostaticsForce.h"
-#include "ReferenceNeighborList.h"
+#include "openmm/reference/ReferenceNeighborList.h"
 #include "ReferenceThreeNeighborList.h"
-#include "SimTKOpenMMRealType.h"
+#include "openmm/reference/SimTKOpenMMRealType.h"
 
 namespace OpenMM {
 

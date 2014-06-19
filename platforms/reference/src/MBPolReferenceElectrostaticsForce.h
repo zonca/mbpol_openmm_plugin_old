@@ -25,10 +25,10 @@
 #define __MBPolReferenceElectrostaticsForce_H__
 
 #include <vector>
-#include "RealVec.h"
+#include "openmm/reference/RealVec.h"
 #include "openmm/MBPolElectrostaticsForce.h"
 #include <map>
-#include "fftpack.h"
+#include "openmm/reference/fftpack.h"
 #include <complex>
 
 using std::vector;

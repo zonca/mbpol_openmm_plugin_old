@@ -25,7 +25,7 @@
 #ifndef __MBPolReferenceForce_H__
 #define __MBPolReferenceForce_H__
 
-#include "RealVec.h"
+#include "openmm/reference/RealVec.h"
 #include "openmm/Vec3.h"
 #include <vector>
 

@@ -25,9 +25,9 @@
 #ifndef __MBPolReferenceDispersionForce_H__
 #define __MBPolReferenceDispersionForce_H__
 
-#include "RealVec.h"
+#include "openmm/reference/RealVec.h"
 #include "openmm/Vec3.h"
-#include "ReferenceNeighborList.h"
+#include "openmm/reference/ReferenceNeighborList.h"
 #include "MBPolConstants.h"
 #include <string>
 #include <vector>

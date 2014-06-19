@@ -25,7 +25,7 @@
 #ifndef __MBPolReferenceThreeBodyForce_H__
 #define __MBPolReferenceThreeBodyForce_H__
 
-#include "RealVec.h"
+#include "openmm/reference/RealVec.h"
 #include "openmm/Vec3.h"
 #include "ReferenceThreeNeighborList.h"
 #include <string>
