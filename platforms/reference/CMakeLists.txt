@@ -1,17 +1,5 @@
 #---------------------------------------------------
 # OpenMMMBPol REFERENCE Platform
-#
-# Creates OpenMM library, base name=OpenMMMBPolReference.
-# Default libraries are shared & optimized. Variants
-# are created for static (_static) and debug (_d).
-#
-# Windows:
-#   OpenMMMBPolReference[_d].dll
-#   OpenMMMBPolReference[_d].lib
-#   OpenMMMBPolReference_static[_d].lib
-# Unix:
-#   libOpenMMMBPolReference[_d].so
-#   libOpenMMMBPolReference_static[_d].a
 #----------------------------------------------------
 
 SET(OPENMM_REFERENCE_LIBRARY_NAME OpenMMMBPolReference)
@@ -22,18 +10,6 @@ SET(OPENMM_REFERENCE_LIBRARY_NAME OpenMMMBPolReference)
 SET(OPENMM_MBPOL_SOURCE_SUBDIRS .)
 
 SET(SHARED_TARGET ${OPENMM_REFERENCE_LIBRARY_NAME})
-
-# Ensure that debug libraries have "_d" appended to their names.
-# CMake gets this right on Windows automatically with this definition.
-IF (MSVC)
-    SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
-ENDIF (MSVC)
-
-# But on Unix or Cygwin we have to add the suffix manually
-IF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
-    SET(SHARED_TARGET ${SHARED_TARGET}_d)
-ENDIF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
-
 
 # These are all the places to search for header files which are
 # to be part of the API.
@@ -68,12 +44,8 @@ ADD_LIBRARY(${SHARED_TARGET} SHARED ${SOURCE_FILES} ${SOURCE_INCLUDE_FILES}     
 
 SET(OPENMM_LIBRARY_NAME OpenMM)
 
-IF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
-    SET(MAIN_OPENMM_LIB ${OPENMM_LIBRARY_NAME}_d)
-ELSE (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
-    SET(MAIN_OPENMM_LIB ${OPENMM_LIBRARY_NAME})
-ENDIF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
-TARGET_LINK_LIBRARIES(${SHARED_TARGET} ${MAIN_OPENMM_LIB})
+TARGET_LINK_LIBRARIES(${SHARED_TARGET} ${OPENMM_LIBRARY_NAME})
+
 TARGET_LINK_LIBRARIES(${SHARED_TARGET} debug ${SHARED_MBPOL_TARGET} optimized           ${SHARED_MBPOL_TARGET})
 SET_TARGET_PROPERTIES(${SHARED_TARGET} PROPERTIES COMPILE_FLAGS "-DOPENMM_BUILDING_SHARED_LIBRARY")
 
