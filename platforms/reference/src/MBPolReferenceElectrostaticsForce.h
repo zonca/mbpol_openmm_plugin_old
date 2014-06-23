@@ -215,7 +215,8 @@ private:
     RealOpenMM data[4];
 };
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 class MBPolReferenceElectrostaticsForce {
 

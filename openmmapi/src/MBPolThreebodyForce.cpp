@@ -34,7 +34,8 @@
 #include "openmm/MBPolThreeBodyForce.h"
 #include "openmm/internal/MBPolThreeBodyForceImpl.h"
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using std::string;
 using std::vector;
 

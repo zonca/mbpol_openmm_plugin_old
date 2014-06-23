@@ -36,7 +36,8 @@
 #include <cmath>
 
 using namespace std;
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 using std::vector;
 

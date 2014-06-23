@@ -33,7 +33,8 @@
 #include "openmm/internal/MBPolOneBodyForceImpl.h"
 #include "openmm/mbpolKernels.h"
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 using std::pair;
 using std::vector;

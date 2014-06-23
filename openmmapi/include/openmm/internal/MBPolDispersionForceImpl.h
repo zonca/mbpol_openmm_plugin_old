@@ -39,7 +39,7 @@
 #include <set>
 #include <string>
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 class System;
 
@@ -71,7 +71,7 @@ private:
     Kernel kernel;
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*OPENMM_MBPOL_VDW_FORCE_IMPL_H_*/
 

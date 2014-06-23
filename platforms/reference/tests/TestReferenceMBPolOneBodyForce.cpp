@@ -43,7 +43,8 @@ const double DegreesToRadians = 3.14159265/180.0;
 #include <iostream>
 #include <vector>
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 const double TOL = 1e-4;
 #define PI_M               3.141592653589

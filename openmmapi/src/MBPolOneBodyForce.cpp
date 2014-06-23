@@ -34,7 +34,8 @@
 #include "openmm/MBPolOneBodyForce.h"
 #include "openmm/internal/MBPolOneBodyForceImpl.h"
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 MBPolOneBodyForce::MBPolOneBodyForce() {
 }

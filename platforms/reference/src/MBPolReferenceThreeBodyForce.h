@@ -31,7 +31,8 @@
 #include <string>
 #include <vector>
 #include "MBPolConstants.h"
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 class MBPolReferenceThreeBodyForce;
 // typedef  RealOpenMM (MBPolReferenceThreeBodyForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;

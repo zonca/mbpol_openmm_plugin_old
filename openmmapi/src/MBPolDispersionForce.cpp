@@ -34,7 +34,8 @@
 #include "openmm/MBPolDispersionForce.h"
 #include "openmm/internal/MBPolDispersionForceImpl.h"
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using std::string;
 using std::vector;
 

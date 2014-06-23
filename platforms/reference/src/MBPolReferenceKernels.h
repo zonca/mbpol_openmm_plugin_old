@@ -35,7 +35,7 @@
 #include "ReferenceThreeNeighborList.h"
 #include "openmm/reference/SimTKOpenMMRealType.h"
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 /**
  * This kernel is invoked by MBPolOneBodyForce to calculate the forces acting on the system and the energy of the system.
@@ -287,6 +287,6 @@ private:
 };
 
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*MBPOL_OPENMM_REFERENCE_KERNELS_H*/

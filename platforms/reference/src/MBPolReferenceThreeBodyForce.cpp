@@ -301,7 +301,7 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculateForceAndEnergy( int numParticl
     RealOpenMM energy = 0.;
     for( unsigned int ii = 0; ii < neighborList.size(); ii++ ){
 
-        OpenMM::AtomTriplet triplet       = neighborList[ii];
+        MBPolPlugin::AtomTriplet triplet       = neighborList[ii];
         int siteI                   = triplet.first;
         int siteJ                   = triplet.second;
         int siteQ                   = triplet.third;

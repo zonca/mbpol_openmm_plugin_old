@@ -32,7 +32,8 @@
 #include <string>
 #include <vector>
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 class MBPolReferenceDispersionForce;
 // typedef  RealOpenMM (MBPolReferenceDispersionForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;

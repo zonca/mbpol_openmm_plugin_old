@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 typedef std::vector<AtomIndex> AtomList;
 
@@ -234,4 +234,4 @@ void OPENMM_EXPORT computeThreeNeighborListVoxelHash(
     }
 }
 
-} // namespace OpenMM
+} // namespace MBPolPlugin

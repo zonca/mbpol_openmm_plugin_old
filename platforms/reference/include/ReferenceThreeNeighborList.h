@@ -7,7 +7,9 @@
 #include <set>
 #include <vector>
 
-namespace OpenMM {
+using namespace OpenMM;
+
+namespace MBPolPlugin {
 
 struct AtomTriplet
 {
@@ -29,6 +31,6 @@ void OPENMM_EXPORT computeThreeNeighborListVoxelHash(
                               double minDistance = 0.0
                              );
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif // OPENMM_REFERENCE_NEIGHBORLIST_H_

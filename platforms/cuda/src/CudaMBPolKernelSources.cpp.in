@@ -26,6 +26,7 @@
 
 #include "CudaMBPolKernelSources.h"
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using namespace std;
 

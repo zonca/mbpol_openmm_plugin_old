@@ -31,7 +31,8 @@
 #include "openmm/OpenMMException.h"
 #include "openmm/internal/windowsExport.h"
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 extern "C" OPENMM_EXPORT void registerPlatforms() {
 }

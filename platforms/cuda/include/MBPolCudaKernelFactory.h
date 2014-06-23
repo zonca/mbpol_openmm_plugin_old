@@ -29,7 +29,7 @@
 
 #include "openmm/KernelFactory.h"
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 /**
  * This KernelFactory creates all kernels for MBPolCudaPlatform.
@@ -40,6 +40,6 @@ public:
     KernelImpl* createKernelImpl(std::string name, const Platform& platform, ContextImpl& context) const;
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*MBPOL_OPENMM_CUDAKERNELFACTORY_H_*/

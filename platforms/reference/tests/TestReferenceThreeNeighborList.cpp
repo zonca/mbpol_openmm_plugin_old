@@ -36,7 +36,8 @@
 #include <vector>
 
 using namespace std;
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 void testNeighborList()
 {

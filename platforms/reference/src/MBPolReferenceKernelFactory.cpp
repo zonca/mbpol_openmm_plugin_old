@@ -30,7 +30,8 @@
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/OpenMMException.h"
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 #if defined(WIN32)
     #include <windows.h>

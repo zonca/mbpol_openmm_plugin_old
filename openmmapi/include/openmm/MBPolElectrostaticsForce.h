@@ -40,7 +40,9 @@
 #include <sstream>
 #include <vector>
 
-namespace OpenMM {
+using namespace OpenMM;
+
+namespace MBPolPlugin {
 
 /**
  * This class implements the MBPol multipole interaction.
@@ -418,6 +420,6 @@ public:
 
 enum TholeIndices { TCC, TCD, TDD, TDDOH, TDDHH };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*OPENMM_MBPOL_MULTIPOLE_FORCE_H_*/

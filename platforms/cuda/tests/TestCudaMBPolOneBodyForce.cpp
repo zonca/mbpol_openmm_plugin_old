@@ -41,7 +41,8 @@
 #include <iostream>
 #include <vector>
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 extern "C" void registerMBPolCudaKernelFactories();
 

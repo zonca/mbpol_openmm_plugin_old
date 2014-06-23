@@ -30,7 +30,7 @@
 #include "openmm/internal/windowsExport.h"
 #include <string>
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 /**
  * This class is a central holding place for the source code of CUDA kernels.
@@ -43,6 +43,6 @@ public:
 @CUDA_FILE_DECLARATIONS@
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*OPENMM_CUDAMBPOLKERNELSOURCES_H_*/

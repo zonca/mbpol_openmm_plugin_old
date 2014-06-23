@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-using namespace OpenMM;
+using namespace  OpenMM;
 
 class MBPolReferenceTwoBodyForce;
 typedef  RealOpenMM (MBPolReferenceTwoBodyForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;

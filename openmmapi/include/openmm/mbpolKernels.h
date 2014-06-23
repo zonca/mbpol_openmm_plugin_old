@@ -41,7 +41,7 @@
 #include <string>
 #include <vector>
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 /**
  * This kernel is invoked by MBPolTorsionForce to calculate the forces acting on the system and the energy of the system.
@@ -63,7 +63,7 @@ public:
      * @param system     the System this kernel will be applied to
      * @param force      the OneBodyForce this kernel will be used for
      */
-    virtual void initialize(const System& system, const MBPolOneBodyForce& force) = 0;
+    virtual void initialize(const OpenMM::System& system, const MBPolOneBodyForce& force) = 0;
 
     /**
      * Execute the kernel to calculate the forces and/or energy.
@@ -103,7 +103,7 @@ public:
      * @param system     the System this kernel will be applied to
      * @param force      the ElectrostaticsForce this kernel will be used for
      */
-    virtual void initialize(const System& system, const MBPolElectrostaticsForce& force) = 0;
+    virtual void initialize(const OpenMM::System& system, const MBPolElectrostaticsForce& force) = 0;
 
     /**
      * Execute the kernel to calculate the forces and/or energy.
@@ -147,7 +147,7 @@ public:
      * @param system     the System this kernel will be applied to
      * @param force      the GBSAOBCForce this kernel will be used for
      */
-    virtual void initialize(const System& system, const MBPolTwoBodyForce& force) = 0;
+    virtual void initialize(const OpenMM::System& system, const MBPolTwoBodyForce& force) = 0;
 
     /**
      * Execute the kernel to calculate the forces and/or energy.
@@ -186,7 +186,7 @@ public:
      * @param system     the System this kernel will be applied to
      * @param force      the GBSAOBCForce this kernel will be used for
      */
-    virtual void initialize(const System& system, const MBPolThreeBodyForce& force) = 0;
+    virtual void initialize(const OpenMM::System& system, const MBPolThreeBodyForce& force) = 0;
 
     /**
      * Execute the kernel to calculate the forces and/or energy.
@@ -222,7 +222,7 @@ public:
      * @param system     the System this kernel will be applied to
      * @param force      the GBSAOBCForce this kernel will be used for
      */
-    virtual void initialize(const System& system, const MBPolDispersionForce& force) = 0;
+    virtual void initialize(const OpenMM::System& system, const MBPolDispersionForce& force) = 0;
 
     /**
      * Execute the kernel to calculate the forces and/or energy.
@@ -242,6 +242,6 @@ public:
     virtual void copyParametersToContext(ContextImpl& context, const MBPolDispersionForce& force) = 0;
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*MBPOL_OPENMM_KERNELS_H*/
