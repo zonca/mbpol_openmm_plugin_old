@@ -9,7 +9,7 @@ mbpolplugin_library_dir = '@MBPOLPLUGIN_LIBRARY_DIR@'
 
 extension = Extension(name='_mbpolplugin',
                       sources=['MBPolPluginWrapper.cpp'],
-                      libraries=['OpenMM', 'MBPolPlugin'],
+                      libraries=['OpenMM', 'OpenMMMBPol'],
                       include_dirs=[os.path.join(openmm_dir, 'include'), mbpolplugin_header_dir],
                       library_dirs=[os.path.join(openmm_dir, 'lib'), mbpolplugin_library_dir]
                      )
