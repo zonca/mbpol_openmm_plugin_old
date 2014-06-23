@@ -1,6 +1,6 @@
 %module mbpolplugin
 
-// %import(module="simtk.openmm") "OpenMMSwigHeaders.i"
+%import(module="simtk.openmm") "OpenMMSwigHeaders.i"
 
 %{
 #include "openmm/MBPolElectrostaticsForce.h"
