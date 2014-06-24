@@ -119,5 +119,51 @@ public:
 
 };
 
+class MBPolThreeBodyForce : public Force {
+public:
+    MBPolThreeBodyForce();
+
+    int getNumParticles() const;
+
+    void setParticleParameters(int particleIndex, std::vector<int>& particleIndices);
+
+    void getParticleParameters(int particleIndex, std::vector<int>& particleIndices) const;
+
+    int addParticle(const std::vector<int> & particleIndices);
+
+    int getNumMolecules(void) const;
+    void setCutoff(double cutoff);
+
+    double getCutoff(void) const;
+
+    //NonbondedMethod getNonbondedMethod() const;
+    // void setNonbondedMethod(NonbondedMethod method);
+
+    void updateParametersInContext(Context& context);
+};
+
+class MBPolDispersionForce : public Force {
+public:
+    MBPolDispersionForce();
+
+    int getNumParticles() const;
+
+    void setParticleParameters(int particleIndex, std::vector<int>& particleIndices);
+
+    void getParticleParameters(int particleIndex, std::vector<int>& particleIndices) const;
+
+    int addParticle(const std::vector<int> & particleIndices);
+
+    int getNumMolecules(void) const;
+    void setCutoff(double cutoff);
+
+    double getCutoff(void) const;
+
+    // NonbondedMethod getNonbondedMethod() const;
+    // void setNonbondedMethod(NonbondedMethod method);
+
+    void updateParametersInContext(Context& context);
+
+};
 
 }
