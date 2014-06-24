@@ -99,7 +99,7 @@ public:
     /**
      * Get the number of particles in the potential function
      */
-    int getNumElectrostaticss() const {
+    int getNumElectrostatics() const {
         return multipoles.size();
     }
 

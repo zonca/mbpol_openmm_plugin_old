@@ -142,7 +142,7 @@ public:
 
 private:
 
-    int numElectrostaticss;
+    int numElectrostatics;
     MBPolElectrostaticsForce::NonbondedMethod nonbondedMethod;
     MBPolElectrostaticsForce::PolarizationType polarizationType;
     std::vector<RealOpenMM> charges;

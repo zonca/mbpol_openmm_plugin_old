@@ -116,7 +116,7 @@ void ReferenceCalcMBPolOneBodyForceKernel::copyParametersToContext(ContextImpl& 
  * -------------------------------------------------------------------------- */
 
 ReferenceCalcMBPolElectrostaticsForceKernel::ReferenceCalcMBPolElectrostaticsForceKernel(std::string name, const Platform& platform, const OpenMM::System& system) : 
-         CalcMBPolElectrostaticsForceKernel(name, platform), system(system), numElectrostaticss(0), mutualInducedMaxIterations(200), mutualInducedTargetEpsilon(1.0e-03),
+         CalcMBPolElectrostaticsForceKernel(name, platform), system(system), numElectrostatics(0), mutualInducedMaxIterations(200), mutualInducedTargetEpsilon(1.0e-03),
                                                          usePme(false),alphaEwald(0.0), cutoffDistance(1.0) {  
 
 }
@@ -126,26 +126,26 @@ ReferenceCalcMBPolElectrostaticsForceKernel::~ReferenceCalcMBPolElectrostaticsFo
 
 void ReferenceCalcMBPolElectrostaticsForceKernel::initialize(const OpenMM::System& system, const MBPolElectrostaticsForce& force) {
 
-    numElectrostaticss   = force.getNumElectrostaticss();
+    numElectrostatics   = force.getNumElectrostatics();
 
-    charges.resize(numElectrostaticss);
-    dipoles.resize(3*numElectrostaticss);
-    quadrupoles.resize(9*numElectrostaticss);
-    tholes.resize(5*numElectrostaticss);
-    dampingFactors.resize(numElectrostaticss);
-    polarity.resize(numElectrostaticss);
-    axisTypes.resize(numElectrostaticss);
-    multipoleAtomZs.resize(numElectrostaticss);
-    multipoleAtomXs.resize(numElectrostaticss);
-    multipoleAtomYs.resize(numElectrostaticss);
-    multipoleAtomCovalentInfo.resize(numElectrostaticss);
+    charges.resize(numElectrostatics);
+    dipoles.resize(3*numElectrostatics);
+    quadrupoles.resize(9*numElectrostatics);
+    tholes.resize(5*numElectrostatics);
+    dampingFactors.resize(numElectrostatics);
+    polarity.resize(numElectrostatics);
+    axisTypes.resize(numElectrostatics);
+    multipoleAtomZs.resize(numElectrostatics);
+    multipoleAtomXs.resize(numElectrostatics);
+    multipoleAtomYs.resize(numElectrostatics);
+    multipoleAtomCovalentInfo.resize(numElectrostatics);
 
     int dipoleIndex      = 0;
     int quadrupoleIndex  = 0;
     int tholeIndex       = 0;
     int maxCovalentRange = 0;
     double totalCharge   = 0.0;
-    for( int ii = 0; ii < numElectrostaticss; ii++ ){
+    for( int ii = 0; ii < numElectrostatics; ii++ ){
 
         // multipoles
 
@@ -336,7 +336,7 @@ void ReferenceCalcMBPolElectrostaticsForceKernel::getSystemElectrostaticsMoments
 }
 
 void ReferenceCalcMBPolElectrostaticsForceKernel::copyParametersToContext(ContextImpl& context, const MBPolElectrostaticsForce& force) {
-    if (numElectrostaticss != force.getNumElectrostaticss())
+    if (numElectrostatics != force.getNumElectrostatics())
         throw OpenMMException("updateParametersInContext: The number of multipoles has changed");
 
     // Record the values.
@@ -344,7 +344,7 @@ void ReferenceCalcMBPolElectrostaticsForceKernel::copyParametersToContext(Contex
     int dipoleIndex = 0;
     int quadrupoleIndex = 0;
     int tholeIndex = 0;
-    for (int i = 0; i < numElectrostaticss; ++i) {
+    for (int i = 0; i < numElectrostatics; ++i) {
         int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
         double charge, dampingFactorD, polarityD;
         std::vector<double> dipolesD;
