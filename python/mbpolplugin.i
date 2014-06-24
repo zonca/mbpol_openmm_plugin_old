@@ -77,4 +77,47 @@ public:
     void updateParametersInContext(Context& context);
 };
 
+class MBPolOneBodyForce : public OpenMM::Force {
+public:
+
+    MBPolOneBodyForce();
+
+    int getNumOneBodys() const;
+
+    int addOneBody(int particle1, int particle2, int particle3);
+
+    void getOneBodyParameters(int index, int& particle1, int& particle2, int& particle3 ) const;
+
+    void setOneBodyParameters(int index, int particle1, int particle2, int particle3 );
+
+    void updateParametersInContext(Context& context);
+
+};
+
+class MBPolTwoBodyForce : public Force {
+public:
+    MBPolTwoBodyForce();
+
+    int getNumParticles() const;
+
+    void setParticleParameters(int particleIndex, std::vector<int>& particleIndices);
+
+    void getParticleParameters(int particleIndex, std::vector<int>& particleIndices) const;
+
+    int addParticle(const std::vector<int> & particleIndices);
+
+    int getNumMolecules(void) const;
+    void setCutoff(double cutoff);
+
+    double getCutoff(void) const;
+
+    // NonbondedMethod getNonbondedMethod() const;
+
+    // void setNonbondedMethod(NonbondedMethod method);
+
+    void updateParametersInContext(Context& context);
+
+};
+
+
 }
