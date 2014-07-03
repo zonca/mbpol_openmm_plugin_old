@@ -16,6 +16,18 @@
 %feature("autodoc", "1");
 %nodefaultctor;
 
+%include "std_string.i"
+%include "typemaps.i"
+%include "std_vector.i"
+namespace std {
+  %template(vectord) vector<double>;
+  %template(vectorddd) vector< vector< vector<double> > >;
+  %template(vectori) vector<int>;
+  %template(vectorii) vector < vector<int> >;
+  %template(vectorstring) vector<string>;
+};
+
+
 using namespace OpenMM;
 
 namespace MBPolPlugin {
