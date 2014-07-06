@@ -39,7 +39,7 @@ using namespace MBPolPlugin;
 using std::string;
 using std::vector;
 
-MBPolThreeBodyForce::MBPolThreeBodyForce() : nonbondedMethod(NoCutoff), cutoff(1.0e+10) {
+MBPolThreeBodyForce::MBPolThreeBodyForce() : nonbondedMethod(CutoffNonPeriodic), cutoff(1.0e+10) {
 }
 
 int MBPolThreeBodyForce::addParticle(const std::vector<int> & particleIndices ) {
