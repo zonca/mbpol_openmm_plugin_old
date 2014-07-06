@@ -14,8 +14,8 @@ extension = Extension(name='_mbpolplugin',
                       library_dirs=[os.path.join(openmm_dir, 'lib'), mbpolplugin_library_dir]
                      )
 
-setup(name='mbpolplugin',
+setup(name='mbpol',
       version='1.0',
-      py_modules=['mbpolplugin'],
+      py_modules=['mbpol', 'mbpolplugin'],
       ext_modules=[extension],
      )

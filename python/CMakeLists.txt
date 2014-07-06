@@ -20,6 +20,7 @@ add_custom_target(PythonInstall DEPENDS "${WRAP_FILE}")
 set(MBPOLPLUGIN_HEADER_DIR "${CMAKE_SOURCE_DIR}/openmmapi/include")
 set(MBPOLPLUGIN_LIBRARY_DIR "${CMAKE_BINARY_DIR}")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mbpol.py ${CMAKE_CURRENT_BINARY_DIR}/mbpol.py COPYONLY)
 add_custom_command(TARGET PythonInstall
     COMMAND "${PYTHON_EXECUTABLE}" setup.py build
     COMMAND "${PYTHON_EXECUTABLE}" setup.py install
