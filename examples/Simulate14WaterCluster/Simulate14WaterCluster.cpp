@@ -219,17 +219,17 @@ void simulate14WaterCluster() {
         particleIndices[2] = jj+2;
 
         // Charge, dipoles and quadrupoles (zero in MBPol)
-        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, jj+1, jj+2, jj+3,
                                             thole, 0.001310, 0.001310 );
-        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, jj, jj+2, jj+3,
                                             thole, 0.000294, 0.000294 );
-        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, jj, jj+1, jj+3,
                                             thole, 0.000294, 0.000294 );
         if (particlesPerMolecule == 4) {
             system.addParticle( 0. ); // Virtual Site
             system.setVirtualSite(jj+3, new ThreeParticleAverageSite(jj, jj+1, jj+2,
                                                                    virtualSiteWeightO, virtualSiteWeightH,virtualSiteWeightH));
-            mbpolElectrostaticsForce->addElectrostatics(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+            mbpolElectrostaticsForce->addElectrostatics(  0., jj, jj+1, jj+2,
                                                         thole,  0.001310,  0.);
         }
 

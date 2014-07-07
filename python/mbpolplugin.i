@@ -56,7 +56,7 @@ public:
 
     // void setPmeGridDimensions(const std::vector<int>& gridDimension);
 
-    int addElectrostatics(double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType,
+    int addElectrostatics(double charge, 
                       int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity);
 
     void getElectrostaticsParameters(int index, double& charge, std::vector<double>& molecularDipole, std::vector<double>& molecularQuadrupole,

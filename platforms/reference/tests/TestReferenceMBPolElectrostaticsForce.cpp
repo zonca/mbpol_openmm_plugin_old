@@ -377,22 +377,14 @@ static void testWater3VirtualSite( FILE* log ) {
     thole[TDDHH] = 0.055;
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
-        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, jj+1, jj+2, jj+3,
                                             thole, 0.001310, 0.001310 );
-        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, jj, jj+2, jj+3,
                                             thole, 0.000294, 0.000294 );
-        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, jj, jj+1, jj+3,
                                             thole, 0.000294, 0.000294 );
-        mbpolElectrostaticsForce->addElectrostatics(  0., zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
+        mbpolElectrostaticsForce->addElectrostatics(  0., jj, jj+1, jj+2,
                                                     thole,  0.001310,  0.);
-//        mbpolElectrostaticsForce->addElectrostatics( 0, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
-//                                              4.000000e-01, 0.001310, 0.001310 );
-//          mbpolElectrostaticsForce->addElectrostatics(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
-//                                              4.000000e-01, 0.000294, 0.000294 );
-//          mbpolElectrostaticsForce->addElectrostatics(  .5, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
-//                                              4.000000e-01, 0.000294, 0.000294 );
-//          mbpolElectrostaticsForce->addElectrostatics(  -1, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+2,
-//                                                      4.000000e-01,  0.001310,  0.);
     }
 
     system.addForce(mbpolElectrostaticsForce);
@@ -663,11 +655,11 @@ static void testWater3( FILE* log ) {
     std::fill(thole.begin(), thole.end(), 0.4);
 
     for( unsigned int jj = 0; jj < numberOfParticles; jj += particlesPerMolecule ){
-        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, zeroDipole, zeroQuadrupole, 1, jj+1, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, jj+1, jj+2, jj+3,
                                             thole, 0.001310, 0.001310 );
-        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+2, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, jj, jj+2, jj+3,
                                             thole, 0.000294, 0.000294 );
-        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, zeroDipole, zeroQuadrupole, 0, jj, jj+1, jj+3,
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, jj, jj+1, jj+3,
                                             thole, 0.000294, 0.000294 );
     }
 
