@@ -35,7 +35,8 @@
 #include "openmm/internal/MBPolElectrostaticsForceImpl.h"
 #include <stdio.h>
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using std::string;
 using std::vector;
 
@@ -135,9 +136,15 @@ void MBPolElectrostaticsForce::setEwaldErrorTolerance(double tol) {
     ewaldErrorTol = tol;
 }
 
-int MBPolElectrostaticsForce::addElectrostatics( double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType, 
+int MBPolElectrostaticsForce::addElectrostatics( double charge, 
                                        int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity) {
-    multipoles.push_back(ElectrostaticsInfo( charge, molecularDipole, molecularQuadrupole,  axisType, multipoleAtomZ,  multipoleAtomX, multipoleAtomY, thole, dampingFactor, polarity));
+    std::vector<double> zeroDipole(3);
+    std::vector<double> zeroQuadrupole(9);
+
+    std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
+    std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
+
+    multipoles.push_back(ElectrostaticsInfo( charge, zeroDipole, zeroQuadrupole,  0, multipoleAtomZ,  multipoleAtomX, multipoleAtomY, thole, dampingFactor, polarity));
     return multipoles.size()-1;
 }
 

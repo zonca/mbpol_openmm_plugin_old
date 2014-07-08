@@ -34,11 +34,12 @@
 #include "openmm/MBPolDispersionForce.h"
 #include "openmm/internal/MBPolDispersionForceImpl.h"
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using std::string;
 using std::vector;
 
-MBPolDispersionForce::MBPolDispersionForce() : nonbondedMethod(NoCutoff), cutoff(1.0e+10) {
+MBPolDispersionForce::MBPolDispersionForce() : nonbondedMethod(CutoffNonPeriodic), cutoff(1.0e+10) {
 }
 
 int MBPolDispersionForce::addParticle(const std::vector<int> & particleIndices ) {

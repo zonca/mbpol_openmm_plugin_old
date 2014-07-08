@@ -44,7 +44,8 @@
 #include <windows.h>
 #endif
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using namespace std;
 
 #define CHECK_RESULT(result) \

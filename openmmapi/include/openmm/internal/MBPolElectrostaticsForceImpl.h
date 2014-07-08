@@ -39,7 +39,7 @@
 #include <utility>
 #include <string>
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 /**
  * This is the internal implementation of MBPolElectrostaticsForce.
@@ -98,6 +98,6 @@ private:
     static const int* getCovalentDegrees( void );
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*OPENMM_MBPOL_MULTIPOLE_FORCE_IMPL_H_*/

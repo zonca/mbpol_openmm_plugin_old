@@ -29,7 +29,7 @@
 #include "MBPolReferenceTwoBodyForce.h"
 #include "MBPolReferenceThreeBodyForce.h"
 #include "MBPolReferenceDispersionForce.h"
-#include "ReferencePlatform.h"
+#include "openmm/reference/ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/MBPolElectrostaticsForce.h"
 #include "openmm/internal/MBPolElectrostaticsForceImpl.h"
@@ -44,7 +44,8 @@
 #include <windows.h>
 #endif
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using namespace std;
 
 static vector<RealVec>& extractPositions(ContextImpl& context) {
@@ -67,14 +68,14 @@ static RealVec& extractBoxSize(ContextImpl& context) {
     return *(RealVec*) data->periodicBoxSize;
 }
 
-ReferenceCalcMBPolOneBodyForceKernel::ReferenceCalcMBPolOneBodyForceKernel(std::string name, const Platform& platform, const System& system) :
+ReferenceCalcMBPolOneBodyForceKernel::ReferenceCalcMBPolOneBodyForceKernel(std::string name, const Platform& platform, const OpenMM::System& system) :
                    CalcMBPolOneBodyForceKernel(name, platform), system(system) {
 }
 
 ReferenceCalcMBPolOneBodyForceKernel::~ReferenceCalcMBPolOneBodyForceKernel() {
 }
 
-void ReferenceCalcMBPolOneBodyForceKernel::initialize(const System& system, const MBPolOneBodyForce& force) {
+void ReferenceCalcMBPolOneBodyForceKernel::initialize(const OpenMM::System& system, const MBPolOneBodyForce& force) {
 
     numOneBodys = force.getNumOneBodys();
     for ( int ii = 0; ii < numOneBodys; ii++) {
@@ -114,8 +115,8 @@ void ReferenceCalcMBPolOneBodyForceKernel::copyParametersToContext(ContextImpl& 
  *                             MBPolElectrostatics                                *
  * -------------------------------------------------------------------------- */
 
-ReferenceCalcMBPolElectrostaticsForceKernel::ReferenceCalcMBPolElectrostaticsForceKernel(std::string name, const Platform& platform, const System& system) : 
-         CalcMBPolElectrostaticsForceKernel(name, platform), system(system), numElectrostaticss(0), mutualInducedMaxIterations(200), mutualInducedTargetEpsilon(1.0e-03),
+ReferenceCalcMBPolElectrostaticsForceKernel::ReferenceCalcMBPolElectrostaticsForceKernel(std::string name, const Platform& platform, const OpenMM::System& system) : 
+         CalcMBPolElectrostaticsForceKernel(name, platform), system(system), numElectrostatics(0), mutualInducedMaxIterations(200), mutualInducedTargetEpsilon(1.0e-03),
                                                          usePme(false),alphaEwald(0.0), cutoffDistance(1.0) {  
 
 }
@@ -123,28 +124,28 @@ ReferenceCalcMBPolElectrostaticsForceKernel::ReferenceCalcMBPolElectrostaticsFor
 ReferenceCalcMBPolElectrostaticsForceKernel::~ReferenceCalcMBPolElectrostaticsForceKernel() {
 }
 
-void ReferenceCalcMBPolElectrostaticsForceKernel::initialize(const System& system, const MBPolElectrostaticsForce& force) {
+void ReferenceCalcMBPolElectrostaticsForceKernel::initialize(const OpenMM::System& system, const MBPolElectrostaticsForce& force) {
 
-    numElectrostaticss   = force.getNumElectrostaticss();
+    numElectrostatics   = force.getNumElectrostatics();
 
-    charges.resize(numElectrostaticss);
-    dipoles.resize(3*numElectrostaticss);
-    quadrupoles.resize(9*numElectrostaticss);
-    tholes.resize(5*numElectrostaticss);
-    dampingFactors.resize(numElectrostaticss);
-    polarity.resize(numElectrostaticss);
-    axisTypes.resize(numElectrostaticss);
-    multipoleAtomZs.resize(numElectrostaticss);
-    multipoleAtomXs.resize(numElectrostaticss);
-    multipoleAtomYs.resize(numElectrostaticss);
-    multipoleAtomCovalentInfo.resize(numElectrostaticss);
+    charges.resize(numElectrostatics);
+    dipoles.resize(3*numElectrostatics);
+    quadrupoles.resize(9*numElectrostatics);
+    tholes.resize(5*numElectrostatics);
+    dampingFactors.resize(numElectrostatics);
+    polarity.resize(numElectrostatics);
+    axisTypes.resize(numElectrostatics);
+    multipoleAtomZs.resize(numElectrostatics);
+    multipoleAtomXs.resize(numElectrostatics);
+    multipoleAtomYs.resize(numElectrostatics);
+    multipoleAtomCovalentInfo.resize(numElectrostatics);
 
     int dipoleIndex      = 0;
     int quadrupoleIndex  = 0;
     int tholeIndex       = 0;
     int maxCovalentRange = 0;
     double totalCharge   = 0.0;
-    for( int ii = 0; ii < numElectrostaticss; ii++ ){
+    for( int ii = 0; ii < numElectrostatics; ii++ ){
 
         // multipoles
 
@@ -316,7 +317,7 @@ void ReferenceCalcMBPolElectrostaticsForceKernel::getSystemElectrostaticsMoments
 
     // retrieve masses
 
-    const System& system             = context.getSystem();
+    const OpenMM::System& system             = context.getSystem();
     vector<RealOpenMM> masses;
     for (int i = 0; i <  system.getNumParticles(); ++i) {
         masses.push_back( static_cast<RealOpenMM>(system.getParticleMass(i)) );
@@ -335,7 +336,7 @@ void ReferenceCalcMBPolElectrostaticsForceKernel::getSystemElectrostaticsMoments
 }
 
 void ReferenceCalcMBPolElectrostaticsForceKernel::copyParametersToContext(ContextImpl& context, const MBPolElectrostaticsForce& force) {
-    if (numElectrostaticss != force.getNumElectrostaticss())
+    if (numElectrostatics != force.getNumElectrostatics())
         throw OpenMMException("updateParametersInContext: The number of multipoles has changed");
 
     // Record the values.
@@ -343,7 +344,7 @@ void ReferenceCalcMBPolElectrostaticsForceKernel::copyParametersToContext(Contex
     int dipoleIndex = 0;
     int quadrupoleIndex = 0;
     int tholeIndex = 0;
-    for (int i = 0; i < numElectrostaticss; ++i) {
+    for (int i = 0; i < numElectrostatics; ++i) {
         int axisType, multipoleAtomZ, multipoleAtomX, multipoleAtomY;
         double charge, dampingFactorD, polarityD;
         std::vector<double> dipolesD;
@@ -378,7 +379,7 @@ void ReferenceCalcMBPolElectrostaticsForceKernel::copyParametersToContext(Contex
 }
 
 
-ReferenceCalcMBPolTwoBodyForceKernel::ReferenceCalcMBPolTwoBodyForceKernel(std::string name, const Platform& platform, const System& system) :
+ReferenceCalcMBPolTwoBodyForceKernel::ReferenceCalcMBPolTwoBodyForceKernel(std::string name, const Platform& platform, const OpenMM::System& system) :
        CalcMBPolTwoBodyForceKernel(name, platform), system(system) {
     useCutoff = 0;
     usePBC = 0;
@@ -392,7 +393,7 @@ ReferenceCalcMBPolTwoBodyForceKernel::~ReferenceCalcMBPolTwoBodyForceKernel() {
     } 
 }
 
-void ReferenceCalcMBPolTwoBodyForceKernel::initialize(const System& system, const MBPolTwoBodyForce& force) {
+void ReferenceCalcMBPolTwoBodyForceKernel::initialize(const OpenMM::System& system, const MBPolTwoBodyForce& force) {
 
     // per-particle parameters
 
@@ -462,7 +463,7 @@ void ReferenceCalcMBPolTwoBodyForceKernel::copyParametersToContext(ContextImpl& 
     }
 }
 
-ReferenceCalcMBPolThreeBodyForceKernel::ReferenceCalcMBPolThreeBodyForceKernel(std::string name, const Platform& platform, const System& system) :
+ReferenceCalcMBPolThreeBodyForceKernel::ReferenceCalcMBPolThreeBodyForceKernel(std::string name, const Platform& platform, const OpenMM::System& system) :
        CalcMBPolThreeBodyForceKernel(name, platform), system(system) {
     useCutoff = 0;
     usePBC = 0;
@@ -476,7 +477,7 @@ ReferenceCalcMBPolThreeBodyForceKernel::~ReferenceCalcMBPolThreeBodyForceKernel(
     }
 }
 
-void ReferenceCalcMBPolThreeBodyForceKernel::initialize(const System& system, const MBPolThreeBodyForce& force) {
+void ReferenceCalcMBPolThreeBodyForceKernel::initialize(const OpenMM::System& system, const MBPolThreeBodyForce& force) {
 
     // per-particle parameters
 
@@ -546,7 +547,7 @@ void ReferenceCalcMBPolThreeBodyForceKernel::copyParametersToContext(ContextImpl
     }
 }
 
-ReferenceCalcMBPolDispersionForceKernel::ReferenceCalcMBPolDispersionForceKernel(std::string name, const Platform& platform, const System& system) :
+ReferenceCalcMBPolDispersionForceKernel::ReferenceCalcMBPolDispersionForceKernel(std::string name, const Platform& platform, const OpenMM::System& system) :
        CalcMBPolDispersionForceKernel(name, platform), system(system) {
     useCutoff = 0;
     usePBC = 0;
@@ -560,7 +561,7 @@ ReferenceCalcMBPolDispersionForceKernel::~ReferenceCalcMBPolDispersionForceKerne
     }
 }
 
-void ReferenceCalcMBPolDispersionForceKernel::initialize(const System& system, const MBPolDispersionForce& force) {
+void ReferenceCalcMBPolDispersionForceKernel::initialize(const OpenMM::System& system, const MBPolDispersionForce& force) {
 
     // per-particle parameters
 

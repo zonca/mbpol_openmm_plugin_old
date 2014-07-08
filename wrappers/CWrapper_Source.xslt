@@ -43,7 +43,8 @@
 #include &lt;cstring&gt;
 #include &lt;vector&gt;
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using namespace std;
 
 extern "C" {

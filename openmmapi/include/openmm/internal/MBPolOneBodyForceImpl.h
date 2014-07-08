@@ -39,7 +39,9 @@
 #include <set>
 #include <string>
 
-namespace OpenMM {
+using namespace OpenMM;
+
+namespace MBPolPlugin {
 
 /**
  * This is the internal implementation of MBPolOneBodyForce.
@@ -67,6 +69,6 @@ private:
     Kernel kernel;
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*OPENMM_MBPOL_STRETCH_BEND_FORCE_IMPL_H_*/

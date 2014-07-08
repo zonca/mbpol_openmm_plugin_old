@@ -29,7 +29,9 @@
 
 #include "openmm/KernelFactory.h"
 
-namespace OpenMM {
+using namespace OpenMM;
+
+namespace MBPolPlugin {
 
 /**
  * This KernelFactory creates all kernels for MBPolReferencePlatform.
@@ -40,6 +42,6 @@ public:
     KernelImpl* createKernelImpl(std::string name, const Platform& platform, ContextImpl& context) const;
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*MBPOL_OPENMM_REFERERENCE_KERNEL_FACTORY_H_*/

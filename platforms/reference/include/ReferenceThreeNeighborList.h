@@ -1,13 +1,15 @@
 #ifndef OPENMM_REFERENCE_THREE_NEIGHBORLIST_H_
 #define OPENMM_REFERENCE_THREE_NEIGHBORLIST_H_
 
-#include "RealVec.h"
-#include "ReferenceNeighborList.h"
+#include "openmm/reference/RealVec.h"
+#include "openmm/reference/ReferenceNeighborList.h"
 #include "openmm/internal/windowsExport.h"
 #include <set>
 #include <vector>
 
-namespace OpenMM {
+using namespace OpenMM;
+
+namespace MBPolPlugin {
 
 struct AtomTriplet
 {
@@ -29,6 +31,6 @@ void OPENMM_EXPORT computeThreeNeighborListVoxelHash(
                               double minDistance = 0.0
                              );
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif // OPENMM_REFERENCE_NEIGHBORLIST_H_

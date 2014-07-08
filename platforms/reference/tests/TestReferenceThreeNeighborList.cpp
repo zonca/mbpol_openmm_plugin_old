@@ -31,13 +31,13 @@
 
 #include "openmm/internal/AssertionUtilities.h"
 #include "ReferenceThreeNeighborList.h"
-#include "sfmt/SFMT.h"
 #include <cassert>
 #include <iostream>
 #include <vector>
 
 using namespace std;
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 void testNeighborList()
 {
@@ -115,33 +115,12 @@ void verifyNeighborList(ThreeNeighborList& list, int numParticles, vector<RealVe
 
 }
 
-void testPeriodic(double cutoff) {
-    const int numParticles = 40;
-
-    const RealVec periodicBoxSize(20.0, 15.0, 22.0);
-    vector<RealVec> particleList(numParticles);
-    OpenMM_SFMT::SFMT sfmt;
-    init_gen_rand(0, sfmt);
-
-    for (int i = 0; i <numParticles; i++) {
-        particleList[i][0] = (RealOpenMM) (genrand_real2(sfmt)*periodicBoxSize[0]*3);
-        particleList[i][1] = (RealOpenMM) (genrand_real2(sfmt)*periodicBoxSize[1]*3);
-        particleList[i][2] = (RealOpenMM) (genrand_real2(sfmt)*periodicBoxSize[2]*3);
-    }
-    ThreeNeighborList neighborList;
-    computeThreeNeighborListVoxelHash(neighborList, numParticles, particleList, periodicBoxSize, true, cutoff);
-
-    verifyNeighborList(neighborList, numParticles, particleList, periodicBoxSize, cutoff);
-}
-
 int main() 
 {
 try {
     testNeighborList();
 
     testNeighborListFourAtoms();
-
-    testPeriodic(10.);
 
     cout << "Test Passed" << endl;
     return 0;

@@ -38,7 +38,8 @@
 #include <map>
 #include <cmath>
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using namespace std;
 
 using std::pair;
@@ -52,7 +53,7 @@ MBPolDispersionForceImpl::~MBPolDispersionForceImpl() {
 }
 
 void MBPolDispersionForceImpl::initialize(ContextImpl& context) {
-    const System& system = context.getSystem();
+    const OpenMM::System& system = context.getSystem();
 
     // check that cutoff < 0.5*boxSize
 

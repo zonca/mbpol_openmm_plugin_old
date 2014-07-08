@@ -36,7 +36,9 @@
 #include "internal/windowsExportMBPol.h"
 #include <vector>
 
-namespace OpenMM {
+using namespace OpenMM;
+
+namespace MBPolPlugin {
 
 /**
  * This class implements a buffered 14-7 potential used to model van der Waals forces.
@@ -175,7 +177,7 @@ public:
     }
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*OPENMM_MBPOL_VDW_FORCE_H_*/
 

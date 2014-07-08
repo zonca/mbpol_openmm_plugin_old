@@ -35,7 +35,7 @@
 #include "CudaSort.h"
 #include <cufft.h>
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 class CudaCalcMBPolGeneralizedKirkwoodForceKernel;
 
@@ -575,6 +575,6 @@ private:
     CUfunction forceKernel;
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*MBPOL_OPENMM_CUDAKERNELS_H*/

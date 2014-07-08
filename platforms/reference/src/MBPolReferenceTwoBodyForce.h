@@ -25,13 +25,13 @@
 #ifndef __MBPolReferenceTwoBodyForce_H__
 #define __MBPolReferenceTwoBodyForce_H__
 
-#include "RealVec.h"
+#include "openmm/reference/RealVec.h"
 #include "openmm/Vec3.h"
-#include "ReferenceNeighborList.h"
+#include "openmm/reference/ReferenceNeighborList.h"
 #include <string>
 #include <vector>
 
-using namespace OpenMM;
+using namespace  OpenMM;
 
 class MBPolReferenceTwoBodyForce;
 typedef  RealOpenMM (MBPolReferenceTwoBodyForce::*CombiningFunction)( RealOpenMM x, RealOpenMM y) const;

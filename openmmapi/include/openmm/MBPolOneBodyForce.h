@@ -36,7 +36,9 @@
 #include "internal/windowsExportMBPol.h"
 #include <vector>
 
-namespace OpenMM {
+using namespace OpenMM;
+
+namespace MBPolPlugin {
 
 /**
  * This class implements the MBPol stretch-bend interaction.
@@ -135,6 +137,6 @@ public:
     }
 };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*OPENMM_MBPOL_STRETCH_BEND_FORCE_H_*/

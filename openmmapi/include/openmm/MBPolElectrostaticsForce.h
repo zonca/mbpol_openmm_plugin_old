@@ -40,7 +40,9 @@
 #include <sstream>
 #include <vector>
 
-namespace OpenMM {
+using namespace OpenMM;
+
+namespace MBPolPlugin {
 
 /**
  * This class implements the MBPol multipole interaction.
@@ -97,7 +99,7 @@ public:
     /**
      * Get the number of particles in the potential function
      */
-    int getNumElectrostaticss() const {
+    int getNumElectrostatics() const {
         return multipoles.size();
     }
 
@@ -183,9 +185,6 @@ public:
      * Add multipole-related info for a particle
      *
      * @param charge               the particle's charge
-     * @param molecularDipole      the particle's molecular dipole (vector of size 3)
-     * @param molecularQuadrupole  the particle's molecular quadrupole (vector of size 9)
-     * @param axisType             the particle's axis type
      * @param multipoleAtomZ       index of first atom used in constructing lab<->molecular frames
      * @param multipoleAtomX       index of second atom used in constructing lab<->molecular frames
      * @param multipoleAtomY       index of second atom used in constructing lab<->molecular frames
@@ -195,7 +194,7 @@ public:
      *
      * @return the index of the particle that was added
      */
-    int addElectrostatics(double charge, const std::vector<double>& molecularDipole, const std::vector<double>& molecularQuadrupole, int axisType,
+    int addElectrostatics(double charge, 
                      int multipoleAtomZ, int multipoleAtomX, int multipoleAtomY, const std::vector<double>& thole, double dampingFactor, double polarity);
 
     /**
@@ -418,6 +417,6 @@ public:
 
 enum TholeIndices { TCC, TCD, TDD, TDDOH, TDDHH };
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*OPENMM_MBPOL_MULTIPOLE_FORCE_H_*/

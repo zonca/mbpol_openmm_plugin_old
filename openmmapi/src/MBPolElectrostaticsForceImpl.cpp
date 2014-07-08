@@ -36,7 +36,8 @@
 #include <cmath>
 
 using namespace std;
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 
 using std::vector;
 
@@ -52,7 +53,7 @@ MBPolElectrostaticsForceImpl::~MBPolElectrostaticsForceImpl() {
 void MBPolElectrostaticsForceImpl::initialize(ContextImpl& context) {
 
     const System& system = context.getSystem();
-    if (owner.getNumElectrostaticss() != system.getNumParticles())
+    if (owner.getNumElectrostatics() != system.getNumParticles())
         throw OpenMMException("MBPolElectrostaticsForce must have exactly as many particles as the System it belongs to.");
 
     // check cutoff < 0.5*boxSize

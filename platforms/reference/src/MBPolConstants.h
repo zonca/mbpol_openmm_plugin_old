@@ -32,12 +32,12 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 const double nm_to_A = 10.;
 const double cal2joule = 4.184;
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif
 

@@ -47,7 +47,8 @@
 #include &lt;cstring&gt;
 #include &lt;vector&gt;
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using namespace std;
 
 /* Utilities for dealing with Fortran's blank-padded strings. */

@@ -33,15 +33,18 @@
 #include "openmm/OpenMMException.h"
 #include "openmm/MBPolTwoBodyForce.h"
 #include "openmm/internal/MBPolTwoBodyForceImpl.h"
+#include <iostream>
 
-using namespace OpenMM;
+using namespace  OpenMM;
+using namespace MBPolPlugin;
 using std::string;
 using std::vector;
 
-MBPolTwoBodyForce::MBPolTwoBodyForce() : nonbondedMethod(NoCutoff), cutoff(1.0e+10) {
+MBPolTwoBodyForce::MBPolTwoBodyForce() : nonbondedMethod(CutoffNonPeriodic), cutoff(1.0e+10) {
 }
 
 int MBPolTwoBodyForce::addParticle(const std::vector<int> & particleIndices ) {
+    std::cout << particleIndices[0] << std::endl;
     parameters.push_back(TwoBodyInfo(particleIndices));
     return parameters.size()-1;
 }

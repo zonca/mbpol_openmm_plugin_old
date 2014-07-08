@@ -31,11 +31,11 @@
 #include "openmm/mbpolKernels.h"
 #include "openmm/MBPolElectrostaticsForce.h"
 #include "MBPolReferenceElectrostaticsForce.h"
-#include "ReferenceNeighborList.h"
+#include "openmm/reference/ReferenceNeighborList.h"
 #include "ReferenceThreeNeighborList.h"
-#include "SimTKOpenMMRealType.h"
+#include "openmm/reference/SimTKOpenMMRealType.h"
 
-namespace OpenMM {
+namespace MBPolPlugin {
 
 /**
  * This kernel is invoked by MBPolOneBodyForce to calculate the forces acting on the system and the energy of the system.
@@ -142,7 +142,7 @@ public:
 
 private:
 
-    int numElectrostaticss;
+    int numElectrostatics;
     MBPolElectrostaticsForce::NonbondedMethod nonbondedMethod;
     MBPolElectrostaticsForce::PolarizationType polarizationType;
     std::vector<RealOpenMM> charges;
@@ -287,6 +287,6 @@ private:
 };
 
 
-} // namespace OpenMM
+} // namespace MBPolPlugin
 
 #endif /*MBPOL_OPENMM_REFERENCE_KERNELS_H*/

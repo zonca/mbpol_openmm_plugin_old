@@ -203,6 +203,9 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculateTripletIxn( int siteI, int sit
           drac = std::sqrt(drac);
           drbc = std::sqrt(drbc);
 
+          if ((drab < 2) or (drac < 2) or (drbc < 2))
+               return 0.;
+
           double gab, gac, gbc;
 
           const double sab = threebody_f_switch(drab, gab);
@@ -301,7 +304,7 @@ RealOpenMM MBPolReferenceThreeBodyForce::calculateForceAndEnergy( int numParticl
     RealOpenMM energy = 0.;
     for( unsigned int ii = 0; ii < neighborList.size(); ii++ ){
 
-        OpenMM::AtomTriplet triplet       = neighborList[ii];
+        MBPolPlugin::AtomTriplet triplet       = neighborList[ii];
         int siteI                   = triplet.first;
         int siteJ                   = triplet.second;
         int siteQ                   = triplet.third;
