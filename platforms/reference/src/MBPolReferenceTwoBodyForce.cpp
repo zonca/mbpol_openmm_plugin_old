@@ -83,6 +83,9 @@ RealOpenMM MBPolReferenceTwoBodyForce::calculatePairIxn( int siteI, int siteJ,
         if (rOO > r2f)
             return 0.0;
 
+        if (rOO < 2.)
+            return 0.0;
+
         // offsets
 
         const int Oa  = 0;
