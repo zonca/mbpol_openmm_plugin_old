@@ -24,6 +24,7 @@
 
 #include "MBPolReferenceElectrostaticsForce.h"
 #include <algorithm>
+#include <iostream>
 
 // In case we're using some primitive version of Visual Studio this will
 // make sure that erf() and erfc() are defined.
@@ -1707,6 +1708,7 @@ RealOpenMM MBPolReferenceElectrostaticsForce::calculateForceAndEnergy( const std
 
     mapTorqueToForce( particleData, multipoleAtomXs, multipoleAtomYs, multipoleAtomZs, axisTypes, torques, forces );
 
+    std::cout << "Electrostatics: " << energy/4.184 << std::endl;
     return energy;
 }
 

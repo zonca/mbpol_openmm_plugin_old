@@ -25,6 +25,7 @@
 #include "MBPolReferenceForce.h"
 #include "MBPolReferenceOneBodyForce.h"
 #include <vector>
+#include <iostream>
 #include "mbpol_interaction_constants.h"
 
 using std::vector;
@@ -200,7 +201,8 @@ RealOpenMM MBPolReferenceOneBodyForce::calculateForceAndEnergy( int numOneBodys,
             forceData[particleH2Index][jj] -= forceH2[jj];
         }
 
-    }   
+    }           
+    std::cout << "OneBody: " << energy/4.184 << std::endl;
     return energy;
 }
 

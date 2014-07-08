@@ -106,6 +106,8 @@ double threebody_f_switch(const double& r, double& g)
     if (r > r3f) {
         g = 0.0;
         return 0.0;
+    //} else if (rOO < 2.) {
+    //    return 0.0;
     } else if (r > r3i) {
         const double t1 = M_PI/(r3f - r3i);
         const double x = (r - r3i)*t1;

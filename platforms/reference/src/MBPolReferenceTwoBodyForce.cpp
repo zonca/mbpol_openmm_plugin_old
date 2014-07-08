@@ -29,6 +29,7 @@
 #include <cctype>
 #include "mbpol_2body_constants.h"
 #include "poly-2b-v6x.h"
+#include <iostream>
 
 using std::vector;
 using OpenMM::RealVec;
@@ -82,7 +83,7 @@ RealOpenMM MBPolReferenceTwoBodyForce::calculatePairIxn( int siteI, int siteJ,
 
         if (rOO > r2f)
             return 0.0;
-
+        
         if (rOO < 2.)
             return 0.0;
 
@@ -286,5 +287,6 @@ RealOpenMM MBPolReferenceTwoBodyForce::calculateForceAndEnergy( int numParticles
 
     }
 
+    std::cout << "TwoBody: " << energy/4.184 << std::endl;
     return energy;
 }

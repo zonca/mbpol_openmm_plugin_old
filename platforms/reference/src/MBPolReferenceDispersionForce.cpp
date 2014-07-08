@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <iostream>
 
 using std::vector;
 using OpenMM::RealVec;
@@ -218,5 +219,6 @@ RealOpenMM MBPolReferenceDispersionForce::calculateForceAndEnergy( int numPartic
 
     }
 
+    std::cout << "MBPolReferenceDispersionForce: " << energy/4.184 << std::endl;
     return energy;
 }
