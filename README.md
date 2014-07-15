@@ -29,9 +29,11 @@ As of version `0.4.0`, only the `Reference` platform, i.e. single threaded C++ o
   `openmm` folder
 * Run `make PythonInstall` to install the Python wrapper, it requires
   Python and `swig`, the best is to use Anaconda
+* Add the OpenMM lib folder to the dynamic libraries path, generally : `export LD_LIBRARY_PATH=/usr/local/openmm/lib:$LD_LIBRARY_PATH`
 
 ## Example simulations
 
 * C++:
   <https://github.com/sdsc/mbpol_openmm_plugin/blob/master/examples/Simulate14WaterCluster/Simulate14WaterCluster.cpp>, see the documentation in the `examples/` folder.
 * IPython Notebook: <https://github.com/sdsc/mbpol_openmm_plugin/blob/master/python/water14.ipynb>
+* Python Script: <https://github.com/sdsc/mbpol_openmm_plugin/blob/master/python/water14.py>
