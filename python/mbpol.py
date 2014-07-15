@@ -24,7 +24,7 @@ class MBPolOneBodyForceGenerator:
         # <StretchBend class1="2" class2="1" class3="4" k1="3.14005676385" k2="3.14005676385" />
 
         for MBPolOneBodyForce_template in element.findall('MBPolOneBodyForce'):
-            types = forceField._findAtomTypes(MBPolOneBodyForce_template, 3)
+            types = forceField._findAtomTypes(MBPolOneBodyForce_template.attrib, 3)
             if None not in types:
 
                 generator.types1.append(types[0])
@@ -146,7 +146,7 @@ class MBPolThreeBodyForceGenerator:
         # <StretchBend class1="2" class2="1" class3="4" k1="3.14005676385" k2="3.14005676385" />
 
         for MBPolThreeBodyForce_template in element.findall('MBPolThreeBodyForce'):
-            types = forceField._findAtomTypes(MBPolThreeBodyForce_template, 3)
+            types = forceField._findAtomTypes(MBPolThreeBodyForce_template.attrib, 3)
             if None not in types:
 
                 generator.types1.append(types[0])
@@ -210,7 +210,7 @@ class MBPolDispersionForceGenerator:
         # <StretchBend class1="2" class2="1" class3="4" k1="3.14005676385" k2="3.14005676385" />
 
         for MBPolDispersionForce_template in element.findall('MBPolDispersionForce'):
-            types = forceField._findAtomTypes(MBPolDispersionForce_template, 3)
+            types = forceField._findAtomTypes(MBPolDispersionForce_template.attrib, 3)
             if None not in types:
 
                 generator.types1.append(types[0])
@@ -276,7 +276,7 @@ class MBPolElectrostaticsForceGenerator:
         forceField._forces.append(generator)
 
         for MBPolElectrostaticsForce_template in element.findall('MBPolElectrostaticsForce'):
-            types = forceField._findAtomTypes(MBPolElectrostaticsForce_template, 3)
+            types = forceField._findAtomTypes(MBPolElectrostaticsForce_template.attrib, 3)
             if None not in types:
 
                 generator.types1.append(types[0])
@@ -305,7 +305,7 @@ class MBPolElectrostaticsForceGenerator:
 
         for atom in element.findall('Atom'):
         #     <Atom type="MBPol-H" charge="2.5983000e-01" damping-factor="0.000294" polarizability="0.000294" />
-            types = forceField._findAtomTypes(atom, 1)
+            types = forceField._findAtomTypes(atom.attrib, 1)
             if None not in types:
 
                 for t in types[0]:
@@ -314,7 +314,7 @@ class MBPolElectrostaticsForceGenerator:
                                              damping_factor = float(atom.attrib['damping-factor']) )
 
             else:
-                outputString = "MBPolElectrostaticsForceGenerator: error getting type for atom: %s" % (atom.attrib['class'])
+                outputString = "MBPolElectrostaticsForceGenerator: error getting type for atom: %s" % (atom.attrib['type'])
                 raise ValueError(outputString)
 
     def createForce(self, sys, data, nonbondedMethod, nonbondedCutoff, args):
