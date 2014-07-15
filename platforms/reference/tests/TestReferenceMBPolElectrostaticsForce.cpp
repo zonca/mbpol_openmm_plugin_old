@@ -124,7 +124,7 @@ static void testGetAndScaleInverseRsInterMulecolar( FILE* log ) {
     ASSERT_EQUAL_TOL_MOD(3.607586381e-01*1e1, rrI[1], 1e-5, testName); // from mbpol
     ASSERT_EQUAL_TOL_MOD(4.695157736e-02*1e3, rrI[3], 1e-5, testName); // from mbpol
     ASSERT_EQUAL_TOL_MOD(6.110587933e-03*1e5*3., rrI[5], 1e-5, testName); // from mbpol
-    ASSERT_EQUAL_TOL_MOD(119289, rrI[7], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
+    ASSERT_EQUAL_TOL_MOD(119289., rrI[7], 1e-5, testName); // from this plugin after integration testing with mbpol on water3
 }
 
 class WrappedMBPolReferenceElectrostaticsForceForIndDipole : public MBPolReferenceElectrostaticsForce {
@@ -255,7 +255,7 @@ class WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge : public MBP
 
         computeWaterCharge(particleO, particleH1, particleH2, particleM);
 
-        ASSERT_EQUAL_TOL_MOD(0, particleO.charge, 1e-5, testName);
+        ASSERT_EQUAL_TOL_MOD(0., particleO.charge, 1e-5, testName);
         ASSERT_EQUAL_TOL_MOD(0.573599422, particleH1.charge, 1e-5, testName);
         ASSERT_EQUAL_TOL_MOD(0.577197137, particleH2.charge, 1e-5, testName);
         ASSERT_EQUAL_TOL_MOD(-1.15079656, particleM.charge, 1e-5, testName);
