@@ -128,13 +128,13 @@ simulation.step(100)
 
 # In[ ]:
 
-get_ipython().system(u'head trajectory.pdb')
+#get_ipython().system(u'head trajectory.pdb')
 
 
 # In[ ]:
 
-get_ipython().system(u'echo Number of lines: `wc -l trajectory.pdb`')
-
+#get_ipython().system(u'echo Number of lines: `wc -l trajectory.pdb`')
+#
 
 # In[ ]:
 
