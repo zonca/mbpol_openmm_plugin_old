@@ -44,7 +44,6 @@ MBPolTwoBodyForce::MBPolTwoBodyForce() : nonbondedMethod(CutoffNonPeriodic), cut
 }
 
 int MBPolTwoBodyForce::addParticle(const std::vector<int> & particleIndices ) {
-    std::cout << particleIndices[0] << std::endl;
     parameters.push_back(TwoBodyInfo(particleIndices));
     return parameters.size()-1;
 }
