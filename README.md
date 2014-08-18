@@ -25,7 +25,6 @@ As of version `0.4.0`, only the `Reference` platform, i.e. single threaded C++ o
 * Create the `build_mbpol` folder outside of the source folder
 * Configure the build by running `ccmake -i ../mbpol_openmm_plugin` inside the `build_mbpol` folder and press `c`
 * Set:
-  * `OPENMM_BUILD_MBPOL_PLUGIN` `ON`
   * `OPENMM_BUILD_MBPOL_CUDA_LIB`  `OFF` (not supported yet)
   * `CMAKE_INSTALL_PREFIX` and `OPENMM_DIR` should contain the path to the installed `OpenMM`, by default `/usr/local/openmm`.
   * `CMAKE_BUILD_TYPE` `Release`
