@@ -2060,55 +2060,6 @@ void MBPolReferencePmeElectrostaticsForce::getPmeScale( RealVec& scale ) const
     scale[2] = static_cast<RealOpenMM>(_pmeGridDimensions[2])*_invPeriodicBoxSize[2];
 }
 
-void MBPolReferencePmeElectrostaticsForce::getDampedInverseDistances( const ElectrostaticsParticleData& particleI,
-                                                                  const ElectrostaticsParticleData& particleJ,
-                                                                  RealOpenMM dscale, RealOpenMM pscale, RealOpenMM r,
-                                                                  std::vector<RealOpenMM>& dampedDInverseDistances,
-                                                                  std::vector<RealOpenMM>& dampedPInverseDistances ) const
-{
-
-    std::vector<RealOpenMM> scaleFactor(4);
-    std::fill(scaleFactor.begin(), scaleFactor.end(), 1.0);
-    RealOpenMM damp        = particleI.dampingFactor*particleJ.dampingFactor;
-    if( damp != 0.0 ){
-
-        RealOpenMM ratio   = pow(r/damp, 4);
-
-        // TODO implement variable thole in PME
-        RealOpenMM pgamma  = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
-                   damp    = -pgamma*ratio;
-
-        if( damp > -50.0) {
-            RealOpenMM expdamp = EXP(damp);
-            scaleFactor[0]     = 1.0 - expdamp + pow(pgamma, 1.0/4.0)*(r/damp)*EXP(ttm::gammln(3.0/4.0))*ttm::gammq(3.0/4.0, -damp);;
-            scaleFactor[1]     = 1.0 - expdamp;
-            scaleFactor[2]     = (1.0 - expdamp)- (4./3.) * pgamma * expdamp * ratio;
-            scaleFactor[3]     = ((1.0 - expdamp) - (4./3.) * pgamma * expdamp * ratio) - // rrI[2]'s factor
-                    (4./15.) * pgamma * (4. * pgamma * ratio - 1.) * expdamp / pow(damp, 4) * pow(r, 4);
-;
-        }   
-    }   
-    RealOpenMM r2              = r*r;
-    RealOpenMM r3              = r*r2;
-    RealOpenMM r5              = r3*r2;
-    RealOpenMM r7              = r5*r2;
-
-    dampedDInverseDistances[0] =      (1.0-scaleFactor[0])/r;
-    dampedDInverseDistances[1] =      (1.0-scaleFactor[1])/r3;
-    dampedDInverseDistances[2] =  3.0*(1.0-scaleFactor[2])/r5;
-    dampedDInverseDistances[3] = 15.0*(1.0-scaleFactor[3])/r7;
-    if( pscale == dscale ){
-        dampedPInverseDistances = dampedDInverseDistances;
-    } else {
-        dampedPInverseDistances[0] =      (1.0-scaleFactor[0])/r;
-        dampedPInverseDistances[1] =      (1.0-scaleFactor[1])/r3;
-        dampedPInverseDistances[2] =  3.0*(1.0-scaleFactor[2])/r5;
-        dampedPInverseDistances[3] = 15.0*(1.0-scaleFactor[3])/r7;
-    }
-
-    return;
-}
-
 void MBPolReferencePmeElectrostaticsForce::initializeBSplineModuli( void )
 {
 
