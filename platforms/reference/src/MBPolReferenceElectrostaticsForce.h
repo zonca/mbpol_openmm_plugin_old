@@ -1426,7 +1426,6 @@ private:
      * @param torques           vector of particle torques to be updated
      */
     RealOpenMM calculatePmeDirectElectrostaticPairIxn( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
-                                                       const std::vector<RealOpenMM>& scalingFactors,
                                                        std::vector<RealVec>& forces, std::vector<RealVec>& torques ) const;
 
     /**

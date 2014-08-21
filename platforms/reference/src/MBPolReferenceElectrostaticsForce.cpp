@@ -3374,7 +3374,6 @@ void MBPolReferencePmeElectrostaticsForce::calculatePmeSelfTorque( const std::ve
 
 RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostaticPairIxn( const ElectrostaticsParticleData& particleI, 
                                                                                      const ElectrostaticsParticleData& particleJ,
-                                                                                     const std::vector<RealOpenMM>& scalingFactors,
                                                                                      std::vector<RealVec>& forces,
                                                                                      std::vector<RealVec>& torques ) const 
 {
@@ -3476,51 +3475,20 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM ddsc73 = 0.0;
 
     RealOpenMM damp;
-    std::vector<RealOpenMM> scalingFactors(4);
 
-    getAndScaleInverseRs( particleI.dampingFactor, particleJ.dampingFactor, particleI.thole, particleJ.thole, r, true, damp, scalingFactors );
 
-    if( damp != 0.0 ){
-        // TODO variable thole in PME
-        RealOpenMM pgamma = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
-        RealOpenMM ratio  = r/damp;
-            damp     = -pgamma*ratio*ratio*ratio;
-        if( damp > -50.0 ){
-            RealOpenMM expdamp  = EXP(damp);
-            scale1         = scalingFactors[0];
-            scale3         = scalingFactors[1];
-            scale5         = scalingFactors[2];
-            scale7         = scalingFactors[3];
-            RealOpenMM temp3    = -3.0 * damp * expdamp / r2;
-            RealOpenMM temp5    = -damp;
-            RealOpenMM temp7    = -0.2 - 0.6*damp;
+    RealOpenMM dsc3 = 1.0 - scale3;
+    RealOpenMM dsc5 = 1.0 - scale5;
+    RealOpenMM dsc7 = 1.0 - scale7;
 
-            ddsc31         = temp3 * xr;
-            ddsc32         = temp3 * yr;
-            ddsc33         = temp3 * zr;
+    RealOpenMM psc1 = 1.0 - scale1;
+    RealOpenMM psc3 = 1.0 - scale3;
+    RealOpenMM psc5 = 1.0 - scale5;
+    RealOpenMM psc7 = 1.0 - scale7;
 
-            ddsc51         = temp5 * ddsc31;
-            ddsc52         = temp5 * ddsc32;
-            ddsc53         = temp5 * ddsc33;
-
-            ddsc71         = temp7 * ddsc51;
-            ddsc72         = temp7 * ddsc52;
-            ddsc73         = temp7 * ddsc53;
-        }
-    }
-
-    RealOpenMM dsc3 = 1.0 - scale3*scalingFactors[D_SCALE];
-    RealOpenMM dsc5 = 1.0 - scale5*scalingFactors[D_SCALE];
-    RealOpenMM dsc7 = 1.0 - scale7*scalingFactors[D_SCALE];
-
-    RealOpenMM psc1 = 1.0 - scale1*scalingFactors[P_SCALE];
-    RealOpenMM psc3 = 1.0 - scale3*scalingFactors[P_SCALE];
-    RealOpenMM psc5 = 1.0 - scale5*scalingFactors[P_SCALE];
-    RealOpenMM psc7 = 1.0 - scale7*scalingFactors[P_SCALE];
-
-    RealOpenMM usc3 = 1.0 - scale3*scalingFactors[U_SCALE];
-    RealOpenMM usc5 = 1.0 - scale5*scalingFactors[U_SCALE];
-    RealOpenMM usc7 = 1.0 - scale7*scalingFactors[U_SCALE];
+    RealOpenMM usc3 = 1.0 - scale3;
+    RealOpenMM usc5 = 1.0 - scale5;
+    RealOpenMM usc7 = 1.0 - scale7;
 
     // construct necessary auxiliary vectors
 
@@ -3744,7 +3712,9 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
 
     RealOpenMM erl           = rr1*gl0*psc1 + rr3*(gl1+gl6)*psc3 + rr5*(gl2+gl7+gl8)*psc5 + rr7*(gl3+gl5)*psc7 + rr9*gl4;
     RealOpenMM erli          = 0.5*(rr3*(gli1+gli6)*psc3 + rr5*(gli2+gli7)*psc5 + rr7*gli3*psc7);
-    e                   = e - (1.0-scalingFactors[M_SCALE])*erl;
+
+    // FIXME is scalingFactors[M_SCALE] == 1??
+    // e                   = e - (1.0-scalingFactors[M_SCALE])*erl;
     ei                  = ei - erli;
 
     energy              = (e + ei);
