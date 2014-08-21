@@ -2067,7 +2067,8 @@ void MBPolReferencePmeElectrostaticsForce::getDampedInverseDistances( const Elec
                                                                   std::vector<RealOpenMM>& dampedPInverseDistances ) const
 {
 
-    RealVec scaleFactor    = RealVec( 1.0, 1.0, 1.0, 1.0 );
+    std::vector<RealOpenMM> scaleFactor(4);
+    std::fill(scaleFactor.begin(), scaleFactor.end(), 1.0);
     RealOpenMM damp        = particleI.dampingFactor*particleJ.dampingFactor;
     if( damp != 0.0 ){
 
@@ -2087,25 +2088,22 @@ void MBPolReferencePmeElectrostaticsForce::getDampedInverseDistances( const Elec
 ;
         }   
     }   
-    RealVec dampedDScale       = scaleFactor*dscale;
-
     RealOpenMM r2              = r*r;
     RealOpenMM r3              = r*r2;
     RealOpenMM r5              = r3*r2;
     RealOpenMM r7              = r5*r2;
 
-    dampedDInverseDistances[0] =      (1.0-dampedDScale[0])/r;
-    dampedDInverseDistances[1] =      (1.0-dampedDScale[1])/r3;
-    dampedDInverseDistances[2] =  3.0*(1.0-dampedDScale[2])/r5;
-    dampedDInverseDistances[3] = 15.0*(1.0-dampedDScale[3])/r7;
+    dampedDInverseDistances[0] =      (1.0-scaleFactor[0])/r;
+    dampedDInverseDistances[1] =      (1.0-scaleFactor[1])/r3;
+    dampedDInverseDistances[2] =  3.0*(1.0-scaleFactor[2])/r5;
+    dampedDInverseDistances[3] = 15.0*(1.0-scaleFactor[3])/r7;
     if( pscale == dscale ){
         dampedPInverseDistances = dampedDInverseDistances;
     } else {
-        RealVec dampedPScale       = scaleFactor*pscale;
-        dampedPInverseDistances[0] =      (1.0-dampedPScale[0])/r;
-        dampedPInverseDistances[1] =      (1.0-dampedPScale[1])/r3;
-        dampedPInverseDistances[2] =  3.0*(1.0-dampedPScale[2])/r5;
-        dampedPInverseDistances[3] = 15.0*(1.0-dampedPScale[3])/r7;
+        dampedPInverseDistances[0] =      (1.0-scaleFactor[0])/r;
+        dampedPInverseDistances[1] =      (1.0-scaleFactor[1])/r3;
+        dampedPInverseDistances[2] =  3.0*(1.0-scaleFactor[2])/r5;
+        dampedPInverseDistances[3] = 15.0*(1.0-scaleFactor[3])/r7;
     }
 
     return;
