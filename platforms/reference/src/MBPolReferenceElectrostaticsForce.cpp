@@ -2197,23 +2197,6 @@ void MBPolReferencePmeElectrostaticsForce::calculateFixedElectrostaticsFieldPair
     alsq2n                *= alsq2;
     RealOpenMM bn3         = (5.0*bn2+alsq2n*exp2a)/r2;
 
-    // compute the error function scaled and unscaled terms
-
-    std::vector<RealOpenMM> dampedDInverseDistances(4);
-    std::vector<RealOpenMM> dampedPInverseDistances(4);
-
-    getDampedInverseDistances( particleI, particleJ, dscale, pscale, r, dampedDInverseDistances, dampedPInverseDistances);
-
-    RealOpenMM drr1        = dampedDInverseDistances[0];
-    RealOpenMM drr3        = dampedDInverseDistances[1];
-    RealOpenMM drr5        = dampedDInverseDistances[2];
-    RealOpenMM drr7        = dampedDInverseDistances[3];
-
-    RealOpenMM prr1        = dampedPInverseDistances[0];
-    RealOpenMM prr3        = dampedPInverseDistances[1];
-    RealOpenMM prr5        = dampedPInverseDistances[2];
-    RealOpenMM prr7        = dampedPInverseDistances[3];
-
     RealOpenMM dir         = particleI.dipole.dot( deltaR );
 
     RealVec qxI            = RealVec( particleI.quadrupole[QXX], particleI.quadrupole[QXY], particleI.quadrupole[QXZ] );
@@ -2235,11 +2218,16 @@ void MBPolReferencePmeElectrostaticsForce::calculateFixedElectrostaticsFieldPair
     RealVec fim            = qj*( 2.0*bn2)  - particleJ.dipole*bn1  - deltaR*( bn1*particleJ.charge - bn2*djr+bn3*qjr);
     RealVec fjm            = qi*(-2.0*bn2)  - particleI.dipole*bn1  + deltaR*( bn1*particleI.charge + bn2*dir+bn3*qir);
 
-    RealVec fid            = qj*( 2.0*drr5) - particleJ.dipole*drr3 - deltaR*(drr3*particleJ.charge - drr5*djr+drr7*qjr);
-    RealVec fjd            = qi*(-2.0*drr5) - particleI.dipole*drr3 + deltaR*(drr3*particleI.charge + drr5*dir+drr7*qir);
+ // FIXME check that everything is charge-charge
+    RealOpenMM rr3    = getAndScaleInverseRs( particleI, particleJ, r, false, 3, TCC); //         charge - charge
+    RealOpenMM rr5    = getAndScaleInverseRs( particleI, particleJ, r, false, 5, TCC);; //        charge - charge
+    RealOpenMM rr7    = getAndScaleInverseRs( particleI, particleJ, r, false, 7, TCC);; //        charge - charge
 
-    RealVec fip            = qj*( 2.0*prr5) - particleJ.dipole*prr3 - deltaR*(prr3*particleJ.charge - prr5*djr+prr7*qjr);
-    RealVec fjp            = qi*(-2.0*prr5) - particleI.dipole*prr3 + deltaR*(prr3*particleI.charge + prr5*dir+prr7*qir);
+    RealVec fid            = qj*( 2.0*rr5) - particleJ.dipole*rr3 - deltaR*(rr3*particleJ.charge - rr5*djr+rr7*qjr);
+    RealVec fjd            = qi*(-2.0*rr5) - particleI.dipole*rr3 + deltaR*(rr3*particleI.charge + rr5*dir+rr7*qir);
+
+    RealVec fip            = qj*( 2.0*rr5) - particleJ.dipole*rr3 - deltaR*(rr3*particleJ.charge - rr5*djr+rr7*qjr);
+    RealVec fjp            = qi*(-2.0*rr5) - particleI.dipole*rr3 + deltaR*(rr3*particleI.charge + rr5*dir+rr7*qir);
 
     // increment the field at each site due to this interaction
 
