@@ -1198,10 +1198,12 @@ private:
      * @param dampedDInverseDistances damped inverse distances (drr3,drr5,drr7 in udirect2a() in TINKER)
      * @param dampedPInverseDistances damped inverse distances (prr3,prr5,prr7 in udirect2a() in TINKER)
      */
-    void getDampedInverseDistances( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
-                                    RealOpenMM dscale, RealOpenMM pscale, RealOpenMM r,
-                                    RealVec& dampedDInverseDistances, RealVec& dampedPInverseDistances ) const;
-    
+    void getDampedInverseDistances( const ElectrostaticsParticleData& particleI,
+                                                                  const ElectrostaticsParticleData& particleJ,
+                                                                  RealOpenMM dscale, RealOpenMM pscale, RealOpenMM r,
+                                                                  std::vector<RealOpenMM>& dampedDInverseDistances,
+                                                                  std::vector<RealOpenMM>& dampedPInverseDistances ) const;
+
     /**
      * Initialize B-spline moduli.
      * 
