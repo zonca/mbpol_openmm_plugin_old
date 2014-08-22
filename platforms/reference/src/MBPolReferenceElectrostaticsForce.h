@@ -26,6 +26,7 @@
 
 #include <vector>
 #include "openmm/reference/RealVec.h"
+#include "openmm/reference/SimTKOpenMMRealType.h"
 #include "openmm/MBPolElectrostaticsForce.h"
 #include <map>
 #include "openmm/reference/fftpack.h"
