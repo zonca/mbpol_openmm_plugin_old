@@ -224,6 +224,110 @@ class WrappedMBPolReferenceElectrostaticsForceForIndDipole : public MBPolReferen
     }
 };
 
+class WrappedMBPolReferenceElectrostaticsForceForPmeDipole: public MBPolReferencePmeElectrostaticsForce {
+    public:
+    int wrapCalculateInducedDipolePairIxns()   {
+        string testName = "computeInducedDipolesPme";
+        std::cout << testName << std::endl;
+
+        int numberOfParticles = 2;
+        std::vector<RealVec> positions(numberOfParticles);
+        positions[0]             = RealVec( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
+        positions[1]             = RealVec( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
+
+        for (int i=0; i<numberOfParticles; i++) {
+             for (int j=0; j<3; j++) {
+                positions[i][j] *= 1e-1;
+             }
+         }
+
+        std::vector<RealOpenMM> charges, dipoles, tholes, dampingFactors, polarity;
+        std::vector<RealOpenMM> quadrupoles;
+        std::vector<int> intZeros;
+
+        for (int i=0; i<numberOfParticles; i++){
+            charges.push_back(-5.1966000e-01);
+            for (int j=0; j<5; j++){
+                tholes.push_back(0.4);
+            }
+            dampingFactors.push_back(0.001310);
+            polarity.push_back(0.001310);
+            for (int j=0; j<3; j++){
+                dipoles.push_back(0.);
+            }
+            for (int j=0; j<6; j++){
+                quadrupoles.push_back(0.);
+            }
+            intZeros.push_back(0);
+        }
+
+        std::vector<ElectrostaticsParticleData> particleData;
+        _numParticles = numberOfParticles;
+        loadParticleData(positions, charges, dipoles, quadrupoles,
+                              tholes, dampingFactors, polarity, intZeros, intZeros, intZeros, particleData );
+
+        _fixedElectrostaticsField.resize( numberOfParticles );
+        _fixedElectrostaticsFieldPolar.resize( numberOfParticles );
+        _fixedElectrostaticsField[0]      = RealVec(-6.040604308e-03*1e2, -4.375756834e-03*1e2, -6.721950569e-02*1e2);
+        _fixedElectrostaticsFieldPolar[0] = RealVec(0., 0., 0);
+        _fixedElectrostaticsField[1]      = RealVec(6.040604308e-03*1e2, 4.375756834e-03*1e2, 6.721950569e-02*1e2);
+        _fixedElectrostaticsFieldPolar[1] = RealVec(0., 0., 0);
+
+        for( unsigned int ii = 0; ii < _numParticles; ii++ ){
+            _fixedElectrostaticsField[ii]      *= particleData[ii].polarity;
+            _fixedElectrostaticsFieldPolar[ii] *= particleData[ii].polarity;
+        }
+        _inducedDipole.resize( numberOfParticles );
+        _inducedDipolePolar.resize( numberOfParticles );
+        std::vector<UpdateInducedDipoleFieldStruct> updateInducedDipoleField;
+        updateInducedDipoleField.push_back( UpdateInducedDipoleFieldStruct( &_fixedElectrostaticsField,       &_inducedDipole ) );
+        updateInducedDipoleField.push_back( UpdateInducedDipoleFieldStruct( &_fixedElectrostaticsFieldPolar,  &_inducedDipolePolar ) );
+
+//        std::cout << "initializeInducedDipoles" << std::endl;
+
+        //initializeInducedDipoles( updateInducedDipoleField );
+        _inducedDipole.resize( _numParticles );
+        _inducedDipolePolar.resize( _numParticles );
+
+        for( unsigned int ii = 0; ii < _numParticles; ii++ ){
+            _inducedDipole[ii]       = _fixedElectrostaticsField[ii];
+            _inducedDipolePolar[ii]  = _fixedElectrostaticsFieldPolar[ii];
+        }
+
+//      for( unsigned int ii = 0; ii < numberOfParticles; ii++ ){
+//          std::cout << updateInducedDipoleField[0].inducedDipoles[0][ii] << std::endl;
+//      }
+
+//        std::cout << "calculateInducedDipolePairIxns" << std::endl;
+
+        convergeInduceDipoles( particleData, updateInducedDipoleField );
+
+      for( unsigned int ii = 0; ii < numberOfParticles; ii++ ){
+          std::cout << "******** Particle " << ii << std::endl;
+          //"[ protoncharge nm ]"
+          std::cout << "inducedDipoles:     " << updateInducedDipoleField[0].inducedDipoles[0][ii]*18.2226*10 << "[ protoncharge A sqrt(A kcal/mol) ]"<< std::endl;
+          std::cout << "fixedElectrostaticsField:" << updateInducedDipoleField[0].fixedElectrostaticsField[0][ii] << "[ Kj/mol/nm ]" << std::endl;
+          std::cout << "inducedDipoleField: " << updateInducedDipoleField[0].inducedDipoleField[ii] << "[ Kj/mol/nm ]" << std::endl;
+      }
+
+//        std::cout << "END of wrapCalculateInducedDipolePairIxns" << std::endl;
+
+        std::vector<Vec3> expectedInducedDipoles(numberOfParticles);
+        expectedInducedDipoles[0] = Vec3(-7.046394571e-03, -5.104341822e-03, -7.841188329e-02);
+        expectedInducedDipoles[1] = Vec3( 7.046394571e-03,  5.104341822e-03,  7.841188329e-02);
+        for (int i=0; i<numberOfParticles; i++) {
+            for (int j=0; j<3; j++) {
+                expectedInducedDipoles[i][j] *= 1e-1;
+            }
+        }
+
+        double tolerance = 1e-7;
+        for (int i=0; i<numberOfParticles; i++) {
+            ASSERT_EQUAL_VEC_MOD(expectedInducedDipoles[i], updateInducedDipoleField[0].inducedDipoles[0][i], tolerance, testName);
+        }
+    }
+};
+
 class WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge : public MBPolReferenceElectrostaticsForce {
     public:
     int testComputeWaterCharge()   {
@@ -799,6 +903,229 @@ static void testWater3( FILE* log ) {
     return;
 }
 
+static void testWater3VirtualSitePMEHugeBox( FILE* log ) {
+
+    std::string testName      = "testWater3VirtualSite";
+    std::cout << "Test START: " << testName << std::endl;
+
+    int numberOfParticles     = 12;
+    double cutoff             = 10.;
+
+    std::vector<double> outputElectrostaticsMoments;
+    std::vector< Vec3 > inputGrid;
+    std::vector< double > outputGridPotential;
+
+
+    // beginning of Electrostatics setup
+    MBPolElectrostaticsForce::NonbondedMethod nonbondedMethod = MBPolElectrostaticsForce::PME;
+
+    System system;
+    // box dimensions
+
+    double boxDimension                               = 50; //1.8643;
+    Vec3 a( boxDimension, 0.0, 0.0 );
+    Vec3 b( 0.0, boxDimension, 0.0 );
+    Vec3 c( 0.0, 0.0, boxDimension );
+    system.setDefaultPeriodicBoxVectors( a, b, c );
+
+    MBPolElectrostaticsForce* mbpolElectrostaticsForce        = new MBPolElectrostaticsForce();;
+    mbpolElectrostaticsForce->setNonbondedMethod( nonbondedMethod );
+    //mbpolElectrostaticsForce->setPolarizationType( polarizationType );
+    mbpolElectrostaticsForce->setCutoffDistance( cutoff );
+    //mbpolElectrostaticsForce->setMutualInducedTargetEpsilon( 1.0e-06 );
+    //mbpolElectrostaticsForce->setMutualInducedMaxIterations( 500 );
+    // mbpolElectrostaticsForce->setAEwald( 5.4459052e+00 );
+    mbpolElectrostaticsForce->setAEwald( 1e-15 );
+    mbpolElectrostaticsForce->setEwaldErrorTolerance( 1.0e-04 );
+
+    std::vector<int> pmeGridDimension( 3 );
+    int inputPmeGridDimension = 5;
+    pmeGridDimension[0] = pmeGridDimension[1] = pmeGridDimension[2] = inputPmeGridDimension;
+    mbpolElectrostaticsForce->setPmeGridDimensions( pmeGridDimension );
+
+    double virtualSiteWeightO = 0.573293118;
+    double virtualSiteWeightH = 0.213353441;
+    for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
+        system.addParticle( 1.5999000e+01 );
+        system.addParticle( 1.0080000e+00 );
+        system.addParticle( 1.0080000e+00 );
+        system.addParticle( 0. ); // Virtual Site
+        system.setVirtualSite(jj+3, new ThreeParticleAverageSite(jj, jj+1, jj+2,
+                                                           virtualSiteWeightO, virtualSiteWeightH,virtualSiteWeightH));
+
+    }
+
+    std::vector<double> zeroDipole(3);
+    std::vector<double> zeroQuadrupole(9);
+    std::vector<double> thole(5);
+
+    std::fill(zeroDipole.begin(), zeroDipole.end(), 0.);
+    std::fill(zeroQuadrupole.begin(), zeroQuadrupole.end(), 0.);
+
+    thole[TCC] = 0.4;
+    thole[TCD] = 0.4;
+    thole[TDD] = 0.055;
+    thole[TDDOH]  = 0.626;
+    thole[TDDHH] = 0.055;
+
+    for( unsigned int jj = 0; jj < numberOfParticles; jj += 4 ){
+        mbpolElectrostaticsForce->addElectrostatics( -5.1966000e-01, jj+1, jj+2, jj+3,
+                                            thole, 0.001310, 0.001310 );
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, jj, jj+2, jj+3,
+                                            thole, 0.000294, 0.000294 );
+        mbpolElectrostaticsForce->addElectrostatics(  2.5983000e-01, jj, jj+1, jj+3,
+                                            thole, 0.000294, 0.000294 );
+        mbpolElectrostaticsForce->addElectrostatics(  0., jj, jj+1, jj+2,
+                                                    thole,  0.001310,  0.);
+    }
+
+    system.addForce(mbpolElectrostaticsForce);
+
+    static std::vector<Vec3> positions; // Static to work around bug in Visual Studio that makes compilation very very slow.
+    positions.resize(numberOfParticles);
+
+    positions[0]             = Vec3( -1.516074336e+00, -2.023167650e-01,  1.454672917e+00  );
+    positions[1]             = Vec3( -6.218989773e-01, -6.009430735e-01,  1.572437625e+00  );
+    positions[2]             = Vec3( -2.017613812e+00, -4.190350349e-01,  2.239642849e+00  );
+    positions[3]             = Vec3( -1.43230412, -0.33360265,  1.64727446 );
+
+
+    positions[4]             = Vec3( -1.763651687e+00, -3.816594649e-01, -1.300353949e+00  );
+    positions[5]             = Vec3( -1.903851736e+00, -4.935677617e-01, -3.457810126e-01  );
+    positions[6]             = Vec3( -2.527904158e+00, -7.613550077e-01, -1.733803676e+00  );
+    positions[7]             = Vec3( -1.95661974, -0.48654484, -1.18917052 );
+
+
+    positions[8]             = Vec3( -5.588472140e-01,  2.006699172e+00, -1.392786582e-01  );
+    positions[9]             = Vec3( -9.411558180e-01,  1.541226676e+00,  6.163293071e-01  );
+    positions[10]            = Vec3( -9.858551734e-01,  1.567124294e+00, -8.830970941e-01  );
+    positions[11]            = Vec3( -0.73151769,  1.8136042 , -0.13676332 );
+
+    for (int i=0; i<numberOfParticles; i++) {
+        for (int j=0; j<3; j++) {
+            positions[i][j] *= 1e-1;
+        }
+    }
+
+    std::string platformName;
+    platformName = "Reference";
+    LangevinIntegrator integrator(0.0, 0.1, 0.01);
+    Context context(system, integrator, Platform::getPlatformByName( platformName ) );
+
+    context.setPositions(positions);
+    context.applyConstraints(1e-4); // update position of virtual site
+
+    double tolerance          = 1.0e-04;
+
+//    // test energy and forces
+//
+    State state                = context.getState(State::Forces | State::Energy);
+    std::vector<Vec3> forces   = state.getForces();
+    double energy              = state.getPotentialEnergy();
+    double cal2joule = 4.184;
+
+    double expectedEnergy = -15.818784*cal2joule;
+    std::cout << "Energy: " << energy/cal2joule << " Kcal/mol "<< std::endl;
+    std::cout << "Expected energy: " << expectedEnergy/cal2joule << " Kcal/mol "<< std::endl;
+
+    std::vector<Vec3> expectedForces(numberOfParticles);
+    expectedForces[0]         = Vec3(  2.38799956, 0.126835228,   8.86189407  );
+    expectedForces[1]         = Vec3( -4.21263312, -0.72316292,   3.37076777  );
+    expectedForces[2]         = Vec3(  2.19240288, -2.24806806,   1.96210789  );
+    expectedForces[4]         = Vec3(  3.59486021, -2.16710895,   3.57138432  );
+    expectedForces[5]         = Vec3( -4.54547068, -4.58639226,  -17.4258666  );
+    expectedForces[6]         = Vec3( -3.27239433, -1.96722979,    1.1170853  );
+    expectedForces[8]         = Vec3( -1.44387205, -3.22471108,  -2.61329967  );
+    expectedForces[9]         = Vec3(  3.35011312,  6.07136704, -0.197008793  );
+    expectedForces[10]         = Vec3(  1.94899441,   8.7184708,   1.35293571  );
+
+    // gradient -> forces
+    for (int i=0; i<numberOfParticles; i++) {
+           for (int j=0; j<3; j++) {
+            forces[i][j] /= cal2joule*10;
+            if ((i+1) % 4 == 0) { // Set virtual site force to 0
+                forces[i][j] = 0;
+            }
+           }
+       }
+
+//    for (int i=0; i<numberOfParticles; i++) {
+//           for (int j=0; j<3; j++) {
+//               expectedForces[i][j] *= -1;
+//           }
+//       }
+//    std::cout  << std::endl << "Forces:" << std::endl;
+//
+//
+//    const double eps = 1.0e-4;
+//
+//    double x_orig;
+//
+//    std::vector<Vec3> finiteDifferenceForces(numberOfParticles);
+//    for (int i=0; i<numberOfParticles; i++) {
+//        finiteDifferenceForces.push_back(Vec3( 0.,  0., 0.  ));
+//    }
+//    for (int i=0; i<numberOfParticles; i++) {
+//        for (int xyz=0; xyz<3; xyz++) {
+//            x_orig = positions[i][xyz];
+//
+//            positions[i][xyz] = x_orig + eps;
+//            context.setPositions(positions);
+//            context.applyConstraints(1e-4); // update position of virtual site
+//            state                = context.getState(State::Energy);
+//            const double Ep  = state.getPotentialEnergy();
+//
+//            positions[i][xyz] = x_orig + 2*eps;
+//            context.setPositions(positions);
+//            context.applyConstraints(1e-4); // update position of virtual site
+//            state                = context.getState(State::Energy);
+//            const double E2p  = state.getPotentialEnergy();
+//
+//            positions[i][xyz] = x_orig - eps;
+//            context.setPositions(positions);
+//            context.applyConstraints(1e-4); // update position of virtual site
+//            state                = context.getState(State::Energy);
+//            const double Em   = state.getPotentialEnergy();
+//
+//            positions[i][xyz] = x_orig - 2*eps;
+//            context.setPositions(positions);
+//            context.applyConstraints(1e-4); // update position of virtual site
+//            state                = context.getState(State::Energy);
+//            const double E2m   = state.getPotentialEnergy();
+//
+//            finiteDifferenceForces[i][xyz] = (8*(Ep - Em) - (E2p - E2m))/(12*eps);
+//            positions[i][xyz] = x_orig;
+//        }
+//
+//    }
+//
+//    for (int i=0; i<numberOfParticles; i++) {
+//           for (int j=0; j<3; j++) {
+//            finiteDifferenceForces[i][j] /= -1*cal2joule*10;
+//           }
+//
+//       }
+//
+//    for (int i=0; i<numberOfParticles; i++) {
+//        std::cout << "Force atom " << i << ": " << expectedForces[i] << " Kcal/mol/A <mbpol>" << std::endl;
+//        std::cout << "Force atom " << i << ": " << forces[i] << " Kcal/mol/A <openmm-mbpol>" << std::endl;
+//        std::cout << "Force atom " << i << ": " << finiteDifferenceForces[i] << " Kcal/mol/A <openmm-mbpol finite differences>" << std::endl << std::endl;
+//    }
+
+    std::cout << "Comparison of energy and forces with tolerance: " << tolerance << std::endl << std::endl;
+
+    ASSERT_EQUAL_TOL_MOD( expectedEnergy, energy, tolerance, testName );
+
+    for( unsigned int ii = 0; ii < forces.size(); ii++ ){
+        ASSERT_EQUAL_VEC_MOD( expectedForces[ii], forces[ii], tolerance, testName );
+    }
+
+    std::cout << "Test Successful: " << testName << std::endl << std::endl;
+
+
+    return;
+}
+
 
 int main( int numberOfArguments, char* argv[] ) {
 
@@ -807,22 +1134,37 @@ int main( int numberOfArguments, char* argv[] ) {
 
         FILE* log = NULL;
 
-        testGetAndScaleInverseRs( log );
-        testGetAndScaleInverseRsInterMulecolar( log );
+//        testGetAndScaleInverseRs( log );
+//        testGetAndScaleInverseRsInterMulecolar( log );
+//
+//        WrappedMBPolReferenceElectrostaticsForceForIndDipole* mbpolReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForceForIndDipole();
+//        mbpolReferenceElectrostaticsForce->setMutualInducedDipoleTargetEpsilon(1e-7);
+//        mbpolReferenceElectrostaticsForce->wrapCalculateInducedDipolePairIxns();
 
-        WrappedMBPolReferenceElectrostaticsForceForIndDipole* mbpolReferenceElectrostaticsForce = new WrappedMBPolReferenceElectrostaticsForceForIndDipole();
-        mbpolReferenceElectrostaticsForce->setMutualInducedDipoleTargetEpsilon(1e-7);
-        mbpolReferenceElectrostaticsForce->wrapCalculateInducedDipolePairIxns();
+        WrappedMBPolReferenceElectrostaticsForceForPmeDipole* mbpolReferenceElectrostaticsForcePme = new WrappedMBPolReferenceElectrostaticsForceForPmeDipole();
+        mbpolReferenceElectrostaticsForcePme->setMutualInducedDipoleTargetEpsilon(1e-7);
+        mbpolReferenceElectrostaticsForcePme->setCutoffDistance( 10. );
+        mbpolReferenceElectrostaticsForcePme->setAlphaEwald( 1e-15 );
+        std::vector<int> pmeGrid(3);
+        std::fill(pmeGrid.begin(), pmeGrid.end(), 20.);
+        mbpolReferenceElectrostaticsForcePme->setPmeGridDimensions(pmeGrid);
+        RealVec boxSize;
+        boxSize[0] = boxSize[1] = boxSize[2] = 50;
+        mbpolReferenceElectrostaticsForcePme->setPeriodicBoxSize(boxSize);
 
-        WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn();
-        wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
+        mbpolReferenceElectrostaticsForcePme->wrapCalculateInducedDipolePairIxns();
 
-        WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge();
-        wrapperForComputeWaterCharge->testComputeWaterCharge();
+//        WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn* wrapperForComputeElectrostaticPairIxn = new WrappedMBPolReferenceElectrostaticsForceForCalculateElectrostaticPairIxn();
+//        wrapperForComputeElectrostaticPairIxn->testCalculateElectrostaticPairIxn(log);
+//
+//        WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge* wrapperForComputeWaterCharge = new WrappedMBPolReferenceElectrostaticsForceForComputeWaterCharge();
+//        wrapperForComputeWaterCharge->testComputeWaterCharge();
+//
+//        testWater3( log );
+//
+        // testWater3VirtualSite( log );
 
-        testWater3( log );
-
-        testWater3VirtualSite( log );
+        //testWater3VirtualSitePMEHugeBox( log );
 
     } catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;

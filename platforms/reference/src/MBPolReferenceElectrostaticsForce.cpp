@@ -2218,7 +2218,6 @@ void MBPolReferencePmeElectrostaticsForce::calculateFixedElectrostaticsFieldPair
     RealVec fim            = qj*( 2.0*bn2)  - particleJ.dipole*bn1  - deltaR*( bn1*particleJ.charge - bn2*djr+bn3*qjr);
     RealVec fjm            = qi*(-2.0*bn2)  - particleI.dipole*bn1  + deltaR*( bn1*particleI.charge + bn2*dir+bn3*qir);
 
- // FIXME check that everything is charge-charge
     RealOpenMM rr3    = getAndScaleInverseRs( particleI, particleJ, r, false, 3, TCC); //         charge - charge
     RealOpenMM rr5    = getAndScaleInverseRs( particleI, particleJ, r, false, 5, TCC);; //        charge - charge
     RealOpenMM rr7    = getAndScaleInverseRs( particleI, particleJ, r, false, 7, TCC);; //        charge - charge
@@ -3215,20 +3214,20 @@ void MBPolReferencePmeElectrostaticsForce::calculateInducedDipoleFields( const s
         }
     }
 
-    // reciprocal space ixns
-
-    calculateReciprocalSpaceInducedDipoleField( updateInducedDipoleFields );
-
-    // self ixn 
-
-    RealOpenMM term = (4.0/3.0)*(_alphaEwald*_alphaEwald*_alphaEwald)/SQRT_PI;
-    for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
-        vector<RealVec>& inducedDipoles = *(updateInducedDipoleFields[ii].inducedDipoles);
-        vector<RealVec>& field          = updateInducedDipoleFields[ii].inducedDipoleField;
-        for( unsigned int jj = 0; jj < particleData.size(); jj++ ){
-            field[jj] += inducedDipoles[jj]*term;
-        } 
-    }
+//    // reciprocal space ixns
+//
+//    calculateReciprocalSpaceInducedDipoleField( updateInducedDipoleFields );
+//
+//    // self ixn
+//
+//    RealOpenMM term = (4.0/3.0)*(_alphaEwald*_alphaEwald*_alphaEwald)/SQRT_PI;
+//    for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
+//        vector<RealVec>& inducedDipoles = *(updateInducedDipoleFields[ii].inducedDipoles);
+//        vector<RealVec>& field          = updateInducedDipoleFields[ii].inducedDipoleField;
+//        for( unsigned int jj = 0; jj < particleData.size(); jj++ ){
+//            field[jj] += inducedDipoles[jj]*term;
+//        }
+//    }
 
     return;
 }
@@ -3288,24 +3287,28 @@ void MBPolReferencePmeElectrostaticsForce::calculateDirectInducedDipolePairIxns(
 
     // compute the error function scaled and unscaled terms
 
-    // TODO check if we can use get and scale
-    RealOpenMM scale3      = 1.0;
-    RealOpenMM scale5      = 1.0;
-    RealOpenMM damp        = particleI.dampingFactor*particleJ.dampingFactor;
-    if( damp != 0.0 ){
+//    // TODO check if we can use get and scale
+//    RealOpenMM scale3      = 1.0;
+//    RealOpenMM scale5      = 1.0;
+//    RealOpenMM damp        = particleI.dampingFactor*particleJ.dampingFactor;
+//    if( damp != 0.0 ){
+//
+//        RealOpenMM ratio  = (r/damp);
+//        ratio       = ratio*ratio*ratio;
+//        // TODO implement variable thole in PME
+//        RealOpenMM pgamma = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
+//        damp        = -pgamma*ratio;
+//
+//        if( damp > -50.0) {
+//            RealOpenMM expdamp = expf(damp);
+//            scale3        = 1.0 - expdamp;
+//            scale5        = 1.0 - expdamp*(1.0-damp);
+//        }
+//    }
 
-        RealOpenMM ratio  = (r/damp);
-              ratio       = ratio*ratio*ratio;
-        // TODO implement variable thole in PME
-        RealOpenMM pgamma = particleI.thole[TCC] < particleJ.thole[TCC] ? particleI.thole[TCC] : particleJ.thole[TCC];
-              damp        = -pgamma*ratio;
+    RealOpenMM scale3 = getAndScaleInverseRs(particleI, particleJ, r, true, 3, TDD);
+    RealOpenMM scale5 = getAndScaleInverseRs(particleI, particleJ, r, true, 5, TDD);
 
-        if( damp > -50.0) {
-            RealOpenMM expdamp = expf(damp);
-            scale3        = 1.0 - expdamp;
-            scale5        = 1.0 - expdamp*(1.0-damp);
-        }
-    }
     RealOpenMM dsc3        = uscale*scale3;
     RealOpenMM dsc5        = uscale*scale5;
 
@@ -3729,7 +3732,7 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
 
     // FIXME is scalingFactors[M_SCALE] == 0??
     // e                   = e - (1.0-scalingFactors[M_SCALE])*erl;
-    e                   = e - erl;
+    // e                   = e - erl;
     ei                  = ei - erli;
 
     energy              = (e + ei);
