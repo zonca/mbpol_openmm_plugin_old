@@ -3214,7 +3214,7 @@ void MBPolReferencePmeElectrostaticsForce::calculateInducedDipoleFields( const s
         }
     }
 
-//    // reciprocal space ixns
+// FIXME segfault!   // reciprocal space ixns
 //
 //    calculateReciprocalSpaceInducedDipoleField( updateInducedDipoleFields );
 //
