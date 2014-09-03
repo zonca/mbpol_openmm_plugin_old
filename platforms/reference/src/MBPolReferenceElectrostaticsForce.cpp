@@ -3215,19 +3215,19 @@ void MBPolReferencePmeElectrostaticsForce::calculateInducedDipoleFields( const s
     }
 
 // FIXME segfault!   // reciprocal space ixns
-//
-//    calculateReciprocalSpaceInducedDipoleField( updateInducedDipoleFields );
-//
-//    // self ixn
-//
-//    RealOpenMM term = (4.0/3.0)*(_alphaEwald*_alphaEwald*_alphaEwald)/SQRT_PI;
-//    for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
-//        vector<RealVec>& inducedDipoles = *(updateInducedDipoleFields[ii].inducedDipoles);
-//        vector<RealVec>& field          = updateInducedDipoleFields[ii].inducedDipoleField;
-//        for( unsigned int jj = 0; jj < particleData.size(); jj++ ){
-//            field[jj] += inducedDipoles[jj]*term;
-//        }
-//    }
+
+    calculateReciprocalSpaceInducedDipoleField( updateInducedDipoleFields );
+
+    // self ixn
+
+    RealOpenMM term = (4.0/3.0)*(_alphaEwald*_alphaEwald*_alphaEwald)/SQRT_PI;
+    for( unsigned int ii = 0; ii < updateInducedDipoleFields.size(); ii++ ){
+        vector<RealVec>& inducedDipoles = *(updateInducedDipoleFields[ii].inducedDipoles);
+        vector<RealVec>& field          = updateInducedDipoleFields[ii].inducedDipoleField;
+        for( unsigned int jj = 0; jj < particleData.size(); jj++ ){
+            field[jj] += inducedDipoles[jj]*term;
+        }
+    }
 
     return;
 }
