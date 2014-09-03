@@ -905,7 +905,7 @@ static void testWater3( FILE* log ) {
 
 static void testWater3VirtualSitePMEHugeBox( FILE* log ) {
 
-    std::string testName      = "testWater3VirtualSite";
+    std::string testName      = "testWater3VirtualSitePMEHugeBox";
     std::cout << "Test START: " << testName << std::endl;
 
     int numberOfParticles     = 12;
@@ -939,7 +939,7 @@ static void testWater3VirtualSitePMEHugeBox( FILE* log ) {
     mbpolElectrostaticsForce->setEwaldErrorTolerance( 1.0e-04 );
 
     std::vector<int> pmeGridDimension( 3 );
-    int inputPmeGridDimension = 5;
+    int inputPmeGridDimension = 20;
     pmeGridDimension[0] = pmeGridDimension[1] = pmeGridDimension[2] = inputPmeGridDimension;
     mbpolElectrostaticsForce->setPmeGridDimensions( pmeGridDimension );
 
