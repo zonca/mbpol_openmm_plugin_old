@@ -2170,7 +2170,6 @@ void MBPolReferencePmeElectrostaticsForce::calculateFixedElectrostaticsFieldPair
     bool isSameWater = (particleI.multipoleAtomZs == particleJ.particleIndex) or
             (particleI.multipoleAtomYs == particleJ.particleIndex) or
             (particleI.multipoleAtomXs == particleJ.particleIndex);
-    if( isSameWater )return;
 
     RealVec deltaR    = particleJ.position - particleI.position;
     getPeriodicDelta( deltaR );
@@ -2218,9 +2217,27 @@ void MBPolReferencePmeElectrostaticsForce::calculateFixedElectrostaticsFieldPair
     RealVec fim            = qj*( 2.0*bn2)  - particleJ.dipole*bn1  - deltaR*( bn1*particleJ.charge - bn2*djr+bn3*qjr);
     RealVec fjm            = qi*(-2.0*bn2)  - particleI.dipole*bn1  + deltaR*( bn1*particleI.charge + bn2*dir+bn3*qir);
 
-    RealOpenMM rr3    = getAndScaleInverseRs( particleI, particleJ, r, false, 3, TCC); //         charge - charge
-    RealOpenMM rr5    = getAndScaleInverseRs( particleI, particleJ, r, false, 5, TCC);; //        charge - charge
-    RealOpenMM rr7    = getAndScaleInverseRs( particleI, particleJ, r, false, 7, TCC);; //        charge - charge
+//    RealOpenMM rr3    = getAndScaleInverseRs( particleI, particleJ, r, false, 3, TCC); //         charge - charge
+//    RealOpenMM rr5    = getAndScaleInverseRs( particleI, particleJ, r, false, 5, TCC);; //        charge - charge
+//    RealOpenMM rr7    = getAndScaleInverseRs( particleI, particleJ, r, false, 7, TCC);; //        charge - charge
+    RealOpenMM s3    = getAndScaleInverseRs( particleI, particleJ, r, true, 3, TCC); //         charge - charge
+    RealOpenMM s5    = getAndScaleInverseRs( particleI, particleJ, r, true, 5, TCC);; //        charge - charge
+    RealOpenMM s7    = getAndScaleInverseRs( particleI, particleJ, r, true, 7, TCC);; //        charge - charge
+
+    // FIXME verify this
+    if( isSameWater ){
+		s3 = 2;
+		s5 = 2;
+		s7 = 2;
+    }
+    RealOpenMM rr3 = (s3 - 1.)/(r2*r);
+    RealOpenMM rr5 = (s5 - 1.)/(r2*r2*r);
+    RealOpenMM rr7 = (s7 - 1.)/(r2*r2*r2*r);
+
+//    RealOpenMM rr3 = (s3 - 1)/(r2*r);
+//    RealOpenMM rr5 = (s5 - 1)/(r2*r2*r);
+//    RealOpenMM rr7 = (s7 - 1)/(r2*r2*r2*r);
+
 
     RealVec fid            = qj*( 2.0*rr5) - particleJ.dipole*rr3 - deltaR*(rr3*particleJ.charge - rr5*djr+rr7*qjr);
     RealVec fjd            = qi*(-2.0*rr5) - particleI.dipole*rr3 + deltaR*(rr3*particleI.charge + rr5*dir+rr7*qir);
@@ -3693,22 +3710,18 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM glip6         = scip1;
     RealOpenMM glip7         = 2.0 * (scip7-scip8);
 
-    // compute the energy contributions for this interaction
-
-
     bool isSameWater = (particleI.multipoleAtomZs == particleJ.particleIndex) or
             (particleI.multipoleAtomYs == particleJ.particleIndex) or
             (particleI.multipoleAtomXs == particleJ.particleIndex);
-    // Same water atoms have no charge/charge interaction and no induced-dipole/charge interaction
-    if( isSameWater ) {
-        gl0 = 0.;
-        gli1 = 0.;
-        glip1 = 0.;
 
-    }
+    // in PME same water interactions are not excluded, but the scale factors are set to 0.
+//    if( isSameWater ) {
+////        gl0 = 0.;
+////        gli1 = 0.;
+////        glip1 = 0.;
+//    }
     // compute the energy contributions for this interaction
 
-    // FIXME check that we do not need scale factors
     RealOpenMM e             = bn0*gl0 + bn1*(gl1+gl6) + bn2*(gl2+gl7+gl8) + bn3*(gl3+gl5) + bn4*gl4;
     RealOpenMM ei            = 0.5 * (bn1*(gli1+gli6) + bn2*(gli2+gli7) + bn3*gli3); 
 
@@ -3719,7 +3732,9 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM scale3DD = getAndScaleInverseRs( particleI, particleJ,   r, true, 3, TDD);
     RealOpenMM scale5DD = getAndScaleInverseRs( particleI, particleJ,   r, true, 5, TDD);
 
-    // FIXME check that 1-scale is correct
+    if( isSameWater ) {
+        scale1CC = scale3CD = scale3DD = scale5DD = 0.;
+    }
     RealOpenMM erl           =  rr1*gl0*(1 - scale1CC) + // charge-charge
                                 rr3*gl1*(1 - scale3CD) + // charge -dipole
                                 rr3*gl6*(1 - scale3DD);  // dipole-dipole
