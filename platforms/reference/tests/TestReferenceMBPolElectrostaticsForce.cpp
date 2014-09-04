@@ -294,6 +294,8 @@ class WrappedMBPolReferenceElectrostaticsForceForPmeDipole: public MBPolReferenc
             _inducedDipolePolar[ii]  = _fixedElectrostaticsFieldPolar[ii];
         }
 
+        resizePmeArrays();
+
 //      for( unsigned int ii = 0; ii < numberOfParticles; ii++ ){
 //          std::cout << updateInducedDipoleField[0].inducedDipoles[0][ii] << std::endl;
 //      }

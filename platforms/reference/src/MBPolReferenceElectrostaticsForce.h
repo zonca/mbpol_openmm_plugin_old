@@ -1132,6 +1132,14 @@ public:
      */
      void setPeriodicBoxSize( RealVec& boxSize );
 
+protected:
+
+     /**
+      * Resize PME arrays.
+      *
+      */
+     void resizePmeArrays( void );
+
 private:
 
     static const int MBPOL_PME_ORDER;
@@ -1164,11 +1172,7 @@ private:
     std::vector<RealOpenMM4> _pmeBsplineTheta;
     std::vector<RealOpenMM4> _pmeBsplineDtheta;
 
-    /**
-     * Resize PME arrays.
-     * 
-     */
-    void resizePmeArrays( void );
+
 
     /**
      * Zero Pme grid.
