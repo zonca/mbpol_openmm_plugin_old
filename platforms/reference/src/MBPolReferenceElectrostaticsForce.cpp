@@ -3745,9 +3745,8 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
                                   rr5 * gli2 * (1 - scale5DD) ); // dipole - induced   dipole
                                   // rr5*(gli7)*psc5 + rr7*gli3*psc7);
 
-    // FIXME is scalingFactors[M_SCALE] == 0??
-    // e                   = e - (1.0-scalingFactors[M_SCALE])*erl;
-    // e                   = e - erl;
+    // e                   = e - (1.0-scalingFactors[M_SCALE])*erl; // scalingFactors[M_SCALE] is 1 in AMOEBA
+    e                   = e - erl; // FIXME verify this
     ei                  = ei - erli;
 
     energy              = (e + ei);
