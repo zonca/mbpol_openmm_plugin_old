@@ -212,16 +212,16 @@ void ReferenceCalcMBPolElectrostaticsForceKernel::initialize(const OpenMM::Syste
         alphaEwald = force.getAEwald();
         cutoffDistance = force.getCutoffDistance();
         force.getPmeGridDimensions(pmeGridDimension);
-//        if (pmeGridDimension[0] == 0 || alphaEwald == 0.0) {
-//            NonbondedForce nb;
-//            nb.setEwaldErrorTolerance(force.getEwaldErrorTolerance());
-//            nb.setCutoffDistance(force.getCutoffDistance());
-//            int gridSizeX, gridSizeY, gridSizeZ;
-//            NonbondedForceImpl::calcPMEParameters(system, nb, alphaEwald, gridSizeX, gridSizeY, gridSizeZ);
-//            pmeGridDimension[0] = gridSizeX;
-//            pmeGridDimension[1] = gridSizeY;
-//            pmeGridDimension[2] = gridSizeZ;
-//        }
+        if (pmeGridDimension[0] == 0 || alphaEwald == 0.0) {
+            NonbondedForce nb;
+            nb.setEwaldErrorTolerance(force.getEwaldErrorTolerance());
+            nb.setCutoffDistance(force.getCutoffDistance());
+            int gridSizeX, gridSizeY, gridSizeZ;
+            NonbondedForceImpl::calcPMEParameters(system, nb, alphaEwald, gridSizeX, gridSizeY, gridSizeZ);
+            pmeGridDimension[0] = gridSizeX;
+            pmeGridDimension[1] = gridSizeY;
+            pmeGridDimension[2] = gridSizeZ;
+        }
     } else {
         usePme = false;
     }

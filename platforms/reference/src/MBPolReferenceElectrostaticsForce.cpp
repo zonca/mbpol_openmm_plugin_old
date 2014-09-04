@@ -4152,10 +4152,10 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculateElectrostatic( const s
         }
     }
 
-//    calculatePmeSelfTorque( particleData, torques );
-//    energy += computeReciprocalSpaceInducedDipoleForceAndEnergy( getPolarizationType(), particleData, forces, torques );
-//    energy += computeReciprocalSpaceFixedElectrostaticsForceAndEnergy( particleData, forces, torques );
-//    energy += calculatePmeSelfEnergy( particleData );
+    calculatePmeSelfTorque( particleData, torques );
+    energy += computeReciprocalSpaceInducedDipoleForceAndEnergy( getPolarizationType(), particleData, forces, torques );
+    energy += computeReciprocalSpaceFixedElectrostaticsForceAndEnergy( particleData, forces, torques );
+    energy += calculatePmeSelfEnergy( particleData );
 
     return energy;
 }
