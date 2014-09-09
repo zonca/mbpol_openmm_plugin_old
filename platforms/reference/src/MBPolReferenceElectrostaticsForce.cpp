@@ -3751,9 +3751,18 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
 
     energy              = (e + ei);
 
+    RealOpenMM scale3CC = getAndScaleInverseRs( particleI, particleJ, r, true, 3, TCC);
+    RealOpenMM scale5CD = getAndScaleInverseRs( particleI, particleJ, r, true, 5, TCD);
+    RealOpenMM scale7DD = getAndScaleInverseRs( particleI, particleJ, r, true, 7, TDD);
+
+    if( isSameWater ) {
+    	scale3CC = scale5CD = scale7DD = 0.;
+    }
+
     // intermediate variables for permanent force terms
 
-    RealOpenMM gf1 = bn1*gl0 + bn2*(gl6)
+    RealOpenMM gf1 = bn1*gl0
+    		     + bn2*(gl6)
                  + bn3*(gl2+gl7+gl8)
                  + bn4*(gl3+gl5) + bn5*gl4;
     RealOpenMM gf2 = sc4*bn2 - sc6*bn3;
@@ -3763,14 +3772,14 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM gf6 = 2.0*(-ci*bn2-sc3*bn3-sc5*bn4);
     RealOpenMM gf7 = 4.0*bn3;
 
-    if (not isSameWater) //  induced force with screening excluded interactions
+    if (not isSameWater) //  permanent force ewald excluded interactions
     {
     	gf1 += bn2*gl1;
     	gf2 -= ck*bn1;
     	gf3 += ci*bn1;
     }
 
-    RealOpenMM gfr1 = rr3*gl0 + rr5*(gl6)
+    RealOpenMM gfr1 = (1 - scale3CC) * rr3*gl0 + rr5*(gl6)
                   + rr7*(gl2+gl7+gl8)
                   + rr9*(gl3+gl5) + rr11*gl4;
     RealOpenMM gfr2 = sc4*rr5 - sc6*rr7;
@@ -3780,7 +3789,7 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM gfr6 = 2.0*(-ci*rr5-sc3*rr7-sc5*rr9);
     RealOpenMM gfr7 = 4.0*rr7;
 
-    if (not isSameWater) //  induced force with screening excluded interactions
+    if (not isSameWater) //  permanent force excluded interactions
     {
     	gfr1 += rr5*gl1;
     	gfr2 -= ck*rr3;
@@ -3806,9 +3815,8 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     	gfi2 -= ck*bn1;
     	gfi3 += ci*bn1;
     }
-    RealOpenMM scale3CC = getAndScaleInverseRs( particleI, particleJ, r, true, 3, TCC);
-    RealOpenMM scale5CD = getAndScaleInverseRs( particleI, particleJ, r, true, 5, TCD);
-    RealOpenMM scale7DD = getAndScaleInverseRs( particleI, particleJ, r, true, 7, TDD);
+
+
 
 	RealOpenMM gfri1 = 0.5 * (  rr5 * ( gli1  * scale5CD +  // charge - induced dipole
 			                          gli6  * scale5DD + // dipole - induced dipole
@@ -3906,7 +3914,7 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
         ftm2ri1 += (
                 - rr3*ck*(_inducedDipole[iIndex][0]+_inducedDipolePolar[iIndex][0]) +
                 rr3*ci*(_inducedDipole[jIndex][0]+_inducedDipolePolar[jIndex][0])
-            )*0.5 * scale3CD;
+            )*0.5 * (1-scale3CD);
     }
 
     RealOpenMM ftm2ri2 = gfri1*yr + 0.5*
@@ -3933,7 +3941,7 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
         ftm2ri2 += (
                 - rr3*ck*(_inducedDipole[iIndex][1]+_inducedDipolePolar[iIndex][1]) +
                   rr3*ci*(_inducedDipole[jIndex][1]+_inducedDipolePolar[jIndex][1])
-            )*0.5 * scale3CD;
+            )*0.5 * (1-scale3CD);
     }
 
     RealOpenMM ftm2ri3 = gfri1*zr + 0.5*
@@ -3960,7 +3968,7 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
         ftm2ri3 += (
                 - rr3*ck*(_inducedDipole[iIndex][2]+_inducedDipolePolar[iIndex][2])    +
                 rr3*ci*(_inducedDipole[jIndex][2]+_inducedDipolePolar[jIndex][2])
-            )*0.5* scale3CD;
+            )*0.5* (1-scale3CD);
     }
 
 
