@@ -3772,12 +3772,9 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM gf6 = 2.0*(-ci*bn2-sc3*bn3-sc5*bn4);
     RealOpenMM gf7 = 4.0*bn3;
 
-    if (not isSameWater) //  permanent force ewald excluded interactions
-    {
-    	gf1 += bn2*gl1;
-    	gf2 -= ck*bn1;
-    	gf3 += ci*bn1;
-    }
+	gf1 += bn2*gl1;
+	gf2 -= ck*bn1;
+	gf3 += ci*bn1;
 
     RealOpenMM gfr1 = (1 - scale3CC) * rr3*gl0 + rr5*(gl6)
                   + rr7*(gl2+gl7+gl8)
@@ -3789,12 +3786,10 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM gfr6 = 2.0*(-ci*rr5-sc3*rr7-sc5*rr9);
     RealOpenMM gfr7 = 4.0*rr7;
 
-    if (not isSameWater) //  permanent force excluded interactions
-    {
-    	gfr1 += rr5*gl1;
-    	gfr2 -= ck*rr3;
-    	gfr3 += ci*rr3;
-    }
+
+	gfr1 += rr5*gl1;
+	gfr2 -= ck*rr3;
+	gfr3 += ci*rr3;
 
     // intermediate variables for induced force terms
 
@@ -3809,12 +3804,11 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
     RealOpenMM gfi4 = 2.0 * bn2;
     RealOpenMM gfi5 = bn3 * (sci4+scip4);
     RealOpenMM gfi6 = -bn3 * (sci3+scip3);
-    if (not isSameWater) //  induced force with screening excluded interactions
-    {
-    	gfi1 += 0.5*bn2*(gli1+glip1);
-    	gfi2 -= ck*bn1;
-    	gfi3 += ci*bn1;
-    }
+
+
+	gfi1 += 0.5*bn2*(gli1+glip1);
+	gfi2 -= ck*bn1;
+	gfi3 += ci*bn1;
 
 
 
@@ -3909,13 +3903,11 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
          //+ gfri5*qir1 + gfri6*qkr1;
 
     // Same water atoms have no induced-dipole/charge interaction
-    if (not( isSameWater )) {
 
-        ftm2ri1 += (
-                - rr3*ck*(_inducedDipole[iIndex][0]+_inducedDipolePolar[iIndex][0]) +
-                rr3*ci*(_inducedDipole[jIndex][0]+_inducedDipolePolar[jIndex][0])
-            )*0.5 * (1-scale3CD);
-    }
+	ftm2ri1 += (
+			- rr3*ck*(_inducedDipole[iIndex][0]+_inducedDipolePolar[iIndex][0]) +
+			rr3*ci*(_inducedDipole[jIndex][0]+_inducedDipolePolar[jIndex][0])
+		)*0.5 * (1-scale3CD);
 
     RealOpenMM ftm2ri2 = gfri1*yr + 0.5*
         (
@@ -3935,14 +3927,10 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
          // + gfri5*qir2 + gfri6*qkr2;
 
 
-    // Same water atoms have no induced-dipole/charge interaction
-    if (not( isSameWater )) {
-
-        ftm2ri2 += (
-                - rr3*ck*(_inducedDipole[iIndex][1]+_inducedDipolePolar[iIndex][1]) +
-                  rr3*ci*(_inducedDipole[jIndex][1]+_inducedDipolePolar[jIndex][1])
-            )*0.5 * (1-scale3CD);
-    }
+	ftm2ri2 += (
+			- rr3*ck*(_inducedDipole[iIndex][1]+_inducedDipolePolar[iIndex][1]) +
+			  rr3*ci*(_inducedDipole[jIndex][1]+_inducedDipolePolar[jIndex][1])
+		)*0.5 * (1-scale3CD);
 
     RealOpenMM ftm2ri3 = gfri1*zr + 0.5*
         (
@@ -3962,14 +3950,11 @@ RealOpenMM MBPolReferencePmeElectrostaticsForce::calculatePmeDirectElectrostatic
 //         + gfri5*qir3 + gfri6*qkr3;
 
 
-    // Same water atoms have no induced-dipole/charge interaction
-    if (not( isSameWater )) {
 
-        ftm2ri3 += (
-                - rr3*ck*(_inducedDipole[iIndex][2]+_inducedDipolePolar[iIndex][2])    +
-                rr3*ci*(_inducedDipole[jIndex][2]+_inducedDipolePolar[jIndex][2])
-            )*0.5* (1-scale3CD);
-    }
+	ftm2ri3 += (
+			- rr3*ck*(_inducedDipole[iIndex][2]+_inducedDipolePolar[iIndex][2])    +
+			rr3*ci*(_inducedDipole[jIndex][2]+_inducedDipolePolar[jIndex][2])
+		)*0.5* (1-scale3CD);
 
 
 //    // account for partially excluded induced interactions
