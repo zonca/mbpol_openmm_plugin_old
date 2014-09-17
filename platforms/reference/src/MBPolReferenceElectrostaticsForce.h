@@ -1140,6 +1140,20 @@ protected:
       */
      void resizePmeArrays( void );
 
+
+     /**
+      * Calculate direct space electrostatic interaction between particles I and J.
+      *
+      * @param particleI         positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle I
+      * @param particleJ         positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
+      * @param scalingFactors    scaling factors for interaction
+      * @param forces            vector of particle forces to be updated
+      * @param torques           vector of particle torques to be updated
+      */
+     RealOpenMM calculatePmeDirectElectrostaticPairIxn( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
+                                                        std::vector<RealVec>& forces, std::vector<RealVec>& torques ) const;
+
+
 private:
 
     static const int MBPOL_PME_ORDER;
@@ -1420,18 +1434,6 @@ private:
      * @param torques                 vector of torques
      */
     void calculatePmeSelfTorque( const std::vector<ElectrostaticsParticleData>& particleData, std::vector<RealVec>& torques ) const;
-
-    /**
-     * Calculate direct space electrostatic interaction between particles I and J.
-     * 
-     * @param particleI         positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle I
-     * @param particleJ         positions and parameters (charge, labFrame dipoles, quadrupoles, ...) for particle J
-     * @param scalingFactors    scaling factors for interaction
-     * @param forces            vector of particle forces to be updated
-     * @param torques           vector of particle torques to be updated
-     */
-    RealOpenMM calculatePmeDirectElectrostaticPairIxn( const ElectrostaticsParticleData& particleI, const ElectrostaticsParticleData& particleJ,
-                                                       std::vector<RealVec>& forces, std::vector<RealVec>& torques ) const;
 
     /**
      * Calculate reciprocal space energy/force/torque for dipole interaction.
