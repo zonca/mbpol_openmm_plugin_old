@@ -14,27 +14,9 @@ It implements the `MBPol` force field, available components are:
 The parameters of each component are defined in [`python/mbpol.xml`](https://github.com/paesanilab/mbpol_openmm_plugin/blob/master/python/mbpol.xml).
 As of version `0.4.0`, only the `Reference` platform, i.e. single threaded C++ on CPU, is supported.
 
-## Requirements
-
-* `OpenMM` built from a July 2014 or later snapshot of the Github repository <https://github.com/SimTk/openmm> master branch
-
 ## How to install
 
-* Clone the `mbpol` plugin source from Github:
-  <https://github.com/paesanilab/mbpol_openmm_plugin>
-* Create the `build_mbpol` folder outside of the source folder
-* Configure the build by running `ccmake -i ../mbpol_openmm_plugin` inside the `build_mbpol` folder and press `c`
-* Set:
-  * `OPENMM_BUILD_MBPOL_CUDA_LIB`  `OFF` (not supported yet)
-  * `CMAKE_INSTALL_PREFIX` and `OPENMM_DIR` should contain the path to the installed `OpenMM`, by default `/usr/local/openmm`.
-  * `CMAKE_BUILD_TYPE` `Release`
-* Press `g` to generate the configuration and exit
-* Run `make` to compile the C++ library
-* Run `(sudo) make install` to install the `mbpol` dynamic library to the
-  `openmm` folder
-* Run `make PythonInstall` to install the Python wrapper, it requires
-  Python and `swig`, the best is to use Anaconda
-* Add the OpenMM lib folder to the dynamic libraries path, generally : `export LD_LIBRARY_PATH=/usr/local/openmm/lib:$LD_LIBRARY_PATH`
+See the [`INSTALL.md`](https://github.com/paesanilab/mbpol_openmm_plugin/blob/master/INSTALL.md) file in the package.
 
 ## Example simulation
 
