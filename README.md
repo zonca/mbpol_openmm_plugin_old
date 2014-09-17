@@ -21,7 +21,7 @@ As of version `0.4.0`, only the `Reference` platform, i.e. single threaded C++ o
 ## How to install
 
 * Clone the `mbpol` plugin source from Github:
-  <https://github.com/sdsc/mbpol_openmm_plugin>
+  <https://github.com/paesanilab/mbpol_openmm_plugin>
 * Create the `build_mbpol` folder outside of the source folder
 * Configure the build by running `ccmake -i ../mbpol_openmm_plugin` inside the `build_mbpol` folder and press `c`
 * Set:
