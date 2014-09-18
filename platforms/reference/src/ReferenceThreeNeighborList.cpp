@@ -1,4 +1,5 @@
 #include "ReferenceThreeNeighborList.h"
+#include "openmm/reference/ReferenceForce.h"
 #include <set>
 #include <map>
 #include <cmath>
@@ -11,26 +12,17 @@ namespace MBPolPlugin {
 
 typedef std::vector<AtomIndex> AtomList;
 
-static double periodicDifference(double val1, double val2, double period) {
-    double diff = val1-val2;
-    double base = floor(diff/period+0.5)*period;
-    return diff-base;
-}
-
 // squared distance between two points
 static double compPairDistanceSquared(const RealVec& pos1, const RealVec& pos2, const RealVec& periodicBoxSize, bool usePeriodic) {
     double dx, dy, dz;
+    RealOpenMM deltaR = 0;
     if (!usePeriodic) {
-        dx = pos2[0] - pos1[0];
-        dy = pos2[1] - pos1[1];
-        dz = pos2[2] - pos1[2];
+        ReferenceForce::getDeltaR(pos1, pos2, &deltaR)
     }
     else {
-        dx = periodicDifference(pos2[0], pos1[0], periodicBoxSize[0]);
-        dy = periodicDifference(pos2[1], pos1[1], periodicBoxSize[1]);
-        dz = periodicDifference(pos2[2], pos1[2], periodicBoxSize[2]);
+        ReferenceForce::getDeltaRPeriodic(pos1, pos2, &periodicBoxSize, &deltaR)
     }
-    return dx*dx + dy*dy + dz*dz;
+    return deltaR;
 }
 
 class VoxelIndex
