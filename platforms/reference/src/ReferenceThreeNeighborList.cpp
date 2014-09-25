@@ -16,13 +16,11 @@ typedef std::vector<AtomIndex> AtomList;
 static double compPairDistanceSquared(const RealVec& pos1, const RealVec& pos2, const RealVec& periodicBoxSize, bool usePeriodic) {
     double dx, dy, dz;
     RealOpenMM deltaR = 0;
-    RealOpenMM periodicBoxSizeData[3];
-    periodicBoxSizeData[0] = periodicBoxSize[0]; periodicBoxSizeData[1] = periodicBoxSize[1]; periodicBoxSizeData[2] = periodicBoxSize[2];
     if (!usePeriodic) {
-        ReferenceForce::getDeltaR(pos1, pos2, &deltaR);
+        ReferenceForce::getDeltaR(pos1, pos2, &deltaR)
     }
     else {
-        ReferenceForce::getDeltaRPeriodic(pos1, pos2, periodicBoxSizeData, &deltaR);
+        ReferenceForce::getDeltaRPeriodic(pos1, pos2, &periodicBoxSize, &deltaR)
     }
     return deltaR;
 }
