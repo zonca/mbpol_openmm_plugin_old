@@ -62,6 +62,40 @@ RealVec MBPolReferenceTwoBodyForce::getPeriodicBox( void ) const {
     return _periodicBoxDimensions;
 }
 
+void imageParticles(const RealVec& box, double* referenceParticle, const RealVec& particleToImage, double* outputArray)
+{
+    // Periodic boundary conditions imaging of particleToImage with respect to referenceParticle
+
+    double distance, factor;
+    for (unsigned int i=0; i < 3; i++) {
+        distance = referenceParticle[i] - particleToImage[i];
+        factor = std::floor(distance/box[i] + 0.5);
+        outputArray[i] = particleToImage[i] + box[i]*factor;
+    }
+}
+
+void imageMolecules(const RealVec& box, int siteI, int siteJ, const std::vector<RealVec>& particlePositions, const std::vector<std::vector<int> >& allParticleIndices, double* imagedPositions) const {
+
+    // Take first oxygen as central atom
+
+    for(size_t i = 0; i < 3; ++i)
+        imagedPositions[i] = particlePositions[allParticleIndices[siteI][0][i]];
+
+    // image its two hydrogens with respect of the first oxygen
+
+    for(size_t a = 1; a < 3; ++a)
+        imageParticles(box, imagedPositions, particlePositions[allParticleIndices[siteI][a]], imagedPositions + 3*a);
+
+    // Now image the oxygen of the second molecule
+
+    imageParticles(box, imagedPositions, particlePositions[allParticleIndices[siteJ][0]], imagedPositions + 3*3);
+
+    // Image the hydrogen of the second molecule with respect to the oxygen of the second molecule
+    for(size_t a = 1; a < 3; ++a)
+        imageParticles(box, imagedPositions + 3*3, particlePositions[allParticleIndices[siteJ][a]], imagedPositions + 9 + 3*a);
+
+
+}
 RealOpenMM MBPolReferenceTwoBodyForce::calculatePairIxn( int siteI, int siteJ,
                                                       const std::vector<RealVec>& particlePositions,
                                                       const std::vector<std::vector<int> >& allParticleIndices,
