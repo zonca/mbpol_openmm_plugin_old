@@ -138,15 +138,19 @@ RealOpenMM MBPolReferenceTwoBodyForce::calculatePairIxn( int siteI, int siteJ,
 
         double xcrd[30]; // coordinates including extra-points
 
-        for (unsigned int i=0; i < 3; i++) {
-            // first water molecule
-            xcrd[Oa + i] =  particlePositions[allParticleIndices[siteI][0]][i]*nm_to_A;
-            xcrd[Ha1 + i] = particlePositions[allParticleIndices[siteI][1]][i]*nm_to_A;
-            xcrd[Ha2 + i] = particlePositions[allParticleIndices[siteI][2]][i]*nm_to_A;
-            // second water molecule
-            xcrd[Ob + i] =  particlePositions[allParticleIndices[siteJ][0]][i]*nm_to_A;
-            xcrd[Hb1 + i] = particlePositions[allParticleIndices[siteJ][1]][i]*nm_to_A;
-            xcrd[Hb2 + i] = particlePositions[allParticleIndices[siteJ][2]][i]*nm_to_A;
+        if( _nonbondedMethod == CutoffPeriodic ){
+            imageMolecules(_periodicBoxDimensions, siteI, siteJ, particlePositions, allParticleIndices, xcrd);
+        } else {
+    for (unsigned int i=0; i < 3; i++) {
+        // first water molecule
+        xcrd[Oa + i] =  particlePositions[allParticleIndices[siteI][0]][i]*nm_to_A;
+        xcrd[Ha1 + i] = particlePositions[allParticleIndices[siteI][1]][i]*nm_to_A;
+        xcrd[Ha2 + i] = particlePositions[allParticleIndices[siteI][2]][i]*nm_to_A;
+        // second water molecule
+        xcrd[Ob + i] =  particlePositions[allParticleIndices[siteJ][0]][i]*nm_to_A;
+        xcrd[Hb1 + i] = particlePositions[allParticleIndices[siteJ][1]][i]*nm_to_A;
+        xcrd[Hb2 + i] = particlePositions[allParticleIndices[siteJ][2]][i]*nm_to_A;
+        }
         }
 
         // the extra-points
