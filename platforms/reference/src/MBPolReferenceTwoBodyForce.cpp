@@ -74,16 +74,18 @@ void imageParticles(const RealVec& box, double* referenceParticle, const RealVec
     }
 }
 
-void imageMolecules(const RealVec& box, int siteI, int siteJ, const std::vector<RealVec>& particlePositions, const std::vector<std::vector<int> >& allParticleIndices, double* imagedPositions) const {
+void imageMolecules(const RealVec& box, int siteI, int siteJ, const std::vector<RealVec>& particlePositions,
+        const std::vector<std::vector<int> >& allParticleIndices, double* imagedPositions)
+{
 
     // Take first oxygen as central atom
 
-    for(size_t i = 0; i < 3; ++i)
-        imagedPositions[i] = particlePositions[allParticleIndices[siteI][0][i]];
+    for(unsigned int i = 0; i < 3; ++i)
+        imagedPositions[i] = particlePositions[allParticleIndices[siteI][0]][i];
 
     // image its two hydrogens with respect of the first oxygen
 
-    for(size_t a = 1; a < 3; ++a)
+    for(unsigned int a = 1; a < 3; ++a)
         imageParticles(box, imagedPositions, particlePositions[allParticleIndices[siteI][a]], imagedPositions + 3*a);
 
     // Now image the oxygen of the second molecule
@@ -91,7 +93,7 @@ void imageMolecules(const RealVec& box, int siteI, int siteJ, const std::vector<
     imageParticles(box, imagedPositions, particlePositions[allParticleIndices[siteJ][0]], imagedPositions + 3*3);
 
     // Image the hydrogen of the second molecule with respect to the oxygen of the second molecule
-    for(size_t a = 1; a < 3; ++a)
+    for(unsigned int a = 1; a < 3; ++a)
         imageParticles(box, imagedPositions + 3*3, particlePositions[allParticleIndices[siteJ][a]], imagedPositions + 9 + 3*a);
 
 
