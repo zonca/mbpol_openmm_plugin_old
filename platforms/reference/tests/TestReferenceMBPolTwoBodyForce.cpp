@@ -60,11 +60,20 @@ void testTwoBody( FILE* log ) {
     System system;
     int numberOfParticles          = 6;
     MBPolTwoBodyForce* mbpolTwoBodyForce = new MBPolTwoBodyForce();
-    double cutoff = 1e10;
+    double cutoff = 10;
     mbpolTwoBodyForce->setCutoff( cutoff );
-    mbpolTwoBodyForce->setNonbondedMethod(MBPolTwoBodyForce::CutoffNonPeriodic);
+    mbpolTwoBodyForce->setNonbondedMethod(MBPolTwoBodyForce::CutoffPeriodic);
 
     unsigned int particlesPerMolecule = 3;
+
+    double boxDimension = 50;
+    if( boxDimension > 0.0 ){
+        Vec3 a( boxDimension, 0.0, 0.0 );
+        Vec3 b( 0.0, boxDimension, 0.0 );
+        Vec3 c( 0.0, 0.0, boxDimension );
+        system.setDefaultPeriodicBoxVectors( a, b, c );
+    }
+
 
     std::vector<int> particleIndices(particlesPerMolecule);
     for( unsigned int jj = 0; jj < numberOfParticles; jj += particlesPerMolecule ){
